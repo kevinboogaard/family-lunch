@@ -136,13 +136,19 @@
             font-weight: bold;
             color: var(--primary);
         }
+        /* Standaard grijze knop */
         .add-btn {
-            background: #2a9d8f;
+            background: #adb5bd;
             color: white;
             border: none;
             padding: 6px 12px;
             border-radius: 4px;
             font-weight: bold;
+            transition: 0.2s;
+        }
+        /* Geselecteerde / toegevoegde staat: groen met vinkje */
+        .add-btn.selected {
+            background: #2a9d8f;
         }
         .cart-item {
             display: flex;
@@ -275,9 +281,9 @@
         let cart = [];
         let currentProductForModal = null;
 
-        // Automatisch Excel inladen vanuit dezelfde repository map
+        // Automatisch Excel inladen vanuit dezelfde repository map (pas de naam aan naar jullie exacte bestandsnaam)
         window.onload = function() {
-            const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
+            const excelFilename = 'FamilyMenu_PowerApps_Ready_download.xlsx';
             
             fetch(excelFilename)
                 .then(response => {
@@ -313,7 +319,7 @@
 
                     document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
                     document.getElementById('statusBanner').style.color = '#1b4332';
-                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten uit "${excelFilename}")`;
+                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten)`;
 
                     initApp();
                 })
@@ -321,7 +327,7 @@
                     console.error(error);
                     document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
                     document.getElementById('statusBanner').style.color = '#9b2226';
-                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet automatisch vinden in de repository. Zorg dat het bestand in dezelfde map staat als dit HTML-bestand!`;
+                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet vinden. Zorg dat het bestand in dezelfde map staat als dit HTML-bestand!`;
                 });
         };
 
@@ -356,6 +362,8 @@
             
             const filtered = menuData.filter(item => item.cat === category);
             filtered.forEach(item => {
+                const isSelected = cart.some(cartItem => cartItem.baseId === item.id);
+                
                 const card = document.createElement("div");
                 card.className = "product-card";
                 card.onclick = () => klikProduct(item.id);
@@ -366,7 +374,9 @@
                     </div>
                     <div class="product-footer">
                         <span class="product-price">€ ${item.price.toFixed(2).replace('.', ',')}</span>
-                        <button class="add-btn">+</button>
+                        <button class="add-btn ${isSelected ? 'selected' : ''}" id="btn_${item.id}">
+                            ${isSelected ? '✓' : '+'}
+                        </button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -449,8 +459,16 @@
             if (existing) {
                 existing.qty++;
             } else {
-                cart.push({ name: uniekeNaam, price: stuksprijs, qty: 1 });
+                cart.push({ baseId: product.id, name: uniekeNaam, price: stuksprijs, qty: 1 });
             }
+            
+            // Update knop direct naar groen met vinkje
+            const btn = document.getElementById(`btn_${product.id}`);
+            if (btn) {
+                btn.classList.add('selected');
+                btn.innerText = '✓';
+            }
+
             renderCart();
         }
 
@@ -484,7 +502,18 @@
         }
 
         function removeItem(index) {
+            const removedItem = cart[index];
             cart.splice(index, 1);
+            
+            // Check of dit product nog in het mandje zit; zo niet, zet knop weer terug naar grijs (+)
+            if (removedItem && !cart.some(item => item.baseId === removedItem.baseId)) {
+                const btn = document.getElementById(`btn_${removedItem.baseId}`);
+                if (btn) {
+                    btn.classList.remove('selected');
+                    btn.innerText = '+';
+                }
+            }
+            
             renderCart();
         }
 
@@ -517,6 +546,13 @@
             alert("Bedankt " + naam + "! Je bestelling is toegevoegd.");
             cart = [];
             document.getElementById("naamInput").value = "";
+            
+            // Reset alle knoppen naar grijs
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.innerText = '+';
+            });
+
             renderCart();
         }
 
