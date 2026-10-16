@@ -43,16 +43,13 @@
             color: white;
             font-weight: bold;
         }
-        .upload-banner {
-            background-color: #ffe8d6;
-            padding: 15px;
+        .status-banner {
+            background-color: #e2f0cb;
+            padding: 12px;
             text-align: center;
-            border-bottom: 1px solid #cb997e;
-            font-size: 15px;
-        }
-        .upload-banner input {
-            margin-left: 10px;
-            padding: 5px;
+            border-bottom: 1px solid #b5d56b;
+            font-size: 14px;
+            color: #386641;
         }
         .container {
             display: flex;
@@ -100,7 +97,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 15px;
-            max-height: 70vh;
+            max-height: 75vh;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -220,16 +217,15 @@
         <button class="admin-badge" onclick="openAdminOverzicht()">Beheer: Bekijk Alle Bestellingen</button>
     </header>
     
-    <div class="upload-banner">
-        📂 Laad je Excel-bestand in (<code>FamilyMenu_PowerApps_Ready.xlsx</code>): 
-        <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
+    <div id="statusBanner" class="status-banner">
+        🔄 Menukaart automatisch laden vanuit de repository...
     </div>
 
     <div class="container">
         <div class="menu-section">
             <div id="categoryContainer" class="categories"></div>
             <div id="productGrid" class="product-grid">
-                <div class="placeholder-msg">Upload hierboven je Excel-bestand om de menukaart te laden.</div>
+                <div class="placeholder-msg">Bezig met inladen van producten...</div>
             </div>
         </div>
 
@@ -279,44 +275,55 @@
         let cart = [];
         let currentProductForModal = null;
 
-        function handleExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Automatisch Excel inladen vanuit dezelfde repository map
+        window.onload = function() {
+            const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
+            
+            fetch(excelFilename)
+                .then(response => {
+                    if (!response.ok) throw new Error("Kon Excel-bestand niet vinden in de repository.");
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
+                    if (!workbook.Sheets['Producten'] || !workbook.Sheets['Productvragen_Plat']) {
+                        throw new Error("Tabbladen 'Producten' en 'Productvragen_Plat' ontbreken in de Excel.");
+                    }
 
-                if (!workbook.Sheets['Producten'] || !workbook.Sheets['Productvragen_Plat']) {
-                    alert("Kan tabbladen 'Producten' en 'Productvragen_Plat' niet vinden!");
-                    return;
-                }
+                    const prodRows = XLSX.utils.sheet_to_json(workbook.Sheets['Producten']);
+                    menuData = prodRows.map(row => ({
+                        id: row['Product-ID'],
+                        cat: row['Hoofdcategorie'] || 'Overig',
+                        name: row['Product'] || 'Onbekend',
+                        price: parseFloat(row['Prijs (€)']) || 0.0,
+                        desc: row['Beschrijving'] || '',
+                        vragenSetID: row['Productopties-vragen-ID'] || null
+                    }));
 
-                const prodRows = XLSX.utils.sheet_to_json(workbook.Sheets['Producten']);
-                menuData = prodRows.map(row => ({
-                    id: row['Product-ID'],
-                    cat: row['Hoofdcategorie'] || 'Overig',
-                    name: row['Product'] || 'Onbekend',
-                    price: parseFloat(row['Prijs (€)']) || 0.0,
-                    desc: row['Beschrijving'] || '',
-                    vragenSetID: row['Productopties-vragen-ID'] || null
-                }));
+                    const vraagRows = XLSX.utils.sheet_to_json(workbook.Sheets['Productvragen_Plat']);
+                    vragenData = vraagRows.map(row => ({
+                        vragenSetID: row['VragenSetID'],
+                        vraagID: row['VraagID'],
+                        vraagTekst: row['VraagTekst'] || 'Maak uw keuze',
+                        antwoordTekst: row['AntwoordTekst'] || '',
+                        meerprijs: parseFloat(row['Meerprijs']) || 0.0
+                    }));
 
-                const vraagRows = XLSX.utils.sheet_to_json(workbook.Sheets['Productvragen_Plat']);
-                vragenData = vraagRows.map(row => ({
-                    vragenSetID: row['VragenSetID'],
-                    vraagID: row['VraagID'],
-                    vraagTekst: row['VraagTekst'] || 'Maak uw keuze',
-                    antwoordTekst: row['AntwoordTekst'] || '',
-                    meerprijs: parseFloat(row['Meerprijs']) || 0.0
-                }));
+                    document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
+                    document.getElementById('statusBanner').style.color = '#1b4332';
+                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten uit "${excelFilename}")`;
 
-                alert(`Succesvol ${menuData.length} producten geladen!`);
-                initApp();
-            };
-            reader.readAsArrayBuffer(file);
-        }
+                    initApp();
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
+                    document.getElementById('statusBanner').style.color = '#9b2226';
+                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet automatisch vinden in de repository. Zorg dat het bestand in dezelfde map staat als dit HTML-bestand!`;
+                });
+        };
 
         function initApp() {
             if (menuData.length === 0) return;
@@ -492,7 +499,6 @@
                 return;
             }
 
-            // Haal bestaande bestellingen op uit browsergeheugen
             let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
             
             cart.forEach(item => {
