@@ -136,9 +136,8 @@
             font-weight: bold;
             color: var(--primary);
         }
-        /* Standaard grijze knop */
         .add-btn {
-            background: #adb5bd;
+            background: #2a9d8f;
             color: white;
             border: none;
             padding: 6px 12px;
@@ -146,9 +145,8 @@
             font-weight: bold;
             transition: 0.2s;
         }
-        /* Geselecteerde / toegevoegde staat: groen met vinkje */
-        .add-btn.selected {
-            background: #2a9d8f;
+        .add-btn.added {
+            background: #2b9348 !important;
         }
         .cart-item {
             display: flex;
@@ -264,9 +262,9 @@
     <!-- ADMIN MODAL OVERZICHT -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="width: 700px;">
-            <h3>📋 Centrale Bestellijst (Alle Collega's)</h3>
+            <h3>📋 Centrale Bestellijst (Live Cloud & Lokaal)</h3>
             <div id="adminOrderList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px;">
-                <p>Nog geen bestellingen geplaatst.</p>
+                <p>Gegevens worden geladen...</p>
             </div>
             <div class="modal-buttons">
                 <button class="btn-confirm" onclick="downloadExcelOverzicht()">Exporteer naar Excel</button>
@@ -276,12 +274,15 @@
     </div>
 
     <script>
+        // Optioneel: Plak hier je gratis SheetDB.io API URL als je wilt dat bestellingen 
+        // direct naar een centrale cloud-Excel worden gestuurd (bijv. 'https://sheetdb.io/api/v1/jouw-code')
+        const SHEETDB_API_URL = ""; 
+
         let menuData = [];
         let vragenData = [];
         let cart = [];
         let currentProductForModal = null;
 
-        // Automatisch Excel inladen vanuit dezelfde repository map (pas de naam aan naar jullie exacte bestandsnaam)
         window.onload = function() {
             const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
             
@@ -295,7 +296,7 @@
                     const workbook = XLSX.read(data, { type: 'array' });
 
                     if (!workbook.Sheets['Producten'] || !workbook.Sheets['Productvragen_Plat']) {
-                        throw new Error("Tabbladen 'Producten' en 'Productvragen_Plat' ontbreken in de Excel.");
+                        throw new Error("Tabbladen ontbreken.");
                     }
 
                     const prodRows = XLSX.utils.sheet_to_json(workbook.Sheets['Producten']);
@@ -327,7 +328,7 @@
                     console.error(error);
                     document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
                     document.getElementById('statusBanner').style.color = '#9b2226';
-                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet vinden. Zorg dat het bestand in dezelfde map staat als dit HTML-bestand!`;
+                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet vinden in dezelfde map. Zorg dat het bestand in de repository staat!`;
                 });
         };
 
@@ -362,11 +363,15 @@
             
             const filtered = menuData.filter(item => item.cat === category);
             filtered.forEach(item => {
-                const isSelected = cart.some(cartItem => cartItem.baseId === item.id);
-                
                 const card = document.createElement("div");
                 card.className = "product-card";
                 card.onclick = () => klikProduct(item.id);
+                
+                // Check of product in mandje zit om knop groen te maken
+                const inCart = cart.some(c => c.baseName === item.name);
+                const btnClass = inCart ? "add-btn added" : "add-btn";
+                const btnText = inCart ? "✓" : "+";
+
                 card.innerHTML = `
                     <div>
                         <div class="product-title">${item.name}</div>
@@ -374,9 +379,7 @@
                     </div>
                     <div class="product-footer">
                         <span class="product-price">€ ${item.price.toFixed(2).replace('.', ',')}</span>
-                        <button class="add-btn ${isSelected ? 'selected' : ''}" id="btn_${item.id}">
-                            ${isSelected ? '✓' : '+'}
-                        </button>
+                        <button class="${btnClass}">${btnText}</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -459,17 +462,10 @@
             if (existing) {
                 existing.qty++;
             } else {
-                cart.push({ baseId: product.id, name: uniekeNaam, price: stuksprijs, qty: 1 });
+                cart.push({ name: uniekeNaam, baseName: product.name, price: stuksprijs, qty: 1 });
             }
-            
-            // Update knop direct naar groen met vinkje
-            const btn = document.getElementById(`btn_${product.id}`);
-            if (btn) {
-                btn.classList.add('selected');
-                btn.innerText = '✓';
-            }
-
             renderCart();
+            renderProducts(document.querySelector('.cat-btn.active').innerText);
         }
 
         function renderCart() {
@@ -502,19 +498,11 @@
         }
 
         function removeItem(index) {
-            const removedItem = cart[index];
             cart.splice(index, 1);
-            
-            // Check of dit product nog in het mandje zit; zo niet, zet knop weer terug naar grijs (+)
-            if (removedItem && !cart.some(item => item.baseId === removedItem.baseId)) {
-                const btn = document.getElementById(`btn_${removedItem.baseId}`);
-                if (btn) {
-                    btn.classList.remove('selected');
-                    btn.innerText = '+';
-                }
-            }
-            
             renderCart();
+            if (document.querySelector('.cat-btn.active')) {
+                renderProducts(document.querySelector('.cat-btn.active').innerText);
+            }
         }
 
         function plaatsBestelling() {
@@ -528,10 +516,9 @@
                 return;
             }
 
-            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
-            
+            let nieuweBestellingen = [];
             cart.forEach(item => {
-                alleBestellingen.push({
+                nieuweBestellingen.push({
                     Naam: naam,
                     Product: item.name,
                     Aantal: item.qty,
@@ -541,19 +528,27 @@
                 });
             });
 
+            // Opslaan in browsergeheugen
+            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
+            alleBestellingen.push(...nieuweBestellingen);
             localStorage.setItem('familyBestellingen', JSON.stringify(alleBestellingen));
 
-            alert("Bedankt " + naam + "! Je bestelling is toegevoegd.");
+            // Optioneel: stuur naar Cloud via SheetDB als ingesteld
+            if (SHEETDB_API_URL) {
+                fetch(SHEETDB_API_URL, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: nieuweBestellingen })
+                }).catch(err => console.error("Cloud sync mislukt:", err));
+            }
+
+            alert("Bedankt " + naam + "! Je bestelling is geplaatst.");
             cart = [];
             document.getElementById("naamInput").value = "";
-            
-            // Reset alle knoppen naar grijs
-            document.querySelectorAll('.add-btn').forEach(btn => {
-                btn.classList.remove('selected');
-                btn.innerText = '+';
-            });
-
             renderCart();
+            if (document.querySelector('.cat-btn.active')) {
+                renderProducts(document.querySelector('.cat-btn.active').innerText);
+            }
         }
 
         function openAdminOverzicht() {
@@ -563,9 +558,9 @@
             if (alleBestellingen.length === 0) {
                 container.innerHTML = "<p>Er zijn nog geen bestellingen geplaatst.</p>";
             } else {
-                let html = "<table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th style='padding:8px;'>Naam</th><th style='padding:8px;'>Product</th><th style='padding:8px;'>Aantal</th><th style='padding:8px;'>Totaal</th></tr>";
+                let html = "<table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th style='padding:8px;'>Naam</th><th style='padding:8px;'>Product</th><th style='padding:8px;'>Aantal</th><th style='padding:8px;'>Totaal</th><th style='padding:8px;'>Tijd</th></tr>";
                 alleBestellingen.forEach(b => {
-                    html += `<tr style='border-bottom:1px solid #ddd;'><td style='padding:8px;'>${b.Naam}</td><td style='padding:8px;'>${b.Product}</td><td style='padding:8px;'>${b.Aantal}</td><td style='padding:8px;'>€ ${b.Totaal.toFixed(2).replace('.', ',')}</td></tr>`;
+                    html += `<tr style='border-bottom:1px solid #ddd;'><td style='padding:8px;'>${b.Naam}</td><td style='padding:8px;'>${b.Product}</td><td style='padding:8px;'>${b.Aantal}</td><td style='padding:8px;'>€ ${b.Totaal.toFixed(2).replace('.', ',')}</td><td style='padding:8px;'>${b.Tijd}</td></tr>`;
                 });
                 html += "</table>";
                 container.innerHTML = html;
