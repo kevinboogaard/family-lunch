@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Kantoor Bestel-App</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #1d3557;
+            --light: #f1faee;
+            --gray: #f8f9fa;
+            --dark: #212529;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+        .admin-badge {
+            background: #e63946;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .status-banner {
+            background-color: #e2f0cb;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #b5d56b;
+            font-size: 14px;
+            color: #386641;
+        }
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 0 20px;
+        }
+        .menu-section {
+            flex: 2;
+        }
+        .cart-section {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        .categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .cat-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .cat-btn.active, .cat-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            max-height: 75vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .product-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .product-title {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        .product-desc {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product-price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .add-btn {
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .add-btn.added {
+            background: #2b9348 !important;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        .cart-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            margin: 20px 0;
+        }
+        .checkout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .checkout-btn:hover {
+            background: #c52233;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .placeholder-msg {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 16px;
+        }
+        
+        /* Modal Popup */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 8px; width: 450px;
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 { margin-top: 0; color: var(--secondary); }
+        .question-group { margin-bottom: 15px; }
+        .question-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        .question-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #ddd; color: #333; }
+        .btn-confirm { background: #2a9d8f; color: white; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span>🍔 Family Vrijdagmiddag Bestel-App</span>
+        <button class="admin-badge" onclick="openAdminOverzicht()">Beheer: Bekijk Alle Bestellingen</button>
+    </header>
+    
+    <div id="statusBanner" class="status-banner">
+        🔄 Menukaart automatisch laden vanuit de repository...
+    </div>
+
+    <div class="container">
+        <div class="menu-section">
+            <div id="categoryContainer" class="categories"></div>
+            <div id="productGrid" class="product-grid">
+                <div class="placeholder-msg">Bezig met inladen van producten...</div>
+            </div>
+        </div>
+
+        <div class="cart-section">
+            <h3>Jouw Bestelling</h3>
+            <label for="naamInput">Jouw Naam:</label>
+            <input type="text" id="naamInput" placeholder="Bijv. Jan de Vries">
+            
+            <div id="cartItems" style="max-height: 45vh; overflow-y: auto;">
+                <p style="color: #888; text-align: center;">Je mandje is nog leeg</p>
+            </div>
+            
+            <div class="cart-total" id="cartTotal">Totaal: € 0,00</div>
+            <button class="checkout-btn" onclick="plaatsBestelling()">Plaats Bestelling</button>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP PRODUCTVRAGEN -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalProductTitle">Product Opties</h3>
+            <div id="modalQuestionsContainer"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="sluitModal()">Annuleren</button>
+                <button class="btn-confirm" onclick="bevestigProductOpties()">Toevoegen aan mandje</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL OVERZICHT -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content" style="width: 700px;">
+            <h3>📋 Centrale Bestellijst (Live Cloud & Lokaal)</h3>
+            <div id="adminOrderList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px;">
+                <p>Gegevens worden geladen...</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="downloadExcelOverzicht()">Exporteer naar Excel</button>
+                <button class="btn-cancel" onclick="sluitAdminModal()">Sluiten</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Optioneel: Plak hier je gratis SheetDB.io API URL als je wilt dat bestellingen 
+        // direct naar een centrale cloud-Excel worden gestuurd (bijv. 'https://sheetdb.io/api/v1/jouw-code')
+        const SHEETDB_API_URL = ""; 
+
+        let menuData = [];
+        let vragenData = [];
+        let cart = [];
+        let currentProductForModal = null;
+
+        window.onload = function() {
+            const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
+            
+            fetch(excelFilename)
+                .then(response => {
+                    if (!response.ok) throw new Error("Kon Excel-bestand niet vinden in de repository.");
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    if (!workbook.Sheets['Producten'] || !workbook.Sheets['Productvragen_Plat']) {
+                        throw new Error("Tabbladen ontbreken.");
+                    }
+
+                    const prodRows = XLSX.utils.sheet_to_json(workbook.Sheets['Producten']);
+                    menuData = prodRows.map(row => ({
+                        id: row['Product-ID'],
+                        cat: row['Hoofdcategorie'] || 'Overig',
+                        name: row['Product'] || 'Onbekend',
+                        price: parseFloat(row['Prijs (€)']) || 0.0,
+                        desc: row['Beschrijving'] || '',
+                        vragenSetID: row['Productopties-vragen-ID'] || null
+                    }));
+
+                    const vraagRows = XLSX.utils.sheet_to_json(workbook.Sheets['Productvragen_Plat']);
+                    vragenData = vraagRows.map(row => ({
+                        vragenSetID: row['VragenSetID'],
+                        vraagID: row['VraagID'],
+                        vraagTekst: row['VraagTekst'] || 'Maak uw keuze',
+                        antwoordTekst: row['AntwoordTekst'] || '',
+                        meerprijs: parseFloat(row['Meerprijs']) || 0.0
+                    }));
+
+                    document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
+                    document.getElementById('statusBanner').style.color = '#1b4332';
+                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten)`;
+
+                    initApp();
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
+                    document.getElementById('statusBanner').style.color = '#9b2226';
+                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet vinden in dezelfde map. Zorg dat het bestand in de repository staat!`;
+                });
+        };
+
+        function initApp() {
+            if (menuData.length === 0) return;
+            renderCategories();
+            const defaultCat = [...new Set(menuData.map(item => item.cat))][0];
+            renderProducts(defaultCat);
+        }
+
+        function renderCategories() {
+            const cats = [...new Set(menuData.map(item => item.cat))];
+            const container = document.getElementById("categoryContainer");
+            container.innerHTML = "";
+            
+            cats.forEach((cat, index) => {
+                const btn = document.createElement("button");
+                btn.className = 'cat-btn ' + (index === 0 ? 'active' : '');
+                btn.innerText = cat;
+                btn.onclick = () => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderProducts(cat);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderProducts(category) {
+            const grid = document.getElementById("productGrid");
+            grid.innerHTML = "";
+            
+            const filtered = menuData.filter(item => item.cat === category);
+            filtered.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.onclick = () => klikProduct(item.id);
+                
+                // Check of product in mandje zit om knop groen te maken
+                const inCart = cart.some(c => c.baseName === item.name);
+                const btnClass = inCart ? "add-btn added" : "add-btn";
+                const btnText = inCart ? "✓" : "+";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="product-title">${item.name}</div>
+                        <div class="product-desc">${item.desc}</div>
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price">€ ${item.price.toFixed(2).replace('.', ',')}</span>
+                        <button class="${btnClass}">${btnText}</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function klikProduct(id) {
+            const product = menuData.find(item => item.id === id);
+            if (!product) return;
+
+            if (product.vragenSetID) {
+                const relevanteVragen = vragenData.filter(v => v.vragenSetID == product.vragenSetID);
+                if (relevanteVragen.length > 0) {
+                    openModal(product, relevanteVragen);
+                    return;
+                }
+            }
+            voegToeAanMandje(product, 0, "");
+        }
+
+        function openModal(product, vragen) {
+            currentProductForModal = product;
+            document.getElementById("modalProductTitle").innerText = product.name;
+            const container = document.getElementById("modalQuestionsContainer");
+            container.innerHTML = "";
+
+            const uniekeVragen = {};
+            vragen.forEach(v => {
+                if (!uniekeVragen[v.vraagID]) {
+                    uniekeVragen[v.vraagID] = { tekst: v.vraagTekst, antwoorden: [] };
+                }
+                uniekeVragen[v.vraagID].antwoorden.push(v);
+            });
+
+            Object.keys(uniekeVragen).forEach(vraagID => {
+                const q = uniekeVragen[vraagID];
+                const div = document.createElement("div");
+                div.className = "question-group";
+                
+                let html = `<label>${q.tekst}</label><select id="vraag_${vraagID}">`;
+                q.antwoorden.forEach(a => {
+                    let prijsTekst = a.meerprijs > 0 ? ` (+ € ${a.meerprijs.toFixed(2).replace('.', ',')})` : '';
+                    html += `<option value="${a.antwoordTekst}" data-meerprijs="${a.meerprijs}">${a.antwoordTekst}${prijsTekst}</option>`;
+                });
+                html += `</select>`;
+                div.innerHTML = html;
+                container.appendChild(div);
+            });
+
+            document.getElementById("productModal").style.display = "flex";
+        }
+
+        function sluitModal() {
+            document.getElementById("productModal").style.display = "none";
+            currentProductForModal = null;
+        }
+
+        function bevestigProductOpties() {
+            if (!currentProductForModal) return;
+
+            const selects = document.querySelectorAll("#modalQuestionsContainer select");
+            let extraKosten = 0;
+            let gekozenOpties = [];
+
+            selects.forEach(sel => {
+                const selectedOption = sel.options[sel.selectedIndex];
+                extraKosten += parseFloat(selectedOption.getAttribute("data-meerprijs")) || 0;
+                gekozenOpties.push(selectedOption.value);
+            });
+
+            voegToeAanMandje(currentProductForModal, extraKosten, gekozenOpties.join(", "));
+            sluitModal();
+        }
+
+        function voegToeAanMandje(product, extraKosten, optiesTekst) {
+            const stuksprijs = product.price + extraKosten;
+            const uniekeNaam = product.name + (optiesTekst ? ` (${optiesTekst})` : '');
+            
+            const existing = cart.find(item => item.name === uniekeNaam);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ name: uniekeNaam, baseName: product.name, price: stuksprijs, qty: 1 });
+            }
+            renderCart();
+            renderProducts(document.querySelector('.cat-btn.active').innerText);
+        }
+
+        function renderCart() {
+            const cartContainer = document.getElementById("cartItems");
+            const totalContainer = document.getElementById("cartTotal");
+            
+            if (cart.length === 0) {
+                cartContainer.innerHTML = '<p style="color: #888; text-align: center;">Je mandje is nog leeg</p>';
+                totalContainer.innerText = "Totaal: € 0,00";
+                return;
+            }
+            
+            cartContainer.innerHTML = "";
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                const div = document.createElement("div");
+                div.className = "cart-item";
+                div.innerHTML = `
+                    <span>${item.name} (x${item.qty})</span>
+                    <span>€ ${(item.price * item.qty).toFixed(2).replace('.', ',')} 
+                        <button onclick="removeItem(${index})" style="background:none;border:none;color:red;cursor:pointer;font-weight:bold;">×</button>
+                    </span>
+                `;
+                cartContainer.appendChild(div);
+            });
+            
+            totalContainer.innerText = "Totaal: € " + total.toFixed(2).replace('.', ',');
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            renderCart();
+            if (document.querySelector('.cat-btn.active')) {
+                renderProducts(document.querySelector('.cat-btn.active').innerText);
+            }
+        }
+
+        function plaatsBestelling() {
+            const naam = document.getElementById("naamInput").value.trim();
+            if (!naam) {
+                alert("Vul eerst je naam in voordat je bestelt!");
+                return;
+            }
+            if (cart.length === 0) {
+                alert("Je mandje is leeg!");
+                return;
+            }
+
+            let nieuweBestellingen = [];
+            cart.forEach(item => {
+                nieuweBestellingen.push({
+                    Naam: naam,
+                    Product: item.name,
+                    Aantal: item.qty,
+                    Stuksprijs: item.price,
+                    Totaal: item.price * item.qty,
+                    Tijd: new Date().toLocaleTimeString()
+                });
+            });
+
+            // Opslaan in browsergeheugen
+            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
+            alleBestellingen.push(...nieuweBestellingen);
+            localStorage.setItem('familyBestellingen', JSON.stringify(alleBestellingen));
+
+            // Optioneel: stuur naar Cloud via SheetDB als ingesteld
+            if (SHEETDB_API_URL) {
+                fetch(SHEETDB_API_URL, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: nieuweBestellingen })
+                }).catch(err => console.error("Cloud sync mislukt:", err));
+            }
+
+            alert("Bedankt " + naam + "! Je bestelling is geplaatst.");
+            cart = [];
+            document.getElementById("naamInput").value = "";
+            renderCart();
+            if (document.querySelector('.cat-btn.active')) {
+                renderProducts(document.querySelector('.cat-btn.active').innerText);
+            }
+        }
+
+        function openAdminOverzicht() {
+            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
+            const container = document.getElementById("adminOrderList");
+            
+            if (alleBestellingen.length === 0) {
+                container.innerHTML = "<p>Er zijn nog geen bestellingen geplaatst.</p>";
+            } else {
+                let html = "<table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th style='padding:8px;'>Naam</th><th style='padding:8px;'>Product</th><th style='padding:8px;'>Aantal</th><th style='padding:8px;'>Totaal</th><th style='padding:8px;'>Tijd</th></tr>";
+                alleBestellingen.forEach(b => {
+                    html += `<tr style='border-bottom:1px solid #ddd;'><td style='padding:8px;'>${b.Naam}</td><td style='padding:8px;'>${b.Product}</td><td style='padding:8px;'>${b.Aantal}</td><td style='padding:8px;'>€ ${b.Totaal.toFixed(2).replace('.', ',')}</td><td style='padding:8px;'>${b.Tijd}</td></tr>`;
+                });
+                html += "</table>";
+                container.innerHTML = html;
+            }
+            document.getElementById("adminModal").style.display = "flex";
+        }
+
+        function sluitAdminModal() {
+            document.getElementById("adminModal").style.display = "none";
+        }
+
+        function downloadExcelOverzicht() {
+            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
+            if (alleBestellingen.length === 0) {
+                alert("Geen bestellingen om te exporteren!");
+                return;
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(alleBestellingen);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Bestellingen");
+            XLSX.writeFile(workbook, "Totaaloverzicht_Lunchbestellingen.xlsx");
+        }
+    </script>
+</body>
+</html>
