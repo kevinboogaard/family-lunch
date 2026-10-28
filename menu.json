@@ -1,5 +1,5 @@
 {
- "opgehaald": "2026-10-28T13:36:30.514Z",
+ "opgehaald": "2026-10-28T13:39:53.316Z",
  "geldigVanaf": "2026-10-26T12:55:02.7344321",
  "bron": "e-food.nl",
  "producten": [
@@ -11,7 +11,9 @@
    "name": "Family deal",
    "desc": "4 frites + 4 snacks (kroket, frikandel of kaassouffle)",
    "price": 19.5,
-   "vragenSetID": 107507
+   "vragenSetID": 107507,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-700ed022-bbc3-4ea5-b6f4-b43398f01452.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-700ed022-bbc3-4ea5-b6f4-b43398f01452.jpg"
   },
   {
    "id": 530144,
@@ -21,7 +23,9 @@
    "name": "Frites Stoofvlees",
    "desc": "Vlaams stoofvlees met champignon, paprika, ui",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-a5422fa9-5d9f-4013-ba4a-85669bcd0f42.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-a5422fa9-5d9f-4013-ba4a-85669bcd0f42.jpg"
   },
   {
    "id": 728239,
@@ -31,7 +35,9 @@
    "name": "Burger Bali",
    "desc": "premium rundvleesburger met atjar, ui, spicy saus en crispy chili oil",
    "price": 8.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-2051ab4d-e1e6-4dde-9033-0376be58a33b.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-2051ab4d-e1e6-4dde-9033-0376be58a33b.jpg"
   },
   {
    "id": 728240,
@@ -41,7 +47,9 @@
    "name": "Kroket Special Bali",
    "desc": "Rendangkroket op een brioche broodje met sla, atjar, spicy saus en gebakken uitjes",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-993c33dd-e20b-4e6e-b68c-73f5461a9cac.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-993c33dd-e20b-4e6e-b68c-73f5461a9cac.jpg"
   },
   {
    "id": 552220,
@@ -51,7 +59,9 @@
    "name": "Milkshake seizoensmaak Mango Passie",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-638177426640942315.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638177426640942315.jpg"
   },
   {
    "id": 682768,
@@ -61,7 +71,9 @@
    "name": "Cherry Trifle Sundae",
    "desc": "met Bastogne en kersen-kaneel topping",
    "price": 4.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-f9894b26-2c70-43d4-b012-34f829e9d36f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-f9894b26-2c70-43d4-b012-34f829e9d36f.jpg"
   },
   {
    "id": 515184,
@@ -71,7 +83,9 @@
    "name": "Frites Mayonaise",
    "desc": "",
    "price": 3.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835164700267361.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835164700267361.jpg"
   },
   {
    "id": 515191,
@@ -81,7 +95,9 @@
    "name": "Frites Pindasaus",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835165807199590.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835165807199590.jpg"
   },
   {
    "id": 515192,
@@ -91,7 +107,9 @@
    "name": "Frites Oorlog",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835166113631487.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835166113631487.jpg"
   },
   {
    "id": 515193,
@@ -101,7 +119,9 @@
    "name": "Frites Flip",
    "desc": "Mayonaise en pindasaus",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835166113631487.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835166113631487.jpg"
   },
   {
    "id": 515089,
@@ -111,7 +131,9 @@
    "name": "Frites Zonder",
    "desc": "",
    "price": 2.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515194,
@@ -121,7 +143,9 @@
    "name": "Frites Joppiesaus",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635875808169662179.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635875808169662179.jpg"
   },
   {
    "id": 515189,
@@ -131,7 +155,9 @@
    "name": "Frites speciaal Curry",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835165557096909.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835165557096909.jpg"
   },
   {
    "id": 515190,
@@ -141,7 +167,9 @@
    "name": "Frites speciaal Ketchup",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835165557096909.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835165557096909.jpg"
   },
   {
    "id": 515186,
@@ -151,7 +179,9 @@
    "name": "Frites Ketchup",
    "desc": "",
    "price": 3.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635875817658479375.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635875817658479375.jpg"
   },
   {
    "id": 515185,
@@ -161,7 +191,9 @@
    "name": "Frites Curry",
    "desc": "",
    "price": 3.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835164996960476.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835164996960476.jpg"
   },
   {
    "id": 515187,
@@ -171,7 +203,9 @@
    "name": "Frites Mayo/Curry",
    "desc": "",
    "price": 3.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835164996960476.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835164996960476.jpg"
   },
   {
    "id": 515188,
@@ -181,7 +215,9 @@
    "name": "Frites Mayo/Ketchup",
    "desc": "",
    "price": 3.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835164996960476.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835164996960476.jpg"
   },
   {
    "id": 515195,
@@ -191,7 +227,9 @@
    "name": "Frites Knoflooksaus",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835166307065514.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835166307065514.jpg"
   },
   {
    "id": 515196,
@@ -201,7 +239,9 @@
    "name": "Frites Mayonaise + Ui",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835164700267361.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835164700267361.jpg"
   },
   {
    "id": 515197,
@@ -211,7 +251,9 @@
    "name": "Frites Pindasaus + Ui",
    "desc": "",
    "price": 4,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635835165807199590.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635835165807199590.jpg"
   },
   {
    "id": 515200,
@@ -221,7 +263,9 @@
    "name": "Frites jumbo Mayonaise",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515207,
@@ -231,7 +275,9 @@
    "name": "Frites jumbo Pindasaus",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515208,
@@ -241,7 +287,9 @@
    "name": "Frites jumbo Oorlog",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515209,
@@ -251,7 +299,9 @@
    "name": "Frites jumbo Flip",
    "desc": "Mayonaise en pindasaus",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515213,
@@ -261,7 +311,9 @@
    "name": "Frites jumbo Pindasaus + Ui",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515205,
@@ -271,7 +323,9 @@
    "name": "Frites jumbo speciaal Curry",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515206,
@@ -281,7 +335,9 @@
    "name": "Frites jumbo speciaal Ketchup",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515212,
@@ -291,7 +347,9 @@
    "name": "Frites jumbo Mayonaise + Ui",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515210,
@@ -301,7 +359,9 @@
    "name": "Frites jumbo Joppiesaus",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515201,
@@ -311,7 +371,9 @@
    "name": "Frites jumbo Curry",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515202,
@@ -321,7 +383,9 @@
    "name": "Frites jumbo Ketchup",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515204,
@@ -331,7 +395,9 @@
    "name": "Frites jumbo Mayo/Ketchup",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515203,
@@ -341,7 +407,9 @@
    "name": "Frites jumbo Mayo/Curry",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515211,
@@ -351,7 +419,9 @@
    "name": "Frites jumbo Knoflooksaus",
    "desc": "",
    "price": 6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515199,
@@ -361,7 +431,9 @@
    "name": "Frites Jumbo Zonder",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635814677145967471.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635814677145967471.jpg"
   },
   {
    "id": 515708,
@@ -371,7 +443,9 @@
    "name": "Gezinszak 2 personen",
    "desc": "",
    "price": 5.8,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515709,
@@ -381,7 +455,9 @@
    "name": "Gezinszak 3 personen",
    "desc": "",
    "price": 8.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515710,
@@ -391,7 +467,9 @@
    "name": "Gezinszak 4 personen",
    "desc": "",
    "price": 11.6,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515711,
@@ -401,7 +479,9 @@
    "name": "Gezinszak 5 personen",
    "desc": "",
    "price": 14.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515214,
@@ -411,7 +491,9 @@
    "name": "Kapsalon",
    "desc": "met kipshoarma, sla, gesmolten kaas en knoflooksaus",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-ff720590-d0a5-4e20-8805-1ca337d5ff42.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-ff720590-d0a5-4e20-8805-1ca337d5ff42.jpg"
   },
   {
    "id": 515707,
@@ -421,7 +503,9 @@
    "name": "Frites Truffel-Parmezaan",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637891862033074783.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637891862033074783.jpg"
   },
   {
    "id": 515223,
@@ -431,7 +515,9 @@
    "name": "Frites Creamy Cheese-bacon",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637974469140752393.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637974469140752393.jpg"
   },
   {
    "id": 625718,
@@ -441,7 +527,9 @@
    "name": "Frites Pulled Chicken",
    "desc": "met sla, rode ui, BBQ saus",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515218,
@@ -451,7 +539,9 @@
    "name": "Kapsalon Family Special",
    "desc": "met kipshoarma, sla, komkommer, tomaat, rode ui, gesmolten kaas, pittige saus en knoflooksaus",
    "price": 10.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-ff720590-d0a5-4e20-8805-1ca337d5ff42.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-ff720590-d0a5-4e20-8805-1ca337d5ff42.jpg"
   },
   {
    "id": 515220,
@@ -461,7 +551,9 @@
    "name": "Frites Spicy chicken",
    "desc": "met pittig gemarineerde kip, paprika, champignon, ui",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg"
   },
   {
    "id": 515221,
@@ -471,7 +563,9 @@
    "name": "Frites Warm Vlees",
    "desc": "met gebakken fricandeau, champignon, paprika, ui en pindasaus",
    "price": 9.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-57536dd4-3aff-41ce-a69c-b6cd45aca14a.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-57536dd4-3aff-41ce-a69c-b6cd45aca14a.jpg"
   },
   {
    "id": 515246,
@@ -481,7 +575,9 @@
    "name": "Rundvleeskroket",
    "desc": "",
    "price": 2.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0e648d5d-32aa-4428-b2b8-e4ae97e0744f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0e648d5d-32aa-4428-b2b8-e4ae97e0744f.jpg"
   },
   {
    "id": 515247,
@@ -491,7 +587,9 @@
    "name": "Family kroket (ragout)",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-b7ebe7f2-8b38-4291-b20e-5741359fac47.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-b7ebe7f2-8b38-4291-b20e-5741359fac47.jpg"
   },
   {
    "id": 515248,
@@ -501,7 +599,9 @@
    "name": "Kalfsvleeskroket",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-f1740a6e-ed29-4b31-a39a-848bdab32048.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-f1740a6e-ed29-4b31-a39a-848bdab32048.jpg"
   },
   {
    "id": 515249,
@@ -511,7 +611,9 @@
    "name": "Satekroket",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-df33bc69-6277-451a-b109-2cd63eb962c7.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-df33bc69-6277-451a-b109-2cd63eb962c7.jpg"
   },
   {
    "id": 515250,
@@ -521,7 +623,9 @@
    "name": "Goulashkroket",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-825dfa94-e6b2-46b5-9d77-6b87e6dc0db7.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-825dfa94-e6b2-46b5-9d77-6b87e6dc0db7.jpg"
   },
   {
    "id": 515307,
@@ -531,7 +635,9 @@
    "name": "Kroket Vega",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0e648d5d-32aa-4428-b2b8-e4ae97e0744f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0e648d5d-32aa-4428-b2b8-e4ae97e0744f.jpg"
   },
   {
    "id": 515251,
@@ -541,7 +647,9 @@
    "name": "Groentekroket",
    "desc": "",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-5d28a253-59c7-4c3d-b902-51ae20159ab5.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-5d28a253-59c7-4c3d-b902-51ae20159ab5.jpg"
   },
   {
    "id": 515243,
@@ -551,7 +659,9 @@
    "name": "Frikandel",
    "desc": "",
    "price": 2.65,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-a5ae559e-e3cc-409d-a592-9ee5d3bb9deb.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-a5ae559e-e3cc-409d-a592-9ee5d3bb9deb.jpg"
   },
   {
    "id": 515244,
@@ -561,7 +671,9 @@
    "name": "Frikandel speciaal Curry",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-38ab2266-7b52-42a6-9365-c935166fe236.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-38ab2266-7b52-42a6-9365-c935166fe236.jpg"
   },
   {
    "id": 515245,
@@ -571,7 +683,9 @@
    "name": "Frikandel speciaal Ketchup",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-38ab2266-7b52-42a6-9365-c935166fe236.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-38ab2266-7b52-42a6-9365-c935166fe236.jpg"
   },
   {
    "id": 515252,
@@ -581,7 +695,9 @@
    "name": "Kaassouffle",
    "desc": "",
    "price": 2.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-cd7aa603-60ce-4e4f-b3df-c92a4f0fb70d.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-cd7aa603-60ce-4e4f-b3df-c92a4f0fb70d.jpg"
   },
   {
    "id": 515259,
@@ -591,7 +707,9 @@
    "name": "Kipkorn",
    "desc": "",
    "price": 2.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-1e1cc1ad-fcd9-42a8-9712-a47f783e761a.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-1e1cc1ad-fcd9-42a8-9712-a47f783e761a.jpg"
   },
   {
    "id": 515263,
@@ -601,7 +719,9 @@
    "name": "Loempia",
    "desc": "met kip en ham",
    "price": 5.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-694b7926-0144-40aa-81c4-d63fb31db9f3.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-694b7926-0144-40aa-81c4-d63fb31db9f3.jpg"
   },
   {
    "id": 515721,
@@ -611,7 +731,9 @@
    "name": "Loempia Speciaal",
    "desc": "",
    "price": 7.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515256,
@@ -621,7 +743,9 @@
    "name": "Mexicano",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-eb331c1e-ec2a-4cbb-b41e-53d9b416c737.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-eb331c1e-ec2a-4cbb-b41e-53d9b416c737.jpg"
   },
   {
    "id": 515255,
@@ -631,7 +755,9 @@
    "name": "Nasischijf",
    "desc": "Vegetarisch",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d0a0d599-6675-40d4-872c-33638ac67f39.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d0a0d599-6675-40d4-872c-33638ac67f39.jpg"
   },
   {
    "id": 515254,
@@ -641,7 +767,9 @@
    "name": "Bamiblok",
    "desc": "Vegetarisch",
    "price": 2.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-f7f4b865-ca5b-4b97-8b65-d8521b77124a.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-f7f4b865-ca5b-4b97-8b65-d8521b77124a.jpg"
   },
   {
    "id": 515257,
@@ -651,7 +779,9 @@
    "name": "Pikanto",
    "desc": "",
    "price": 2.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-df346ad9-720c-4033-b29c-16da782b5252.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-df346ad9-720c-4033-b29c-16da782b5252.jpg"
   },
   {
    "id": 515272,
@@ -661,7 +791,9 @@
    "name": "Shoarmarol",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-7d9e094b-3446-4441-9e0f-2bca732a3052.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-7d9e094b-3446-4441-9e0f-2bca732a3052.jpg"
   },
   {
    "id": 515276,
@@ -671,7 +803,9 @@
    "name": "Smulrol",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-907c9b29-9256-4002-85fd-a1a93500d223.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-907c9b29-9256-4002-85fd-a1a93500d223.jpg"
   },
   {
    "id": 515285,
@@ -681,7 +815,9 @@
    "name": "Kipsate met pindasaus",
    "desc": "",
    "price": 7.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-b882ee29-047a-49ed-a6e4-1aa8a8b59e3e.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-b882ee29-047a-49ed-a6e4-1aa8a8b59e3e.jpg"
   },
   {
    "id": 515258,
@@ -691,7 +827,9 @@
    "name": "Berehap Pindasaus",
    "desc": "",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-261007f0-e568-415a-bb93-189219bd0992.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-261007f0-e568-415a-bb93-189219bd0992.jpg"
   },
   {
    "id": 515262,
@@ -701,7 +839,9 @@
    "name": "Gehaktbal",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-1b50ea2f-745e-4dc7-a727-f7b3ffdd3ef7.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-1b50ea2f-745e-4dc7-a727-f7b3ffdd3ef7.jpg"
   },
   {
    "id": 515271,
@@ -711,7 +851,9 @@
    "name": "Halve kip",
    "desc": "",
    "price": 9.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 587766,
@@ -721,7 +863,9 @@
    "name": "Chicken Tenders (5st)",
    "desc": "",
    "price": 5.75,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515277,
@@ -731,7 +875,9 @@
    "name": "Bitterballen (5st)",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635815448850353898.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635815448850353898.jpg"
   },
   {
    "id": 515266,
@@ -741,7 +887,9 @@
    "name": "Kipnuggets (5st)",
    "desc": "Halal",
    "price": 3.75,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951081960229648.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951081960229648.jpg"
   },
   {
    "id": 515264,
@@ -751,7 +899,9 @@
    "name": "Kaasstengels (5st)",
    "desc": "",
    "price": 4.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951060176337370.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951060176337370.jpg"
   },
   {
    "id": 515278,
@@ -761,7 +911,9 @@
    "name": "Chickenwings (5st)",
    "desc": "",
    "price": 5.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951044763509789.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951044763509789.jpg"
   },
   {
    "id": 515281,
@@ -771,7 +923,9 @@
    "name": "Mini loempia's (5st)",
    "desc": "Vegetarisch",
    "price": 3.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636009659951921212.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636009659951921212.jpg"
   },
   {
    "id": 515280,
@@ -781,7 +935,9 @@
    "name": "Vlammetjes (5st)",
    "desc": "",
    "price": 4.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636009659951921212.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636009659951921212.jpg"
   },
   {
    "id": 515282,
@@ -791,7 +947,9 @@
    "name": "Bittergarnituur 25st",
    "desc": "",
    "price": 22.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637061262560448952.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637061262560448952.jpg"
   },
   {
    "id": 515283,
@@ -801,7 +959,9 @@
    "name": "Bittergarnituur 50st",
    "desc": "",
    "price": 45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637061262560448952.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637061262560448952.jpg"
   },
   {
    "id": 516456,
@@ -811,7 +971,9 @@
    "name": "Bittergarnituur 100st",
    "desc": "",
    "price": 90,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635816358331478107.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635816358331478107.jpg"
   },
   {
    "id": 515287,
@@ -821,7 +983,9 @@
    "name": "Broodje Frikandel",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515288,
@@ -831,7 +995,9 @@
    "name": "Broodje Kroket",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515289,
@@ -841,7 +1007,9 @@
    "name": "Broodje luxe kroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515290,
@@ -851,7 +1019,9 @@
    "name": "Broodje Kalfsvleeskroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515291,
@@ -861,7 +1031,9 @@
    "name": "Broodje Satekroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515292,
@@ -871,7 +1043,9 @@
    "name": "Broodje Goulashkroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515305,
@@ -881,7 +1055,9 @@
    "name": "Broodje Vega Kroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515296,
@@ -891,7 +1067,9 @@
    "name": "Broodje Bal",
    "desc": "",
    "price": 4.25,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515295,
@@ -901,7 +1079,9 @@
    "name": "Broodje Kipkorn",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515294,
@@ -911,7 +1091,9 @@
    "name": "Broodje Kaassouffle",
    "desc": "",
    "price": 3.7,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515300,
@@ -921,7 +1103,9 @@
    "name": "Broodje Bamiblok",
    "desc": "Vegetarisch",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515297,
@@ -931,7 +1115,9 @@
    "name": "Broodje Mexicano",
    "desc": "",
    "price": 4.25,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515298,
@@ -941,7 +1127,9 @@
    "name": "Broodje Pikanto",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 519541,
@@ -951,7 +1139,9 @@
    "name": "Broodje Berehap pinda",
    "desc": "",
    "price": 5.25,
-   "vragenSetID": 118133
+   "vragenSetID": 118133,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515293,
@@ -961,7 +1151,9 @@
    "name": "Broodje Groentekroket",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515309,
@@ -971,7 +1163,9 @@
    "name": "Frikandel glutenvrij",
    "desc": "",
    "price": 2.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635900955499499111.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635900955499499111.jpg"
   },
   {
    "id": 515310,
@@ -981,7 +1175,9 @@
    "name": "Kroket glutenvrij",
    "desc": "",
    "price": 2.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635906926580047695.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635906926580047695.jpg"
   },
   {
    "id": 515320,
@@ -991,7 +1187,9 @@
    "name": "Premium Family burger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met gebakken paprika, champignon, ui, cheddar, bacon en grillsaus",
    "price": 8.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg"
   },
   {
    "id": 515326,
@@ -1001,7 +1199,9 @@
    "name": "Premium baconcheeseburger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, cheddar en grillsaus",
    "price": 7.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg"
   },
   {
    "id": 515322,
@@ -1011,7 +1211,9 @@
    "name": "Premium cheeseburger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, cheddar en grillsaus",
    "price": 7.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-b364b3a9-b122-489f-b194-4cfe8778ea1f.jpg"
   },
   {
    "id": 515325,
@@ -1021,7 +1223,9 @@
    "name": "Premium Truffelburger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, champignon, paprika, ui en truffelmayonaise",
    "price": 7.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-20b268b3-891f-4a04-ba8b-506c205d5ba3.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-20b268b3-891f-4a04-ba8b-506c205d5ba3.jpg"
   },
   {
    "id": 515327,
@@ -1031,7 +1235,9 @@
    "name": "Premium kipburger",
    "desc": "Kipfilet geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk en joppiesaus",
    "price": 7.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-11d8dbbd-14e6-4004-af02-de49969faf81.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-11d8dbbd-14e6-4004-af02-de49969faf81.jpg"
   },
   {
    "id": 515328,
@@ -1041,7 +1247,9 @@
    "name": "Premium spicy kipburger",
    "desc": "Kipfilet geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, cheddar, bacon en Smokey Hot Cocktailsaus",
    "price": 7.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-77cf11a9-1e8d-470c-8013-dad0175b86f2.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-77cf11a9-1e8d-470c-8013-dad0175b86f2.jpg"
   },
   {
    "id": 515321,
@@ -1051,7 +1259,9 @@
    "name": "Premium hamburger classic",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk en grillsaus",
    "price": 7.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-c31ad959-c147-4f68-bf3c-2dd64c625b3a.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-c31ad959-c147-4f68-bf3c-2dd64c625b3a.jpg"
   },
   {
    "id": 515324,
@@ -1061,7 +1271,9 @@
    "name": "Premium eggburger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, gebakken ei en grillsaus",
    "price": 7.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 639047,
@@ -1071,7 +1283,9 @@
    "name": "BBQ Egg Burger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, gebakken ei en bbqsaus",
    "price": 7.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515725,
@@ -1081,7 +1295,9 @@
    "name": "Premium baconburger",
    "desc": "100% rundvlees geserveerd op een brioche broodje met sla, komkommer, tomaat, augurk, bacon en grillsaus",
    "price": 7.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-1d08d275-9278-4ce7-95f1-f2137098dea1.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-1d08d275-9278-4ce7-95f1-f2137098dea1.jpg"
   },
   {
    "id": 614753,
@@ -1091,7 +1307,9 @@
    "name": "BBQ Chicken Burger",
    "desc": "Premium kipfiletburger op een brioche broodje met sla, tomaat, komkommer, augurk en bbq saus",
    "price": 7.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 588990,
@@ -1101,7 +1319,9 @@
    "name": "Premium bacon-cheese-egg burger",
    "desc": "",
    "price": 8.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-96c8b3b2-3e82-48a5-8e52-0e01137a5600.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-96c8b3b2-3e82-48a5-8e52-0e01137a5600.jpg"
   },
   {
    "id": 515323,
@@ -1111,7 +1331,9 @@
    "name": "Spinazie-Kaas burger",
    "desc": "met sla, komkommer, tomaat, augurk en grillsaus",
    "price": 7.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d515a1e8-0336-463a-83ea-947c90ce8ab1.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d515a1e8-0336-463a-83ea-947c90ce8ab1.jpg"
   },
   {
    "id": 515313,
@@ -1121,7 +1343,9 @@
    "name": "Family burger",
    "desc": "met sla, komkommer, tomaat, augurk, gebakken paprika, champignon, ui, cheddar, bacon en grillsaus",
    "price": 6.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515315,
@@ -1131,7 +1355,9 @@
    "name": "Bacon cheeseburger",
    "desc": "met sla, komkommer, tomaat, augurk, cheddar, bacon en grillsaus",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515312,
@@ -1141,7 +1367,9 @@
    "name": "Cheeseburger",
    "desc": "met sla, komkommer, tomaat, augurk, cheddar en grillsaus",
    "price": 5.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515311,
@@ -1151,7 +1379,9 @@
    "name": "Hamburger classic",
    "desc": "met sla, komkommer, tomaat, augurk en grillsaus",
    "price": 5.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515314,
@@ -1161,7 +1391,9 @@
    "name": "Kipburger classic",
    "desc": "met sla, komkommer, tomaat, augurk en joppiesaus (halal)",
    "price": 5.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515319,
@@ -1171,7 +1403,9 @@
    "name": "Kipburger spicy",
    "desc": "met sla, komkommer, tomaat, augurk, cheddar, bacon en Smokey Hot Cocktailsaus",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515722,
@@ -1181,7 +1415,9 @@
    "name": "Baconburger",
    "desc": "met sla, komkommer, tomaat, augurk, bacon en grillsaus",
    "price": 5.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-3987c24a-48e3-4a7e-865d-8303af160038.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-3987c24a-48e3-4a7e-865d-8303af160038.jpg"
   },
   {
    "id": 515318,
@@ -1191,7 +1427,9 @@
    "name": "Egg burger",
    "desc": "met sla, komkommer, tomaat, augurk, gebakken ei en grillsaus",
    "price": 5.7,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515330,
@@ -1201,7 +1439,9 @@
    "name": "Vega Classic Burger",
    "desc": "No Beef Burger met sla, komkommer, tomaat, augurk en grillsaus",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515331,
@@ -1211,7 +1451,9 @@
    "name": "Vega Cheeseburger",
    "desc": "No Beef Burger met sla, komkommer, tomaat, augurk, cheddar en grillsaus",
    "price": 6.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515332,
@@ -1221,7 +1463,9 @@
    "name": "Vega Egg Burger",
    "desc": "No Beef Burger met sla, komkommer, tomaat, augurk, gebakken ei en grillsaus",
    "price": 6.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515333,
@@ -1231,7 +1475,9 @@
    "name": "Vega Family burger",
    "desc": "No Beef Burger met sla, komkommer, tomaat, augurk, cheddar, gebakken paprika, champignon, ui en grillsaus",
    "price": 6.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515334,
@@ -1241,7 +1487,9 @@
    "name": "Vega Truffelburger",
    "desc": "No Beef Burger met sla, champignon, paprika, ui en truffelmayonaise",
    "price": 6.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515323,
@@ -1251,7 +1499,9 @@
    "name": "Spinazie-Kaas burger",
    "desc": "met sla, komkommer, tomaat, augurk en grillsaus",
    "price": 7.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d515a1e8-0336-463a-83ea-947c90ce8ab1.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d515a1e8-0336-463a-83ea-947c90ce8ab1.jpg"
   },
   {
    "id": 515485,
@@ -1261,7 +1511,9 @@
    "name": "Kinderfestival",
    "desc": "frites met een kroket, kaassouffle, kidsburger, kipnuggets of kaastengels, appelmoes en een leuke verrassing",
    "price": 5.95,
-   "vragenSetID": 107505
+   "vragenSetID": 107505,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637891876178368518.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637891876178368518.jpg"
   },
   {
    "id": 515466,
@@ -1271,7 +1523,9 @@
    "name": "Schotel premium burger",
    "desc": "Kies je burger (100% rundvlees) op een ambachtelijk brioche broodje, met frites en salade",
    "price": 6,
-   "vragenSetID": 107494
+   "vragenSetID": 107494,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515445,
@@ -1281,7 +1535,9 @@
    "name": "Schotel hamburger",
    "desc": "Kies je burger, met frites en salade",
    "price": 6,
-   "vragenSetID": 107500
+   "vragenSetID": 107500,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 602948,
@@ -1291,7 +1547,9 @@
    "name": "Schotel Vega Burger",
    "desc": "",
    "price": 6,
-   "vragenSetID": 139903
+   "vragenSetID": 139903,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515460,
@@ -1301,7 +1559,9 @@
    "name": "Schotel kipsate",
    "desc": "met pindasaus",
    "price": 14.5,
-   "vragenSetID": 107495
+   "vragenSetID": 107495,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635827677463781642.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635827677463781642.jpg"
   },
   {
    "id": 515479,
@@ -1311,7 +1571,9 @@
    "name": "Schotel kipschnitzel",
    "desc": "",
    "price": 13.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636028707119309843.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636028707119309843.jpg"
   },
   {
    "id": 515484,
@@ -1321,7 +1583,9 @@
    "name": "Schotel loempia",
    "desc": "loempia met kip en ham, gebakken ei, pindasaus, frites en salade",
    "price": 13.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635827677172142813.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635827677172142813.jpg"
   },
   {
    "id": 515459,
@@ -1331,7 +1595,9 @@
    "name": "Schotel hete kip",
    "desc": "pittig gemarineerde kip met paprika, champignon, ui",
    "price": 13.5,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636028704918178582.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636028704918178582.jpg"
   },
   {
    "id": 515476,
@@ -1341,7 +1607,9 @@
    "name": "Schotel warm vlees",
    "desc": "gebakken fricandeau met champignon, paprika, ui en pindasaus",
    "price": 13.5,
-   "vragenSetID": 107495
+   "vragenSetID": 107495,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515461,
@@ -1351,7 +1619,9 @@
    "name": "Schotel kipshoarma",
    "desc": "met knoflooksaus",
    "price": 14.95,
-   "vragenSetID": 107495
+   "vragenSetID": 107495,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635827676284759225.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635827676284759225.jpg"
   },
   {
    "id": 515444,
@@ -1361,7 +1631,9 @@
    "name": "Schotel halve kip",
    "desc": "",
    "price": 15.5,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515464,
@@ -1371,7 +1643,9 @@
    "name": "Schotel wienerschnitzel",
    "desc": "varkensvlees",
    "price": 14.5,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636028707119309843.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636028707119309843.jpg"
   },
   {
    "id": 515480,
@@ -1381,7 +1655,9 @@
    "name": "Boerenschnitzel",
    "desc": "Varkensschnitzel met gebakken paprika, champignon, ui en bacon",
    "price": 14.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635907807604387967.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635907807604387967.jpg"
   },
   {
    "id": 515474,
@@ -1391,7 +1667,9 @@
    "name": "Schotel mixed grill",
    "desc": "Kipfilet, varkenshaas en biefstuk met gebakken champignon, paprika, ui en knoflooksaus",
    "price": 17.5,
-   "vragenSetID": 107495
+   "vragenSetID": 107495,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515478,
@@ -1401,7 +1679,9 @@
    "name": "Schotel beef special",
    "desc": "malse rundvleesreepjes, champignon, paprika, ui gebakken in sesam woksaus",
    "price": 16.95,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515483,
@@ -1411,7 +1691,9 @@
    "name": "Nasi compleet",
    "desc": "met kipsaté, pindasaus en gebakken ei",
    "price": 14.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 669246,
@@ -1421,7 +1703,9 @@
    "name": "Snackmenu",
    "desc": "",
    "price": 6,
-   "vragenSetID": 182918
+   "vragenSetID": 182918,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515481,
@@ -1431,7 +1715,9 @@
    "name": "Schotel gamba's",
    "desc": "gebakken in knoflooksaus met champignon, paprika, ui",
    "price": 14.5,
-   "vragenSetID": 107484
+   "vragenSetID": 107484,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515482,
@@ -1441,7 +1727,9 @@
    "name": "Fish and Chips",
    "desc": "met knoflooksaus",
    "price": 14.95,
-   "vragenSetID": 107495
+   "vragenSetID": 107495,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637920294777831943.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637920294777831943.jpg"
   },
   {
    "id": 515509,
@@ -1451,7 +1739,9 @@
    "name": "Carpaccio salade",
    "desc": "met truffelmayonaise, pittenmix, kappertjes en parmezaanse kaas",
    "price": 10.25,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635967381056807423.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635967381056807423.jpg"
   },
   {
    "id": 515508,
@@ -1461,7 +1751,9 @@
    "name": "Beef salade",
    "desc": "met malse rundvleesreepjes, paprika, champignon, ui gebakken in sesam woksaus",
    "price": 11.25,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218671307741298.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218671307741298.jpg"
   },
   {
    "id": 515507,
@@ -1471,7 +1763,9 @@
    "name": "Spicy Chicken salade",
    "desc": "met kip, paprika, champignon, ui",
    "price": 9.95,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218670937444643.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218670937444643.jpg"
   },
   {
    "id": 515510,
@@ -1481,7 +1775,9 @@
    "name": "Old Amsterdam salade",
    "desc": "met bacon en pittenmix",
    "price": 8.75,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516653,
@@ -1491,7 +1787,9 @@
    "name": "Gerookte zalm salade",
    "desc": "met ui en honing-mosterdsaus",
    "price": 10.95,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635967385392068677.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635967385392068677.jpg"
   },
   {
    "id": 515511,
@@ -1501,7 +1799,9 @@
    "name": "Gamba salade",
    "desc": "gebakken in knoflooksaus met paprika, champignon, ui",
    "price": 11.25,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515514,
@@ -1511,7 +1811,9 @@
    "name": "Crispy Chicken Salade",
    "desc": "met krokante kip en sweet chillisaus",
    "price": 9.95,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637891861592726104.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637891861592726104.jpg"
   },
   {
    "id": 660372,
@@ -1521,7 +1823,9 @@
    "name": "Salade Caprese",
    "desc": "",
    "price": 8.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-638859995390811737.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638859995390811737.jpg"
   },
   {
    "id": 626329,
@@ -1531,7 +1835,9 @@
    "name": "Tonijnsalade",
    "desc": "",
    "price": 8.75,
-   "vragenSetID": 111445
+   "vragenSetID": 111445,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515515,
@@ -1541,7 +1847,9 @@
    "name": "Rundvleesslaatje",
    "desc": "",
    "price": 4.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515516,
@@ -1551,7 +1859,9 @@
    "name": "Rauwkostsalade",
    "desc": "",
    "price": 3,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515341,
@@ -1561,7 +1871,9 @@
    "name": "Broodje gezond ham/kaas",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515335,
@@ -1571,7 +1883,9 @@
    "name": "Broodje gezond kaas",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515342,
@@ -1581,7 +1895,9 @@
    "name": "Broodje brie gezond",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515351,
@@ -1591,7 +1907,9 @@
    "name": "Broodje brie",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515343,
@@ -1601,7 +1919,9 @@
    "name": "Broodje filet americain",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": 107496
+   "vragenSetID": 107496,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515345,
@@ -1611,7 +1931,9 @@
    "name": "Broodje filet americain speciaal",
    "desc": "met ei, ui en mayonaise",
    "price": 4.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515346,
@@ -1621,7 +1943,9 @@
    "name": "Broodje tartaar",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": 107496
+   "vragenSetID": 107496,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515347,
@@ -1631,7 +1955,9 @@
    "name": "Broodje tartaar speciaal",
    "desc": "met ei, ui en mayonaise",
    "price": 4.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515349,
@@ -1641,7 +1967,9 @@
    "name": "Broodje jonge kaas",
    "desc": "",
    "price": 3.15,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515350,
@@ -1651,7 +1979,9 @@
    "name": "Broodje oude kaas",
    "desc": "",
    "price": 3.35,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515354,
@@ -1661,7 +1991,9 @@
    "name": "Broodje ham",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 600324,
@@ -1671,7 +2003,9 @@
    "name": "Broodje beenham-roomkaas",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 118133
+   "vragenSetID": 118133,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515356,
@@ -1681,7 +2015,9 @@
    "name": "Broodje ham/kaas",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515355,
@@ -1691,7 +2027,9 @@
    "name": "Broodje fricandeau",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": 107491
+   "vragenSetID": 107491,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515352,
@@ -1701,7 +2039,9 @@
    "name": "Broodje gekookte ei",
    "desc": "",
    "price": 2.95,
-   "vragenSetID": 107491
+   "vragenSetID": 107491,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515716,
@@ -1711,7 +2051,9 @@
    "name": "Broodje eiersalade",
    "desc": "",
    "price": 3.35,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 529341,
@@ -1721,7 +2063,9 @@
    "name": "Broodje eiersalade bacon",
    "desc": "",
    "price": 3.85,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516294,
@@ -1731,7 +2075,9 @@
    "name": "Broodje roomkaas",
    "desc": "",
    "price": 3.35,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516296,
@@ -1741,7 +2087,9 @@
    "name": "Broodje Kipkerrie salade",
    "desc": "",
    "price": 3.35,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516297,
@@ -1751,7 +2099,9 @@
    "name": "Broodje Kipfilet",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516299,
@@ -1761,7 +2111,9 @@
    "name": "Broodje Ossenworst",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": 138690
+   "vragenSetID": 138690,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 600300,
@@ -1771,7 +2123,9 @@
    "name": "Broodje Ossenworst speciaal",
    "desc": "met augurk en truffelmayo",
    "price": 4.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516298,
@@ -1781,7 +2135,9 @@
    "name": "Broodje Rosbief",
    "desc": "",
    "price": 3.65,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 711714,
@@ -1791,7 +2147,9 @@
    "name": "Broodje Rosbief Speciaal",
    "desc": "",
    "price": 4.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516300,
@@ -1801,7 +2159,9 @@
    "name": "Broodje Zalm-roomkaas",
    "desc": "",
    "price": 5.75,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218667056152382.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218667056152382.jpg"
   },
   {
    "id": 517106,
@@ -1811,7 +2171,9 @@
    "name": "Broodje mozarella, tomaat, pesto",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951108101809511.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951108101809511.jpg"
   },
   {
    "id": 517105,
@@ -1821,7 +2183,9 @@
    "name": "Broodje tonijn",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636028696780219434.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636028696780219434.jpg"
   },
   {
    "id": 600301,
@@ -1831,7 +2195,9 @@
    "name": "Broodje tonijn gezond",
    "desc": "",
    "price": 4.45,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636801378213207614.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636801378213207614.jpg"
   },
   {
    "id": 515715,
@@ -1841,7 +2207,9 @@
    "name": "Broodje carpaccio",
    "desc": "",
    "price": 5.75,
-   "vragenSetID": 107490
+   "vragenSetID": 107490,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218660701860978.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218660701860978.jpg"
   },
   {
    "id": 540009,
@@ -1851,7 +2219,9 @@
    "name": "Broodje Hummus",
    "desc": "met sla, tomaat, komkommer",
    "price": 3.35,
-   "vragenSetID": 118133
+   "vragenSetID": 118133,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515365,
@@ -1861,7 +2231,9 @@
    "name": "Broodje hete kip",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg"
   },
   {
    "id": 515366,
@@ -1871,7 +2243,9 @@
    "name": "Broodje kipshoarma",
    "desc": "met knoflooksaus",
    "price": 5.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg"
   },
   {
    "id": 515371,
@@ -1881,7 +2255,9 @@
    "name": "Broodje Pulled Chicken",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d3eb8fcf-d772-495a-8668-9e98284b8474.jpg"
   },
   {
    "id": 515370,
@@ -1891,7 +2267,9 @@
    "name": "Broodje warme beenham",
    "desc": "met honing-mosterdsaus",
    "price": 5.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951085067024227.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951085067024227.jpg"
   },
   {
    "id": 515717,
@@ -1901,7 +2279,9 @@
    "name": "Broodje warm vlees",
    "desc": "",
    "price": 4.2,
-   "vragenSetID": 111377
+   "vragenSetID": 111377,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635823122156263205.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635823122156263205.jpg"
   },
   {
    "id": 515369,
@@ -1911,7 +2291,9 @@
    "name": "Broodje warm vlees speciaal",
    "desc": "met gebakken fricandeau, paprika, champignon, ui en pindasaus",
    "price": 5.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-1e1b64ba-2ec7-440f-8133-b30e1618c1c7.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-1e1b64ba-2ec7-440f-8133-b30e1618c1c7.jpg"
   },
   {
    "id": 515384,
@@ -1921,7 +2303,9 @@
    "name": "Warme pistolet caprese",
    "desc": "Mozarella, tomaat en pesto",
    "price": 4.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515385,
@@ -1931,7 +2315,9 @@
    "name": "Warme pistolet ham en kaas",
    "desc": "",
    "price": 4.55,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515353,
@@ -1941,7 +2327,9 @@
    "name": "Broodje gebakken ei",
    "desc": "",
    "price": 3.35,
-   "vragenSetID": 139902
+   "vragenSetID": 139902,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516301,
@@ -1951,7 +2339,9 @@
    "name": "Broodje gebakken ei-bacon",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": 139902
+   "vragenSetID": 139902,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635925304214247486.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635925304214247486.jpg"
   },
   {
    "id": 516320,
@@ -1961,7 +2351,9 @@
    "name": "Warme pistolet Tonijn",
    "desc": "met oude kaas",
    "price": 4.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 600298,
@@ -1971,7 +2363,9 @@
    "name": "Warme pistolet Brie",
    "desc": "met honing-mosterdsaus en pittenmix",
    "price": 4.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 639215,
@@ -1981,7 +2375,9 @@
    "name": "Warme pistolet Family",
    "desc": "met gesmolten kaas, bacon, ui, champignon, paprika uit de oven",
    "price": 4.95,
-   "vragenSetID": 107492
+   "vragenSetID": 107492,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 534069,
@@ -1991,7 +2387,9 @@
    "name": "Uitsmijter",
    "desc": "",
    "price": 6.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635827552970753965.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635827552970753965.jpg"
   },
   {
    "id": 539052,
@@ -2001,7 +2399,9 @@
    "name": "Kroketspecial",
    "desc": "Kalfsvleeskroket op een brioche broodje met sla, truffelmayo en parmezaanse kaas",
    "price": 4.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-9d369dc5-8977-4632-9ecb-177267114981.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-9d369dc5-8977-4632-9ecb-177267114981.jpg"
   },
   {
    "id": 515397,
@@ -2011,7 +2411,9 @@
    "name": "Wrap Carpaccio",
    "desc": "",
    "price": 6.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515399,
@@ -2021,7 +2423,9 @@
    "name": "Wrap Chili Chicken",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 600302,
@@ -2031,7 +2435,9 @@
    "name": "Wrap kip honing-mosterd",
    "desc": "",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516319,
@@ -2041,7 +2447,9 @@
    "name": "Wrap Zalm",
    "desc": "",
    "price": 7.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516309,
@@ -2051,7 +2459,9 @@
    "name": "Flatbread Carpaccio",
    "desc": "Italiaans platbrood met sla, parmezaanse kaas en truffelmayo",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-638301202300157079.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638301202300157079.jpg"
   },
   {
    "id": 516308,
@@ -2061,7 +2471,9 @@
    "name": "Flatbread Spicy chicken",
    "desc": "Italiaans platbrood met sla, paprika, champignon en ui",
    "price": 10.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516310,
@@ -2071,7 +2483,9 @@
    "name": "Flatbread Beef Teriyaki",
    "desc": "Italiaans platbrood met sla, paprika, champignon, ui",
    "price": 11.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515754,
@@ -2081,7 +2495,9 @@
    "name": "Milkshake Klein",
    "desc": "",
    "price": 3,
-   "vragenSetID": 107501
+   "vragenSetID": 107501,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218655083623046.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218655083623046.jpg"
   },
   {
    "id": 515764,
@@ -2091,7 +2507,9 @@
    "name": "Milkshake Middel",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": 107498
+   "vragenSetID": 107498,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218655083623046.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218655083623046.jpg"
   },
   {
    "id": 515770,
@@ -2101,7 +2519,9 @@
    "name": "Milkshake Groot",
    "desc": "",
    "price": 4,
-   "vragenSetID": 107499
+   "vragenSetID": 107499,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218655083623046.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218655083623046.jpg"
   },
   {
    "id": 515547,
@@ -2111,7 +2531,9 @@
    "name": "Sundae beker ijs",
    "desc": "Personaliseer met saus en toppings!",
    "price": 2.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515548,
@@ -2121,7 +2543,9 @@
    "name": "Beker ijs klein",
    "desc": "Personaliseer met saus en toppings!",
    "price": 3.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-1bb8ea5d-6d44-4c70-990f-f5ac97393b5a.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-1bb8ea5d-6d44-4c70-990f-f5ac97393b5a.jpg"
   },
   {
    "id": 515549,
@@ -2131,7 +2555,9 @@
    "name": "Beker ijs middel",
    "desc": "Personaliseer met saus en toppings!",
    "price": 4.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-bb1e4245-936a-4327-8268-49fe7f95c952.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-bb1e4245-936a-4327-8268-49fe7f95c952.jpg"
   },
   {
    "id": 515550,
@@ -2141,7 +2567,9 @@
    "name": "Beker ijs groot",
    "desc": "Personaliseer met saus en toppings!",
    "price": 5.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-826b5b76-f6fe-4f8c-92fd-8bc48dfca062.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-826b5b76-f6fe-4f8c-92fd-8bc48dfca062.jpg"
   },
   {
    "id": 515576,
@@ -2151,7 +2579,9 @@
    "name": "Sundae Caramel",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636046949349342481.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636046949349342481.jpg"
   },
   {
    "id": 515575,
@@ -2161,7 +2591,9 @@
    "name": "Sundae Chocolade",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636046949488220063.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636046949488220063.jpg"
   },
   {
    "id": 515570,
@@ -2171,7 +2603,9 @@
    "name": "Sundae Aardbei",
    "desc": "",
    "price": 3.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636046949222479362.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636046949222479362.jpg"
   },
   {
    "id": 515579,
@@ -2181,7 +2615,9 @@
    "name": "Sundae special 'Cookie Monster'",
    "desc": "softijs met chocoladesaus, Oreo stukjes en brownieblokjes",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218655924420388.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218655924420388.jpg"
   },
   {
    "id": 515577,
@@ -2191,7 +2627,9 @@
    "name": "Sundae special 'Rocky road'",
    "desc": "softijs met chocoladesaus, marshmallows en nootjes",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218656336246716.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218656336246716.jpg"
   },
   {
    "id": 515578,
@@ -2201,7 +2639,9 @@
    "name": "Sundae special 'Sticky Stroopwafel'",
    "desc": "softijs met caramelsaus, karamelblokjes en stroopwafelstukjes",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637218656427373455.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637218656427373455.jpg"
   },
   {
    "id": 515580,
@@ -2211,7 +2651,9 @@
    "name": "Sundae special 'Smarty'",
    "desc": "softijs met aardbeiensaus, smarties en oreo",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-638343562313827177.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638343562313827177.jpg"
   },
   {
    "id": 612521,
@@ -2221,7 +2663,9 @@
    "name": "Sundae Banoffee",
    "desc": "softijs met banaan en karamelsaus en chocoladeballetjes",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637946978587004483.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637946978587004483.jpg"
   },
   {
    "id": 649226,
@@ -2231,7 +2675,9 @@
    "name": "Sundae Dubai",
    "desc": "met chocolade en pistachesaus",
    "price": 4.25,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-638791043271552280.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638791043271552280.jpg"
   },
   {
    "id": 682768,
@@ -2241,7 +2687,9 @@
    "name": "Cherry Trifle Sundae",
    "desc": "met Bastogne en kersen-kaneel topping",
    "price": 4.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-f9894b26-2c70-43d4-b012-34f829e9d36f.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-f9894b26-2c70-43d4-b012-34f829e9d36f.jpg"
   },
   {
    "id": 515605,
@@ -2251,7 +2699,9 @@
    "name": "Coca Cola blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515606,
@@ -2261,7 +2711,9 @@
    "name": "Coca Cola Zero blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515608,
@@ -2271,7 +2723,9 @@
    "name": "Red bull",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635811073271904684.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635811073271904684.jpg"
   },
   {
    "id": 516646,
@@ -2281,7 +2735,9 @@
    "name": "Fanta blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516647,
@@ -2291,7 +2747,9 @@
    "name": "Cassis blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516648,
@@ -2301,7 +2759,9 @@
    "name": "Sprite blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 516651,
@@ -2311,7 +2771,9 @@
    "name": "Ice tea sparkling blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635811068328454363.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635811068328454363.jpg"
   },
   {
    "id": 516652,
@@ -2321,7 +2783,9 @@
    "name": "Ice tea green blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636033207042195695.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636033207042195695.jpg"
   },
   {
    "id": 515593,
@@ -2331,7 +2795,9 @@
    "name": "Chaudfontaine blauw (PET)",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515594,
@@ -2341,7 +2807,9 @@
    "name": "Chaudfontaine rood (PET)",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515597,
@@ -2351,7 +2819,9 @@
    "name": "Chocomel blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515596,
@@ -2361,7 +2831,9 @@
    "name": "Fristi blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515739,
@@ -2371,7 +2843,9 @@
    "name": "Appelsap blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636613883345562960.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636613883345562960.jpg"
   },
   {
    "id": 515645,
@@ -2381,7 +2855,9 @@
    "name": "Verse jus d'Orange",
    "desc": "",
    "price": 3.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635938274052733611.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635938274052733611.jpg"
   },
   {
    "id": 515744,
@@ -2391,7 +2867,9 @@
    "name": "Heineken blik",
    "desc": "",
    "price": 3.45,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515609,
@@ -2401,7 +2879,9 @@
    "name": "Radler 0.0% blik",
    "desc": "",
    "price": 3.2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635851720063744381.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635851720063744381.jpg"
   },
   {
    "id": 515616,
@@ -2411,7 +2891,9 @@
    "name": "Fles witte wijn",
    "desc": "",
    "price": 11.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636010647900951142.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636010647900951142.jpg"
   },
   {
    "id": 515615,
@@ -2421,7 +2903,9 @@
    "name": "Fles rode wijn",
    "desc": "",
    "price": 11.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636010647784563085.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636010647784563085.jpg"
   },
   {
    "id": 515617,
@@ -2431,7 +2915,9 @@
    "name": "Fles rose wijn",
    "desc": "",
    "price": 11.95,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636033276095219642.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636033276095219642.jpg"
   },
   {
    "id": 515404,
@@ -2441,7 +2927,9 @@
    "name": "Mayonaise.",
    "desc": "",
    "price": 0.9,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834463021730900.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834463021730900.jpg"
   },
   {
    "id": 515368,
@@ -2451,7 +2939,9 @@
    "name": "Pindasaus.",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515406,
@@ -2461,7 +2951,9 @@
    "name": "Ketchup.",
    "desc": "",
    "price": 0.9,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635919852097842504.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635919852097842504.jpg"
   },
   {
    "id": 515405,
@@ -2471,7 +2963,9 @@
    "name": "Curry.",
    "desc": "",
    "price": 0.9,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635877635234586165.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635877635234586165.jpg"
   },
   {
    "id": 515412,
@@ -2481,7 +2975,9 @@
    "name": "Joppiesaus.",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635875814409147514.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635875814409147514.jpg"
   },
   {
    "id": 515410,
@@ -2491,7 +2987,9 @@
    "name": "Oorlogsaus.",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834464570977029.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834464570977029.jpg"
   },
   {
    "id": 515411,
@@ -2501,7 +2999,9 @@
    "name": "Flip.",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834464040469669.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834464040469669.jpg"
   },
   {
    "id": 515275,
@@ -2511,7 +3011,9 @@
    "name": "Speciaal Curry.",
    "desc": "",
    "price": 1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834464570977029.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834464570977029.jpg"
   },
   {
    "id": 515274,
@@ -2521,7 +3023,9 @@
    "name": "Speciaal Ketchup.",
    "desc": "",
    "price": 1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834464570977029.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834464570977029.jpg"
   },
   {
    "id": 515413,
@@ -2531,7 +3035,9 @@
    "name": "Appelmoes",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635949243517754605.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635949243517754605.jpg"
   },
   {
    "id": 515171,
@@ -2541,7 +3047,9 @@
    "name": "Knoflooksaus",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834465098105995.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834465098105995.jpg"
   },
   {
    "id": 515143,
@@ -2551,7 +3059,9 @@
    "name": "Truffelmayonaise",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834465098105995.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834465098105995.jpg"
   },
   {
    "id": 515735,
@@ -2561,7 +3071,9 @@
    "name": "Chilisaus",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 683482,
@@ -2571,7 +3083,9 @@
    "name": "Spicy mayo",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635944178232394990.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635944178232394990.jpg"
   },
   {
    "id": 515415,
@@ -2581,7 +3095,9 @@
    "name": "Rauwe uitjes klein",
    "desc": "",
    "price": 0.65,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635936429782341462.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635936429782341462.jpg"
   },
   {
    "id": 515110,
@@ -2591,7 +3107,9 @@
    "name": "BBQ saus",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515267,
@@ -2601,7 +3119,9 @@
    "name": "Zoetzure saus",
    "desc": "",
    "price": 1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515116,
@@ -2611,7 +3131,9 @@
    "name": "Mayo/Curry",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515117,
@@ -2621,7 +3143,9 @@
    "name": "Mayo/Ketchup",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 668898,
@@ -2631,7 +3155,9 @@
    "name": "Mayonaise + Ui",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 668899,
@@ -2641,7 +3167,9 @@
    "name": "Pindasaus + Ui",
    "desc": "",
    "price": 1.1,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515416,
@@ -2651,7 +3179,9 @@
    "name": "Mayonaise middel",
    "desc": "",
    "price": 2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834352135533098.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834352135533098.jpg"
   },
   {
    "id": 515421,
@@ -2661,7 +3191,9 @@
    "name": "Pindasaus middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834355075304964.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834355075304964.jpg"
   },
   {
    "id": 515418,
@@ -2671,7 +3203,9 @@
    "name": "Ketchup middel",
    "desc": "",
    "price": 2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635984639939872879.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635984639939872879.jpg"
   },
   {
    "id": 515417,
@@ -2681,7 +3215,9 @@
    "name": "Curry middel",
    "desc": "",
    "price": 2,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834359982331086.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834359982331086.jpg"
   },
   {
    "id": 515425,
@@ -2691,7 +3227,9 @@
    "name": "Joppiesaus middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834356763512954.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834356763512954.jpg"
   },
   {
    "id": 515422,
@@ -2701,7 +3239,9 @@
    "name": "Oorlogsaus middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636056352756010486.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636056352756010486.jpg"
   },
   {
    "id": 515423,
@@ -2711,7 +3251,9 @@
    "name": "Flip middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635833729003640926.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635833729003640926.jpg"
   },
   {
    "id": 515419,
@@ -2721,7 +3263,9 @@
    "name": "Speciaal Curry middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834353613845457.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834353613845457.jpg"
   },
   {
    "id": 515420,
@@ -2731,7 +3275,9 @@
    "name": "Speciaal Ketchup middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834353613845457.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834353613845457.jpg"
   },
   {
    "id": 515424,
@@ -2741,7 +3287,9 @@
    "name": "Knoflooksaus middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834352135533098.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834352135533098.jpg"
   },
   {
    "id": 515885,
@@ -2751,7 +3299,9 @@
    "name": "Truffelmayonaise middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515736,
@@ -2761,7 +3311,9 @@
    "name": "Chilisaus middel",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515428,
@@ -2771,7 +3323,9 @@
    "name": "Rauwe uitjes middel",
    "desc": "",
    "price": 1.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635936429782341462.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635936429782341462.jpg"
   },
   {
    "id": 515429,
@@ -2781,7 +3335,9 @@
    "name": "Mayonaise groot",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834352135533098.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834352135533098.jpg"
   },
   {
    "id": 515434,
@@ -2791,7 +3347,9 @@
    "name": "Pindasaus groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834355075304964.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834355075304964.jpg"
   },
   {
    "id": 515431,
@@ -2801,7 +3359,9 @@
    "name": "Ketchup groot",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635984639939872879.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635984639939872879.jpg"
   },
   {
    "id": 515430,
@@ -2811,7 +3371,9 @@
    "name": "Curry groot",
    "desc": "",
    "price": 3.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834359982331086.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834359982331086.jpg"
   },
   {
    "id": 515438,
@@ -2821,7 +3383,9 @@
    "name": "Joppiesaus groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834356763512954.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834356763512954.jpg"
   },
   {
    "id": 515435,
@@ -2831,7 +3395,9 @@
    "name": "Oorlogsaus groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636056352756010486.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636056352756010486.jpg"
   },
   {
    "id": 515436,
@@ -2841,7 +3407,9 @@
    "name": "Flip groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635833729003640926.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635833729003640926.jpg"
   },
   {
    "id": 515432,
@@ -2851,7 +3419,9 @@
    "name": "Speciaal Curry groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834353613845457.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834353613845457.jpg"
   },
   {
    "id": 515433,
@@ -2861,7 +3431,9 @@
    "name": "Speciaal Ketchup groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834353613845457.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834353613845457.jpg"
   },
   {
    "id": 515437,
@@ -2871,7 +3443,9 @@
    "name": "Knoflooksaus groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635834352135533098.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635834352135533098.jpg"
   },
   {
    "id": 515886,
@@ -2881,7 +3455,9 @@
    "name": "Truffelmayonaise groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515737,
@@ -2891,7 +3467,9 @@
    "name": "Chilisaus groot",
    "desc": "",
    "price": 3.75,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": null,
+   "fotoGroot": null
   },
   {
    "id": 515441,
@@ -2901,7 +3479,9 @@
    "name": "Rauwe uitjes groot",
    "desc": "",
    "price": 2.5,
-   "vragenSetID": null
+   "vragenSetID": null,
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635936429782341462.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635936429782341462.jpg"
   }
  ],
  "vragen": [

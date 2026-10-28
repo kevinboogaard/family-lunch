@@ -116,6 +116,31 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        .product-foto {
+            height: 130px;
+            margin: -15px -15px 12px;
+            border-radius: 8px 8px 0 0;
+            background: #f1f3f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 48px;
+        }
+        .product-foto img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+        .modal-foto {
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: white;
+        }
         .product-title {
             font-weight: bold;
             font-size: 15px;
@@ -250,6 +275,7 @@
     <!-- MODAL POPUP PRODUCTVRAGEN -->
     <div id="productModal" class="modal">
         <div class="modal-content">
+            <img id="modalFoto" class="modal-foto" alt="" style="display:none;">
             <h3 id="modalProductTitle">Product Opties</h3>
             <div id="modalQuestionsContainer"></div>
             <div class="modal-buttons">
@@ -325,7 +351,9 @@
                         name: p.name || 'Onbekend',
                         price: Number(p.price) || 0.0,
                         desc: p.desc || '',
-                        vragenSetID: p.vragenSetID || null
+                        vragenSetID: p.vragenSetID || null,
+                        foto: p.foto || null,
+                        fotoGroot: p.fotoGroot || p.foto || null
                     }));
 
                     vragenData = menu.vragen.map(v => ({
@@ -377,6 +405,13 @@
             });
         }
 
+        function categorieIcoon(cat) {
+            return {
+                'Actie': '⭐', 'Frites': '🍟', 'Snacks': '🌭', 'Burgers': '🍔', "Menu's": '🍱',
+                'Salades': '🥗', 'Broodjes': '🥪', 'IJs/Shakes': '🍦', 'Dranken': '🥤', 'Sauzen': '🥫'
+            }[cat] || '🍽️';
+        }
+
         function renderProducts(category) {
             const grid = document.getElementById("productGrid");
             grid.innerHTML = "";
@@ -392,8 +427,14 @@
                 const btnClass = inCart ? "add-btn added" : "add-btn";
                 const btnText = inCart ? "✓" : "+";
 
+                // Producten zonder foto (bijv. sauzen) krijgen een icoon van hun categorie
+                const fotoHtml = item.foto
+                    ? `<img src="${escapeHtml(item.foto)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.replaceWith(document.createTextNode('${categorieIcoon(item.cat)}'))">`
+                    : categorieIcoon(item.cat);
+
                 card.innerHTML = `
                     <div>
+                        <div class="product-foto">${fotoHtml}</div>
                         <div class="product-title">${item.name}</div>
                         <div class="product-desc">${item.desc}</div>
                     </div>
@@ -423,6 +464,15 @@
         function openModal(product, vragen) {
             currentProductForModal = product;
             document.getElementById("modalProductTitle").innerText = product.name;
+            const modalFoto = document.getElementById("modalFoto");
+            modalFoto.style.display = product.fotoGroot ? "block" : "none";
+            modalFoto.onerror = () => { modalFoto.style.display = "none"; };
+            if (product.fotoGroot) {
+                modalFoto.src = product.fotoGroot;
+                modalFoto.alt = product.name;
+            } else {
+                modalFoto.removeAttribute("src");
+            }
             const container = document.getElementById("modalQuestionsContainer");
             container.innerHTML = "";
 

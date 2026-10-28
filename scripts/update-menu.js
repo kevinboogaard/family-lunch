@@ -10,6 +10,8 @@ const path = require('path');
 const API_URL = 'https://ntf-api.azurewebsites.net/api/assortment?storeId=100751&salesChannel=4&deliveryMethod=2';
 const OUT_FILE = path.join(__dirname, '..', 'menu.json');
 const WIJZIGINGEN_DIR = path.join(__dirname, '..', 'wijzigingen');
+// Foto's van e-food in verschillende formaten: "5-" is 200x200 (~40 KB), "2-" is 400x400
+const FOTO_URL = (formaat, mediaName) => `https://ntf.blob.core.windows.net/pictures/${formaat}-${mediaName}.jpg`;
 
 // Geen gerecht: controle voor zakelijke klanten (€ 0,01)
 const isGeenGerecht = naam => /^Verificatie/i.test(naam);
@@ -114,7 +116,9 @@ async function main() {
           name: naam,
           desc: stripHtml(pp.description || pr.description),
           price: pr.price,
-          vragenSetID: pp.questionSetId || pr.questionSetId || null
+          vragenSetID: pp.questionSetId || pr.questionSetId || null,
+          foto: pr.mediaName ? FOTO_URL(5, pr.mediaName) : null,
+          fotoGroot: pr.mediaName ? FOTO_URL(2, pr.mediaName) : null
         });
       }
     }
