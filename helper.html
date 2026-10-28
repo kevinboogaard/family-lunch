@@ -191,7 +191,17 @@
 </main>
 
 <script>
-    const basis = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+    // Vast adres van de site. Alleen als deze pagina zelf op een echte website staat (niet lokaal, niet als
+    // file:/data:-voorbeeld) wordt het adres daarvan gebruikt; anders krijgt de bladwijzer een kapot adres.
+    const PRODUCTIE = 'https://kevinboogaard.github.io/family-lunch/';
+    const echteSite = /^https?:\/\//.test(location.href) && !/^https?:\/\/(localhost|127\.|\[::1\])/.test(location.href);
+    const basis = echteSite ? location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '') : PRODUCTIE;
+    if (!echteSite) {
+        const waarschuwing = document.createElement('div');
+        waarschuwing.className = 'kaart nee';
+        waarschuwing.innerHTML = '<b>Let op:</b> je hebt deze pagina niet vanaf de website geopend. De bladwijzer hieronder is wel goed (hij verwijst naar de website), maar open voor de zekerheid <a href="' + PRODUCTIE + 'helper.html">' + PRODUCTIE + 'helper.html</a> in je browser.';
+        document.querySelector('main').insertBefore(waarschuwing, document.querySelector('h2'));
+    }
     // Haalt het script als tekst op en voert het inline uit. Een los <script src> wordt op sommige
     // browsers/sites door de beveiligingsregels (CSP) van e-food geblokkeerd.
     const loader = "(function(){fetch('" + basis + "e-food-helper.js?'+Date.now()).then(function(r){if(!r.ok)throw new Error('status '+r.status);return r.text()}).then(function(t){var s=document.createElement('script');s.textContent=t;document.head.appendChild(s);s.remove()}).catch(function(e){alert('Family hulpje kon niet laden: '+e.message)})})();";

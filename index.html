@@ -1676,7 +1676,9 @@
                 },
                 bestellingen: geladenBestellingen.map(b => ({ Naam: b.Naam, Product: b.Product, Aantal: b.Aantal }))
             };
-            const code = await (await fetch('e-food-helper.js?' + Date.now())).text();
+            // Zelfde plek als deze pagina; staat de app niet op een echte website (bijv. als bestand geopend), dan GitHub Pages
+            const bron = /^https?:\/\//.test(location.href) ? 'e-food-helper.js' : 'https://kevinboogaard.github.io/family-lunch/e-food-helper.js';
+            const code = await (await fetch(bron + '?' + Date.now())).text();
             return { tekst: `window.__familyHelperData=${JSON.stringify(gegevens)};\n${code}`, gegevens };
         }
 
