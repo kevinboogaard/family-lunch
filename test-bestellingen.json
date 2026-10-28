@@ -1,0 +1,15 @@
+{"ok":true,"bestellingen":[
+{"Naam":"Anna","Product":"Burger Bali","Aantal":1,"Stuksprijs":8.5,"Totaal":8.5},
+{"Naam":"Anna","Product":"Coca Cola blik","Aantal":1,"Stuksprijs":3.35,"Totaal":3.35},
+{"Naam":"Anna","Product":"Frites Mayonaise (Zonder zout)","Aantal":1,"Stuksprijs":3.8,"Totaal":3.8},
+{"Naam":"Anna","Product":"Broodje Frikandel (Mayonaise., Pistolet wit warm)","Aantal":1,"Stuksprijs":6,"Totaal":6},
+{"Naam":"Bram","Product":"Burger Bali","Aantal":2,"Stuksprijs":8.5,"Totaal":17},
+{"Naam":"Bram","Product":"Frites Mayonaise (Zonder zout)","Aantal":1,"Stuksprijs":3.8,"Totaal":3.8},
+{"Naam":"Bram","Product":"Chaudfontaine blauw (PET)","Aantal":1,"Stuksprijs":2.65,"Totaal":2.65},
+{"Naam":"Bram","Product":"Uitsmijter (Paprika, champignon, ui, Met Ham)","Aantal":1,"Stuksprijs":9,"Totaal":9},
+{"Naam":"Cato","Product":"Family deal (Kroket, Frikandel, Kaassouffle, Kroket)","Aantal":1,"Stuksprijs":19.5,"Totaal":19.5},
+{"Naam":"Cato","Product":"Kapsalon (Mayonaise, Knoflooksaus)","Aantal":1,"Stuksprijs":12.25,"Totaal":12.25},
+{"Naam":"Cato","Product":"Coca Cola blik","Aantal":2,"Stuksprijs":3.35,"Totaal":6.7},
+{"Naam":"Cato","Product":"Pizza Hawaii","Aantal":1,"Stuksprijs":9,"Totaal":9},
+{"Naam":"Cato","Product":"Burger Bali (Bestaat niet)","Aantal":1,"Stuksprijs":8.5,"Totaal":8.5}
+]}
