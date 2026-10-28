@@ -3,318 +3,913 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Kantoor Bestel-App</title>
+    <title>Family Vrijdag Bestel-App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --primary: #e63946;
-            --secondary: #1d3557;
-            --light: #f1faee;
-            --gray: #f8f9fa;
-            --dark: #212529;
+            --bg: #120b24;
+            --bg-2: #1d1238;
+            --panel: rgba(255, 255, 255, 0.07);
+            --panel-solid: #22173f;
+            --panel-hover: rgba(255, 255, 255, 0.11);
+            --border: rgba(255, 255, 255, 0.13);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --orange: #ff7a2f;
+            --hot: #ff3d81;
+            --mint: #2fe3a3;
+            --danger: #ff5a6e;
+            --vibe: linear-gradient(120deg, var(--sun), var(--orange) 45%, var(--hot));
+            --radius: 22px;
+            --shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.7);
         }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--gray);
             margin: 0;
-            padding: 0;
-            color: var(--dark);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        header {
-            background-color: var(--secondary);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
+        h1, h2, h3, .fun { font-family: 'Fredoka', 'Segoe UI', sans-serif; }
+        button { font-family: inherit; }
+        ::selection { background: var(--hot); color: white; }
+
+        /* ---------- Achtergrond: bewegende kleurvlekken + zwevende emoji's ---------- */
+        .achtergrond {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            background: radial-gradient(1200px 800px at 50% -10%, #2c1a5c 0%, var(--bg) 60%);
+        }
+        .blob {
+            position: absolute;
+            width: 55vmax;
+            height: 55vmax;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.38;
+            animation: dwalen 26s ease-in-out infinite alternate;
+        }
+        .blob.b1 { background: var(--hot); top: -20vmax; left: -15vmax; }
+        .blob.b2 { background: var(--orange); bottom: -25vmax; right: -10vmax; animation-duration: 32s; animation-delay: -8s; }
+        .blob.b3 { background: #6d3bff; top: 30%; left: 40%; width: 40vmax; height: 40vmax; animation-duration: 38s; animation-delay: -16s; opacity: 0.3; }
+        @keyframes dwalen {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            50% { transform: translate(12vw, 8vh) scale(1.15) rotate(40deg); }
+            100% { transform: translate(-8vw, 14vh) scale(0.9) rotate(-30deg); }
+        }
+        .zwevers { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .zwever {
+            position: absolute;
+            bottom: -80px;
+            font-size: var(--size, 32px);
+            opacity: 0.16;
+            animation: zweven var(--duur, 22s) linear infinite;
+            animation-delay: var(--vertraging, 0s);
+        }
+        @keyframes zweven {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-120vh) rotate(var(--draai, 360deg)); }
+        }
+
+        /* ---------- Header / hero ---------- */
+        .topbar {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-left: 40px;
-            padding-right: 40px;
-        }
-        .admin-badge {
-            background: #e63946;
-            font-size: 14px;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-            color: white;
-            font-weight: bold;
-        }
-        .status-banner {
-            background-color: #e2f0cb;
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #b5d56b;
-            font-size: 14px;
-            color: #386641;
-        }
-        .container {
-            display: flex;
+            justify-content: space-between;
+            gap: 16px;
             max-width: 1400px;
-            margin: 20px auto;
-            gap: 20px;
-            padding: 0 20px;
+            margin: 0 auto;
+            padding: 18px 24px 0;
         }
-        .menu-section {
-            flex: 2;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: 0.3px;
         }
-        .cart-section {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            height: fit-content;
+        .logo-icoon {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: var(--vibe);
+            font-size: 22px;
+            box-shadow: 0 8px 24px -6px rgba(255, 61, 129, 0.7);
+            animation: wiebel 4s ease-in-out infinite;
+        }
+        @keyframes wiebel {
+            0%, 85%, 100% { transform: rotate(0deg); }
+            88% { transform: rotate(-14deg) scale(1.08); }
+            92% { transform: rotate(12deg) scale(1.08); }
+            96% { transform: rotate(-6deg); }
+        }
+        .glas-knop {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .glas-knop:hover { background: var(--panel-hover); transform: translateY(-2px); }
+
+        .hero {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 42px 24px 28px;
+            text-align: center;
+        }
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(38px, 7vw, 84px);
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        .verloop-tekst {
+            background: linear-gradient(90deg, var(--sun), var(--orange), var(--hot), #b06bff, var(--sun));
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: glijden 6s linear infinite;
+        }
+        @keyframes glijden { to { background-position: 300% 0; } }
+        .hero-emoji {
+            display: inline-block;
+            animation: stuiter 1.6s cubic-bezier(.28, .84, .42, 1) infinite;
+        }
+        @keyframes stuiter {
+            0%, 100% { transform: translateY(0) rotate(-6deg); }
+            50% { transform: translateY(-14px) rotate(8deg); }
+        }
+        .hero p {
+            margin: 14px auto 0;
+            color: var(--muted);
+            font-size: clamp(15px, 2vw, 18px);
+            max-width: 640px;
+        }
+        .hero-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 22px;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            font-size: 14px;
+            backdrop-filter: blur(12px);
+        }
+        .chip.aftellen { font-weight: 600; }
+        .chip.aftellen strong { color: var(--sun); font-variant-numeric: tabular-nums; }
+        .chip.fout { border-color: var(--danger); color: #ffd0d6; }
+        .stip {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 0 0 rgba(47, 227, 163, 0.7);
+            animation: puls 2s infinite;
+        }
+        @keyframes puls {
+            0% { box-shadow: 0 0 0 0 rgba(47, 227, 163, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(47, 227, 163, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(47, 227, 163, 0); }
+        }
+
+        /* ---------- Layout ---------- */
+        .container {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            align-items: start;
+        }
+
+        /* ---------- Zoeken + categorieën ---------- */
+        .menu-kop {
             position: sticky;
-            top: 20px;
+            top: 10px;
+            z-index: 20;
+            padding: 12px;
+            margin: 0 -12px 8px;
+            border-radius: 26px;
+            background: rgba(24, 14, 48, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px) saturate(1.4);
+        }
+        .zoek {
+            position: relative;
+            margin-bottom: 14px;
+        }
+        .zoek input {
+            width: 100%;
+            padding: 15px 18px 15px 50px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .zoek input::placeholder { color: var(--muted); }
+        .zoek input:focus {
+            outline: none;
+            border-color: var(--orange);
+            box-shadow: 0 0 0 4px rgba(255, 122, 47, 0.25);
+        }
+        .zoek::before {
+            content: '🔍';
+            position: absolute;
+            left: 19px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 17px;
+            z-index: 1;
+            pointer-events: none;
         }
         .categories {
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding: 4px 2px 6px;
+            scrollbar-width: none;
         }
+        .categories::-webkit-scrollbar { display: none; }
         .cat-btn {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
             font-weight: 600;
-            white-space: nowrap;
-            transition: 0.2s;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s, box-shadow 0.25s;
         }
-        .cat-btn.active, .cat-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        .cat-btn .cat-icoon { font-size: 18px; transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1); }
+        .cat-btn:hover { transform: translateY(-3px); background: var(--panel-hover); }
+        .cat-btn:hover .cat-icoon { transform: scale(1.3) rotate(-12deg); }
+        .cat-btn.active {
+            background: var(--vibe);
+            border-color: transparent;
+            color: #1c0d00;
+            box-shadow: 0 10px 28px -8px rgba(255, 90, 80, 0.8);
         }
+        .cat-titel {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin: 10px 0 18px;
+            font-size: 30px;
+        }
+        .cat-titel small { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--muted); font-weight: 500; }
+
+        /* ---------- Productkaarten ---------- */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-            max-height: 75vh;
-            overflow-y: auto;
-            padding-right: 5px;
+            gap: 20px;
         }
         .product-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            padding: 12px 12px 14px;
+            border-radius: var(--radius);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(14px);
             cursor: pointer;
-            transition: 0.2s;
+            opacity: 0;
+            animation: binnenkomen 0.55s cubic-bezier(.2, .8, .2, 1.2) forwards;
+            animation-delay: calc(var(--i, 0) * 45ms);
+            transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.35s, border-color 0.35s, background 0.35s;
+            transform-style: preserve-3d;
+        }
+        @keyframes binnenkomen {
+            from { opacity: 0; transform: translateY(26px) scale(0.92) rotate(-1.5deg); }
+            to { opacity: 1; transform: none; }
         }
         .product-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-8px) rotate(-0.6deg) scale(1.02);
+            border-color: rgba(255, 194, 26, 0.55);
+            background: var(--panel-hover);
+            box-shadow: 0 24px 50px -18px rgba(255, 61, 129, 0.55), 0 0 0 1px rgba(255, 194, 26, 0.25);
         }
+        .product-card:active { transform: scale(0.97); }
+        .product-card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
         .product-foto {
-            height: 130px;
-            margin: -15px -15px 12px;
-            border-radius: 8px 8px 0 0;
-            background: #f1f3f5;
+            position: relative;
+            height: 150px;
+            margin-bottom: 14px;
+            border-radius: 16px;
+            background: radial-gradient(circle at 50% 40%, #ffffff 0%, #fff3e2 75%);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            font-size: 48px;
+            font-size: 58px;
+        }
+        .product-foto.zonder {
+            background: radial-gradient(circle at 50% 40%, rgba(255, 194, 26, 0.25), rgba(255, 61, 129, 0.12) 70%);
         }
         .product-foto img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            background: white;
+            padding: 8px;
+            transition: transform 0.5s cubic-bezier(.34, 1.56, .64, 1);
         }
-        .statiegeld {
-            display: block;
-            font-size: 11px;
-            font-weight: normal;
-            color: #666;
+        .product-card:hover .product-foto img { transform: scale(1.12) rotate(-3deg); }
+        .product-foto .icoon-groot { transition: transform 0.5s cubic-bezier(.34, 1.56, .64, 1); }
+        .product-card:hover .product-foto .icoon-groot { transform: scale(1.2) rotate(10deg); }
+        .in-mandje-badge {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            min-width: 30px;
+            height: 30px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: var(--mint);
+            color: #003322;
+            font-weight: 700;
+            font-size: 14px;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 16px -4px rgba(47, 227, 163, 0.8);
+            animation: plop 0.45s cubic-bezier(.34, 1.56, .64, 1);
+            z-index: 2;
         }
-        .question-group label.extra-optie {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: normal;
-            margin-bottom: 4px;
-            cursor: pointer;
-        }
-        .question-group label small { font-weight: normal; color: #888; }
-        .statiegeld-melding { font-size: 13px; color: #666; margin: 0; }
-        .modal-foto {
-            width: 100%;
-            max-height: 220px;
-            object-fit: contain;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            background: white;
-        }
+        @keyframes plop { from { transform: scale(0); } to { transform: scale(1); } }
         .product-title {
-            font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 5px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 1.2;
+            margin: 0 4px 6px;
         }
         .product-desc {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--muted);
+            margin: 0 4px 14px;
             flex-grow: 1;
         }
         .product-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin: 0 4px;
+            gap: 8px;
         }
         .product-price {
-            font-weight: bold;
-            color: var(--primary);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 21px;
+            color: var(--sun);
+        }
+        .statiegeld {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted);
         }
         .add-btn {
-            background: #2a9d8f;
-            color: white;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .add-btn.added {
-            background: #2b9348 !important;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-            font-size: 14px;
-        }
-        .cart-total {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: right;
-            margin: 20px 0;
-        }
-        .checkout-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 14px;
+            background: var(--vibe);
+            color: #1c0d00;
+            font-size: 24px;
+            font-weight: 700;
             cursor: pointer;
+            box-shadow: 0 8px 20px -6px rgba(255, 90, 80, 0.8);
+            transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
         }
-        .checkout-btn:hover {
-            background: #c52233;
+        .product-card:hover .add-btn { transform: rotate(90deg) scale(1.1); }
+        .geen-resultaten {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-size: 17px;
         }
+        .geen-resultaten span { display: block; font-size: 64px; margin-bottom: 10px; animation: stuiter 1.6s infinite; }
+
+        /* ---------- Mandje ---------- */
+        .cart-section {
+            position: sticky;
+            top: 20px;
+            padding: 22px;
+            border-radius: var(--radius);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(18px);
+            box-shadow: var(--shadow);
+        }
+        .cart-kop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .cart-kop h2 { margin: 0; font-size: 24px; }
+        .mandje-icoon {
+            position: relative;
+            font-size: 30px;
+            display: inline-block;
+        }
+        .mandje-icoon.bump { animation: bump 0.5s cubic-bezier(.34, 1.56, .64, 1); }
+        @keyframes bump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.45) rotate(-12deg); }
+            100% { transform: scale(1); }
+        }
+        .aantal-badge {
+            position: absolute;
+            top: -6px;
+            right: -12px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: var(--hot);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+        }
+        .aantal-badge:empty, .aantal-badge[data-aantal="0"] { display: none; }
+        .veld-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
         input[type="text"] {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 13px 16px;
+            margin-bottom: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .placeholder-msg {
-            text-align: center;
-            color: #666;
-            padding: 40px;
+        input[type="text"]:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(255, 122, 47, 0.25); }
+        input[type="text"].schud { animation: schud 0.45s; border-color: var(--danger); }
+        @keyframes schud {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        #cartItems { max-height: 42vh; overflow-y: auto; overflow-x: hidden; margin: 0 -6px; padding: 0 6px; }
+        .leeg-mandje { text-align: center; color: var(--muted); padding: 22px 0 8px; }
+        .leeg-mandje span { display: block; font-size: 46px; margin-bottom: 6px; animation: wiebel 3s infinite; }
+        .cart-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 10px;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+            font-size: 14px;
+            animation: inschuiven 0.35s cubic-bezier(.2, .8, .2, 1.2);
+        }
+        @keyframes inschuiven { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+        .cart-item-naam { font-weight: 600; line-height: 1.35; }
+        .cart-item-prijs { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; color: var(--sun); white-space: nowrap; }
+        .aantal-knoppen { display: flex; align-items: center; gap: 6px; }
+        .aantal-knoppen button {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
             font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
         }
-        
-        /* Modal Popup */
+        .aantal-knoppen button:hover { background: rgba(255, 255, 255, 0.16); transform: scale(1.1); }
+        .aantal-knoppen span { min-width: 18px; text-align: center; font-weight: 700; }
+        .verwijder-knop { justify-self: end; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; }
+        .verwijder-knop:hover { color: var(--danger); }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 18px 0;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 18px;
+        }
+        .cart-total strong { font-size: 32px; color: var(--sun); font-variant-numeric: tabular-nums; }
+        .checkout-btn {
+            position: relative;
+            width: 100%;
+            padding: 17px;
+            border: none;
+            border-radius: 16px;
+            background: var(--vibe);
+            background-size: 200% 100%;
+            color: #1c0d00;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 14px 30px -10px rgba(255, 61, 129, 0.8);
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background-position 0.6s;
+        }
+        .checkout-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -60%;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+            transform: skewX(-20deg);
+            animation: glans 3.2s ease-in-out infinite;
+        }
+        @keyframes glans { 0%, 60% { left: -60%; } 100% { left: 130%; } }
+        .checkout-btn:hover { transform: translateY(-3px) scale(1.02); background-position: 100% 0; }
+        .checkout-btn:disabled { opacity: 0.7; cursor: wait; transform: none; }
+
+        /* ---------- Mobiele mandjebalk ---------- */
+        .mobiel-mandje-balk { display: none; }
+        .sluit-mandje { display: none; }
+
+        /* ---------- Vliegende producten ---------- */
+        .vlieger {
+            position: fixed;
+            z-index: 3000;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white center / contain no-repeat;
+            display: grid;
+            place-items: center;
+            font-size: 40px;
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(255, 61, 129, 0.6);
+            transition: transform 0.75s cubic-bezier(.5, -0.4, .7, 1), opacity 0.75s;
+        }
+
+        /* ---------- Toasts ---------- */
+        .toasts {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            pointer-events: none;
+        }
+        .toast {
+            padding: 14px 22px;
+            border-radius: 16px;
+            background: var(--panel-solid);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            font-weight: 600;
+            max-width: min(92vw, 460px);
+            text-align: center;
+            animation: toastIn 0.45s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .toast.succes { background: linear-gradient(120deg, #13a874, #0f8f8a); border-color: transparent; }
+        .toast.fout { background: linear-gradient(120deg, #c2183f, #8f1450); border-color: transparent; }
+        .toast.weg { animation: toastUit 0.35s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-30px) scale(0.8); } to { opacity: 1; transform: none; } }
+        @keyframes toastUit { to { opacity: 0; transform: translateY(-20px) scale(0.9); } }
+
+        /* ---------- Pop-ups ---------- */
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center;
+            inset: 0;
+            padding: 16px;
+            background: rgba(8, 4, 20, 0.65);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            animation: vervagen 0.25s;
         }
+        @keyframes vervagen { from { opacity: 0; } }
         .modal-content {
-            background: white; padding: 25px; border-radius: 8px; width: 450px;
-            max-height: 80vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            width: min(500px, 100%);
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 26px;
+            border-radius: 28px;
+            background: var(--panel-solid);
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
+            animation: opveren 0.5s cubic-bezier(.34, 1.56, .64, 1);
         }
-        .modal-content h3 { margin-top: 0; color: var(--secondary); }
-        .question-group { margin-bottom: 15px; }
-        .question-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
-        .question-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .modal-buttons button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-cancel { background: #ddd; color: #333; }
-        .btn-confirm { background: #2a9d8f; color: white; }
+        .modal-content.breed { width: min(820px, 100%); }
+        @keyframes opveren { from { opacity: 0; transform: translateY(60px) scale(0.9); } to { opacity: 1; transform: none; } }
+        .modal-sluit {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 2;
+            transition: transform 0.3s, background 0.2s;
+        }
+        .modal-sluit:hover { transform: rotate(90deg); background: var(--hot); }
+        .modal-foto {
+            width: 100%;
+            height: 230px;
+            object-fit: contain;
+            border-radius: 20px;
+            margin-bottom: 18px;
+            padding: 12px;
+            background: radial-gradient(circle at 50% 40%, #ffffff 0%, #fff3e2 75%);
+            animation: draaiIn 0.7s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        @keyframes draaiIn { from { transform: scale(0.6) rotate(-10deg); opacity: 0; } to { transform: none; opacity: 1; } }
+        .modal-content h3 { margin: 0 0 4px; font-size: 28px; }
+        .modal-prijs { color: var(--sun); font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px; margin-bottom: 18px; }
+        .question-group { margin-bottom: 20px; }
+        .question-group > label, .vraag-titel {
+            display: block;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        .question-group small { font-weight: 500; color: var(--muted); }
+        .keuzes { display: flex; flex-wrap: wrap; gap: 8px; }
+        .keuze { position: relative; }
+        .keuze input { position: absolute; opacity: 0; pointer-events: none; }
+        .keuze span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .keuze span em { font-style: normal; color: var(--muted); font-size: 12px; }
+        .keuze:hover span { transform: translateY(-2px); border-color: rgba(255, 194, 26, 0.6); }
+        .keuze input:checked + span {
+            background: var(--vibe);
+            border-color: transparent;
+            color: #1c0d00;
+            font-weight: 600;
+            animation: plop 0.35s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .keuze input:checked + span em { color: #4a2200; }
+        .keuze input[type="checkbox"]:checked + span::before { content: '✓'; font-weight: 800; }
+        .keuze input:focus-visible + span { outline: 3px solid var(--sun); outline-offset: 2px; }
+        .statiegeld-melding { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+        .modal-buttons {
+            position: sticky;
+            bottom: -26px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 22px -26px -26px;
+            padding: 16px 26px 22px;
+            background: linear-gradient(180deg, rgba(34, 23, 63, 0), var(--panel-solid) 30%);
+        }
+        .modal-content, #cartItems, #adminOrderList { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+        .modal-buttons button {
+            padding: 13px 22px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), filter 0.2s;
+        }
+        .modal-buttons button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        .btn-cancel { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+        .btn-confirm { background: var(--vibe); color: #1c0d00; box-shadow: 0 10px 24px -8px rgba(255, 61, 129, 0.8); }
+        #modalConfirm { flex: 1; font-family: 'Fredoka', sans-serif; font-size: 17px; }
+
+        /* ---------- Beheer ---------- */
+        .beheer-balk { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 6px 0 16px; font-size: 14px; }
+        .beheer-balk label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .beheer-balk input { accent-color: var(--orange); width: 17px; height: 17px; }
+        #adminOrderList { max-height: 52vh; overflow: auto; margin-bottom: 10px; }
+        .beheer-tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .beheer-tabel th { text-align: left; padding: 10px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel-solid); }
+        .beheer-tabel td { padding: 10px; border-bottom: 1px dashed var(--border); }
+        .beheer-tabel tr:not(.totaal-rij):hover td { background: rgba(255, 255, 255, 0.04); }
+        .beheer-tabel .totaal-rij td { font-weight: 700; font-family: 'Fredoka', sans-serif; font-size: 17px; color: var(--sun); border-bottom: none; }
+        .bron { color: var(--muted); font-size: 13px; }
+
+        /* ---------- Mobiel ---------- */
+        @media (max-width: 960px) {
+            /* minmax(0, 1fr): anders duwt de lange rij categorieknoppen de pagina breder dan het scherm */
+            .container { grid-template-columns: minmax(0, 1fr); padding: 0 16px 120px; }
+            .topbar { padding: 14px 16px 0; }
+            .hero { padding: 30px 16px 18px; }
+            .logo-tekst { display: none; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+            .product-foto { height: 120px; }
+            .product-title { font-size: 16px; }
+            .cart-section {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: auto;
+                z-index: 900;
+                max-height: 85vh;
+                overflow-y: auto;
+                border-radius: 28px 28px 0 0;
+                background: var(--panel-solid);
+                transform: translateY(105%);
+                transition: transform 0.45s cubic-bezier(.2, .9, .2, 1.05);
+            }
+            body.mandje-open .cart-section { transform: none; }
+            body.mandje-open::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                z-index: 850;
+                background: rgba(8, 4, 20, 0.6);
+            }
+            .mobiel-mandje-balk {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: fixed;
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                z-index: 800;
+                padding: 14px 20px;
+                border: none;
+                border-radius: 20px;
+                background: var(--vibe);
+                color: #1c0d00;
+                font-family: 'Fredoka', sans-serif;
+                font-size: 18px;
+                font-weight: 700;
+                box-shadow: 0 16px 40px -10px rgba(255, 61, 129, 0.9);
+                cursor: pointer;
+            }
+            .mobiel-mandje-balk .mandje-icoon { font-size: 24px; }
+            .sluit-mandje { display: inline-block; padding: 8px 13px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .product-card { opacity: 1; }
+            .zwevers { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <span>🍔 Family Vrijdagmiddag Bestel-App</span>
-        <button class="admin-badge" onclick="openAdminOverzicht()">Beheer: Bekijk Alle Bestellingen</button>
-    </header>
-    
-    <div id="statusBanner" class="status-banner">
-        🔄 Menukaart automatisch laden vanuit de repository...
+    <div class="achtergrond" aria-hidden="true">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
     </div>
+    <div class="zwevers" id="zwevers" aria-hidden="true"></div>
+    <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+    <div class="topbar">
+        <div class="logo"><span class="logo-icoon">🍟</span><span class="logo-tekst">Family Vrijdag</span></div>
+        <button class="glas-knop" onclick="openAdminOverzicht()">📋 Alle bestellingen</button>
+    </div>
+
+    <header class="hero">
+        <h1><span class="verloop-tekst">Vrijdag = Frietdag</span> <span class="hero-emoji">🍔</span></h1>
+        <p>Kies je favorieten van Cafetaria Family, zet je naam erbij en wij regelen de rest. Smakelijk!</p>
+        <div class="hero-chips">
+            <span class="chip aftellen" id="aftellen">⏳ Even rekenen…</span>
+            <span class="chip" id="statusBanner">🔄 Menukaart laden…</span>
+        </div>
+    </header>
 
     <div class="container">
-        <div class="menu-section">
-            <div id="categoryContainer" class="categories"></div>
+        <main class="menu-section">
+            <div class="menu-kop">
+                <div class="zoek">
+                    <input type="search" id="zoekInput" placeholder="Zoek in het hele menu… (bijv. kroket, mayo, cola)" aria-label="Zoek een product" oninput="zoekProducten()">
+                </div>
+                <div id="categoryContainer" class="categories" role="tablist"></div>
+            </div>
+            <h2 class="cat-titel" id="catTitel"></h2>
             <div id="productGrid" class="product-grid">
-                <div class="placeholder-msg">Bezig met inladen van producten...</div>
+                <div class="geen-resultaten"><span>🍟</span>Bezig met inladen van producten…</div>
             </div>
-        </div>
+        </main>
 
-        <div class="cart-section">
-            <h3>Jouw Bestelling</h3>
-            <label for="naamInput">Jouw Naam:</label>
-            <input type="text" id="naamInput" placeholder="Bijv. Jan de Vries">
-            
-            <div id="cartItems" style="max-height: 45vh; overflow-y: auto;">
-                <p style="color: #888; text-align: center;">Je mandje is nog leeg</p>
+        <aside class="cart-section" id="cartSection" aria-label="Jouw bestelling">
+            <div class="cart-kop">
+                <h2>Jouw bestelling</h2>
+                <span class="mandje-icoon" id="mandjeIcoon">🛒<span class="aantal-badge" id="aantalBadge" data-aantal="0"></span></span>
+                <button class="glas-knop sluit-mandje" onclick="toggleMandje(false)" aria-label="Mandje sluiten">✕</button>
             </div>
-            
-            <div class="cart-total" id="cartTotal">Totaal: € 0,00</div>
-            <button class="checkout-btn" onclick="plaatsBestelling()">Plaats Bestelling</button>
-        </div>
+            <label class="veld-label" for="naamInput">Jouw naam</label>
+            <input type="text" id="naamInput" placeholder="Bijv. Jan de Vries" autocomplete="name">
+
+            <div id="cartItems"></div>
+
+            <div class="cart-total">
+                <span>Totaal</span>
+                <strong id="cartTotal">€ 0,00</strong>
+            </div>
+            <button class="checkout-btn" onclick="plaatsBestelling()">Bestelling plaatsen 🚀</button>
+        </aside>
     </div>
 
-    <!-- MODAL POPUP PRODUCTVRAGEN -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
+    <button class="mobiel-mandje-balk" id="mobielMandjeBalk" onclick="toggleMandje(true)">
+        <span><span class="mandje-icoon" id="mobielMandjeIcoon">🛒<span class="aantal-badge" id="mobielAantalBadge" data-aantal="0"></span></span> Bekijk mandje</span>
+        <span id="mobielTotaal">€ 0,00</span>
+    </button>
+
+    <!-- POP-UP PRODUCTOPTIES -->
+    <div id="productModal" class="modal" onclick="if (event.target === this) sluitModal()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalProductTitle">
+            <button class="modal-sluit" onclick="sluitModal()" aria-label="Sluiten">✕</button>
             <img id="modalFoto" class="modal-foto" alt="" style="display:none;">
-            <h3 id="modalProductTitle">Product Opties</h3>
+            <h3 id="modalProductTitle">Product</h3>
+            <div class="modal-prijs" id="modalPrijs"></div>
             <div id="modalQuestionsContainer"></div>
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="sluitModal()">Annuleren</button>
-                <button class="btn-confirm" onclick="bevestigProductOpties()">Toevoegen aan mandje</button>
+                <button class="btn-confirm" id="modalConfirm" onclick="bevestigProductOpties()">Toevoegen</button>
             </div>
         </div>
     </div>
 
-    <!-- ADMIN MODAL OVERZICHT -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="width: 700px;">
-            <h3>📋 Centrale Bestellijst</h3>
-            <div style="display:flex; gap:15px; align-items:center; margin-bottom:10px; font-size:14px;">
+    <!-- POP-UP BEHEER -->
+    <div id="adminModal" class="modal" onclick="if (event.target === this) sluitAdminModal()">
+        <div class="modal-content breed" role="dialog" aria-modal="true" aria-labelledby="beheerTitel">
+            <button class="modal-sluit" onclick="sluitAdminModal()" aria-label="Sluiten">✕</button>
+            <h3 id="beheerTitel">📋 Alle bestellingen</h3>
+            <div class="beheer-balk">
                 <label><input type="checkbox" id="alleenVandaag" checked onchange="laadAdminOverzicht()"> Alleen vandaag</label>
-                <button class="btn-cancel" style="padding:6px 12px; border:none; border-radius:4px; cursor:pointer;" onclick="laadAdminOverzicht()">🔄 Vernieuwen</button>
+                <button class="glas-knop" onclick="laadAdminOverzicht()">🔄 Vernieuwen</button>
             </div>
-            <div id="adminOrderList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px;">
-                <p>Gegevens worden geladen...</p>
-            </div>
+            <div id="adminOrderList"><p>Gegevens worden geladen…</p></div>
             <div class="modal-buttons">
-                <button class="btn-confirm" onclick="downloadExcelOverzicht()">Exporteer naar Excel</button>
                 <button class="btn-cancel" onclick="sluitAdminModal()">Sluiten</button>
+                <button class="btn-confirm" onclick="downloadExcelOverzicht()">⬇️ Exporteer naar Excel</button>
             </div>
         </div>
     </div>
@@ -331,6 +926,11 @@
         let cart = [];
         let currentProductForModal = null;
         let geladenBestellingen = [];
+        let activeCat = null;
+        let laatsteKaart = null;
+        let getoondTotaal = 0;
+
+        const minderBeweging = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function escapeHtml(tekst) {
             return String(tekst ?? '').replace(/[&<>"']/g, c => ({
@@ -354,7 +954,61 @@
             }
         }
 
+        function toast(tekst, soort = '') {
+            // Gewone meldingen ("zit in je mandje") vervangen elkaar, zodat ze zich niet opstapelen
+            if (!soort) document.querySelectorAll('#toasts .toast:not(.succes):not(.fout)').forEach(t => t.remove());
+            const el = document.createElement('div');
+            el.className = 'toast ' + soort;
+            el.textContent = tekst;
+            document.getElementById('toasts').appendChild(el);
+            setTimeout(() => {
+                el.classList.add('weg');
+                el.addEventListener('animationend', () => el.remove());
+                if (minderBeweging) el.remove();
+            }, soort === 'fout' ? 6000 : 3500);
+        }
+
+        // ---------- Sfeer: zwevende emoji's en aftellen tot vrijdag ----------
+        function maakZwevers() {
+            if (minderBeweging) return;
+            const emojis = ['🍟', '🍔', '🌭', '🥤', '🍦', '🥪', '🧀', '🍗', '🥗', '🍕', '🧅', '🥨'];
+            const laag = document.getElementById('zwevers');
+            for (let i = 0; i < 18; i++) {
+                const s = document.createElement('span');
+                s.className = 'zwever';
+                s.textContent = emojis[i % emojis.length];
+                s.style.left = (Math.random() * 100) + 'vw';
+                s.style.setProperty('--size', (24 + Math.random() * 34) + 'px');
+                s.style.setProperty('--duur', (18 + Math.random() * 22) + 's');
+                s.style.setProperty('--vertraging', (-Math.random() * 40) + 's');
+                s.style.setProperty('--draai', (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360) + 'deg');
+                laag.appendChild(s);
+            }
+        }
+
+        function updateAftellen() {
+            const nu = new Date();
+            const el = document.getElementById('aftellen');
+            if (nu.getDay() === 5 && nu.getHours() >= 12 && nu.getHours() < 17) {
+                el.innerHTML = '🎉 <strong>Het is vrijdag!</strong> Eet smakelijk';
+                return;
+            }
+            const doel = new Date(nu);
+            doel.setHours(12, 0, 0, 0);
+            doel.setDate(nu.getDate() + ((5 - nu.getDay() + 7) % 7));
+            if (doel <= nu) doel.setDate(doel.getDate() + 7);
+            const s = Math.floor((doel - nu) / 1000);
+            const d = Math.floor(s / 86400), u = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+            const pad = n => String(n).padStart(2, '0');
+            el.innerHTML = `⏳ Nog <strong>${d > 0 ? d + 'd ' : ''}${pad(u)}:${pad(m)}:${pad(sec)}</strong> tot de vrijdaglunch`;
+        }
+
         window.onload = function() {
+            maakZwevers();
+            updateAftellen();
+            setInterval(updateAftellen, 1000);
+            renderCart();
+
             // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
             fetch('menu.json', { cache: 'no-cache' })
                 .then(response => {
@@ -386,44 +1040,25 @@
                     }));
 
                     const opgehaald = new Date(menu.opgehaald).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
-                    document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
-                    document.getElementById('statusBanner').style.color = '#1b4332';
-                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart geladen (${menuData.length} producten, bijgewerkt op ${opgehaald})` +
-                        (GOOGLE_SCRIPT_URL ? '' : ' — ⚠️ Centrale opslag niet ingesteld: bestellingen blijven alleen in deze browser.');
+                    document.getElementById('statusBanner').innerHTML = `<span class="stip"></span> ${menuData.length} producten · menu van ${opgehaald}` +
+                        (GOOGLE_SCRIPT_URL ? '' : ' · ⚠️ alleen lokale opslag');
 
                     initApp();
                 })
                 .catch(error => {
                     console.error(error);
-                    document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
-                    document.getElementById('statusBanner').style.color = '#9b2226';
-                    document.getElementById('statusBanner').innerHTML = `⚠️ Menukaart kon niet worden geladen. Zorg dat menu.json in de repository staat!`;
+                    const banner = document.getElementById('statusBanner');
+                    banner.classList.add('fout');
+                    banner.innerHTML = '⚠️ Menukaart kon niet worden geladen. Zorg dat menu.json in de repository staat!';
+                    document.getElementById('productGrid').innerHTML = '<div class="geen-resultaten"><span>😢</span>Het menu is even zoek…</div>';
                 });
         };
 
         function initApp() {
             if (menuData.length === 0) return;
+            activeCat = [...new Set(menuData.map(item => item.cat))][0];
             renderCategories();
-            const defaultCat = [...new Set(menuData.map(item => item.cat))][0];
-            renderProducts(defaultCat);
-        }
-
-        function renderCategories() {
-            const cats = [...new Set(menuData.map(item => item.cat))];
-            const container = document.getElementById("categoryContainer");
-            container.innerHTML = "";
-            
-            cats.forEach((cat, index) => {
-                const btn = document.createElement("button");
-                btn.className = 'cat-btn ' + (index === 0 ? 'active' : '');
-                btn.innerText = cat;
-                btn.onclick = () => {
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    renderProducts(cat);
-                };
-                container.appendChild(btn);
-            });
+            renderProducts(activeCat);
         }
 
         function categorieIcoon(cat) {
@@ -433,50 +1068,103 @@
             }[cat] || '🍽️';
         }
 
-        function renderProducts(category) {
+        function renderCategories() {
+            const cats = [...new Set(menuData.map(item => item.cat))];
+            const container = document.getElementById("categoryContainer");
+            container.innerHTML = "";
+
+            cats.forEach(cat => {
+                const btn = document.createElement("button");
+                btn.className = 'cat-btn' + (cat === activeCat ? ' active' : '');
+                btn.setAttribute('role', 'tab');
+                btn.dataset.cat = cat;
+                btn.innerHTML = `<span class="cat-icoon">${categorieIcoon(cat)}</span>${escapeHtml(cat)}`;
+                btn.onclick = () => {
+                    document.getElementById('zoekInput').value = '';
+                    activeCat = cat;
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b === btn));
+                    btn.scrollIntoView({ behavior: minderBeweging ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+                    renderProducts(cat);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function zoekProducten() {
+            const term = document.getElementById('zoekInput').value.trim();
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', !term && b.dataset.cat === activeCat));
+            renderProducts(activeCat);
+        }
+
+        // Toont de actieve categorie, of zoekresultaten uit het hele menu
+        function huidigeProducten() {
+            const term = document.getElementById('zoekInput').value.trim().toLowerCase();
+            if (!term) return { titel: `${categorieIcoon(activeCat)} ${activeCat}`, lijst: menuData.filter(item => item.cat === activeCat) };
+            const gezien = new Set();
+            const lijst = menuData.filter(p => {
+                if (gezien.has(p.id) || !(p.name + ' ' + p.desc).toLowerCase().includes(term)) return false;
+                gezien.add(p.id);
+                return true;
+            });
+            return { titel: `🔍 “${document.getElementById('zoekInput').value.trim()}”`, lijst };
+        }
+
+        function renderProducts(category, animeer = true) {
+            if (category) activeCat = category;
             const grid = document.getElementById("productGrid");
+            const { titel, lijst } = huidigeProducten();
+            document.getElementById('catTitel').innerHTML = `${escapeHtml(titel)} <small>${lijst.length} ${lijst.length === 1 ? 'product' : 'producten'}</small>`;
             grid.innerHTML = "";
-            
-            const filtered = menuData.filter(item => item.cat === category);
-            filtered.forEach(item => {
+
+            if (lijst.length === 0) {
+                grid.innerHTML = '<div class="geen-resultaten"><span>🤷</span>Niks gevonden. Probeer eens “friet” of “kroket”.</div>';
+                return;
+            }
+
+            lijst.forEach((item, index) => {
                 const card = document.createElement("div");
                 card.className = "product-card";
-                card.onclick = () => klikProduct(item.id);
-                
-                // Check of product in mandje zit om knop groen te maken
-                const inCart = cart.some(c => c.baseName === item.name);
-                const btnClass = inCart ? "add-btn added" : "add-btn";
-                const btnText = inCart ? "✓" : "+";
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', `${item.name}, ${euro(item.price)}`);
+                card.style.setProperty('--i', animeer ? Math.min(index, 14) : 0);
+                if (!animeer) card.style.animation = 'none', card.style.opacity = 1;
+                card.onclick = () => klikProduct(item.id, card);
+                card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); klikProduct(item.id, card); } };
 
-                // Producten zonder foto (bijv. sauzen) krijgen een icoon van hun categorie
+                const aantalInMandje = cart.filter(c => c.baseName === item.name).reduce((s, c) => s + c.qty, 0);
+
+                // Producten zonder foto (bijv. sauzen) krijgen een groot icoon van hun categorie
+                const icoon = `<span class="icoon-groot">${categorieIcoon(item.cat)}</span>`;
                 const fotoHtml = item.foto
-                    ? `<img src="${escapeHtml(item.foto)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.replaceWith(document.createTextNode('${categorieIcoon(item.cat)}'))">`
-                    : categorieIcoon(item.cat);
+                    ? `<img src="${escapeHtml(item.foto)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('zonder'); this.outerHTML='${icoon.replace(/"/g, '&quot;')}'">`
+                    : icoon;
 
                 card.innerHTML = `
-                    <div>
-                        <div class="product-foto">${fotoHtml}</div>
-                        <div class="product-title">${item.name}</div>
-                        <div class="product-desc">${item.desc}</div>
-                    </div>
+                    ${aantalInMandje ? `<span class="in-mandje-badge">${aantalInMandje}×</span>` : ''}
+                    <div class="product-foto${item.foto ? '' : ' zonder'}">${fotoHtml}</div>
+                    <div class="product-title">${escapeHtml(item.name)}</div>
+                    <div class="product-desc">${escapeHtml(item.desc)}</div>
                     <div class="product-footer">
-                        <span class="product-price">€ ${item.price.toFixed(2).replace('.', ',')}${item.statiegeld ? `<small class="statiegeld">+ ${euro(item.statiegeld)} statiegeld</small>` : ''}</span>
-                        <button class="${btnClass}">${btnText}</button>
+                        <span class="product-price">${euro(item.price)}${item.statiegeld ? `<small class="statiegeld">+ ${euro(item.statiegeld)} statiegeld</small>` : ''}</span>
+                        <span class="add-btn" aria-hidden="true">+</span>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function klikProduct(id) {
+        function klikProduct(id, kaart) {
             const product = menuData.find(item => item.id === id);
             if (!product) return;
+            laatsteKaart = kaart || null;
 
             const relevanteVragen = product.vragenSetID ? vragenData.filter(v => v.vragenSetID == product.vragenSetID) : [];
             if (relevanteVragen.length > 0 || product.extraSets.length > 0) {
                 openModal(product, relevanteVragen);
                 return;
             }
+            vliegNaarMandje(kaart && kaart.querySelector('.product-foto'), product);
             voegToeAanMandje(product, 0, "");
         }
 
@@ -490,6 +1178,11 @@
                 set.opties.forEach(o => groepen.get(set.titel).has(o.naam) || groepen.get(set.titel).set(o.naam, o));
             });
             return groepen;
+        }
+
+        function keuzeHtml(type, naam, waarde, meerprijs, aangevinkt) {
+            const prijs = meerprijs > 0 ? ` <em>+ ${euro(meerprijs)}</em>` : '';
+            return `<label class="keuze"><input type="${type}" name="${naam}" value="${escapeHtml(waarde)}" data-meerprijs="${meerprijs}"${aangevinkt ? ' checked' : ''} onchange="updateModalPrijs()"><span>${escapeHtml(waarde)}${prijs}</span></label>`;
         }
 
         function openModal(product, vragen) {
@@ -507,7 +1200,7 @@
             const container = document.getElementById("modalQuestionsContainer");
             container.innerHTML = "";
 
-            // Map i.p.v. object: een object sorteert numerieke keys (VraagID's), een Map behoudt de volgorde uit de Excel
+            // Map i.p.v. object: een object sorteert numerieke keys (VraagID's), een Map behoudt de volgorde uit menu.json
             const uniekeVragen = new Map();
             vragen.forEach(v => {
                 if (!uniekeVragen.has(v.vraagID)) {
@@ -519,26 +1212,16 @@
             uniekeVragen.forEach((q, vraagID) => {
                 const div = document.createElement("div");
                 div.className = "question-group";
-                
-                let html = `<label>${escapeHtml(q.tekst)}</label><select id="vraag_${vraagID}">`;
-                q.antwoorden.forEach(a => {
-                    let prijsTekst = a.meerprijs > 0 ? ` (+ ${euro(a.meerprijs)})` : '';
-                    html += `<option value="${escapeHtml(a.antwoordTekst)}" data-meerprijs="${a.meerprijs}">${escapeHtml(a.antwoordTekst)}${prijsTekst}</option>`;
-                });
-                html += `</select>`;
-                div.innerHTML = html;
+                div.innerHTML = `<span class="vraag-titel">${escapeHtml(q.tekst)}</span><div class="keuzes" role="radiogroup">` +
+                    q.antwoorden.map((a, i) => keuzeHtml('radio', `vraag_${vraagID}`, a.antwoordTekst, a.meerprijs, i === 0)).join('') + '</div>';
                 container.appendChild(div);
             });
 
             extraGroepen(product).forEach((opties, titel) => {
                 const div = document.createElement("div");
                 div.className = "question-group";
-                let html = `<label>${escapeHtml(titel)} <small>(optioneel)</small></label>`;
-                opties.forEach(o => {
-                    const prijsTekst = o.prijs > 0 ? ` (+ ${euro(o.prijs)})` : '';
-                    html += `<label class="extra-optie"><input type="checkbox" value="${escapeHtml(o.naam)}" data-meerprijs="${o.prijs}"> ${escapeHtml(o.naam)}${prijsTekst}</label>`;
-                });
-                div.innerHTML = html;
+                div.innerHTML = `<span class="vraag-titel">${escapeHtml(titel)} <small>(optioneel)</small></span><div class="keuzes">` +
+                    [...opties.values()].map(o => keuzeHtml('checkbox', 'extra', o.naam, o.prijs, false)).join('') + '</div>';
                 container.appendChild(div);
             });
 
@@ -546,7 +1229,29 @@
                 container.insertAdjacentHTML('beforeend', `<p class="statiegeld-melding">Incl. ${euro(product.statiegeld)} statiegeld</p>`);
             }
 
-            document.getElementById("productModal").style.display = "flex";
+            updateModalPrijs();
+            const modal = document.getElementById("productModal");
+            modal.style.display = "flex";
+            modal.querySelector('.modal-content').scrollTop = 0;
+            document.getElementById('modalConfirm').focus({ preventScroll: true });
+        }
+
+        function gekozenInModal() {
+            let extraKosten = 0;
+            const opties = [];
+            document.querySelectorAll("#modalQuestionsContainer input:checked").forEach(inp => {
+                extraKosten += parseFloat(inp.getAttribute("data-meerprijs")) || 0;
+                opties.push(inp.value);
+            });
+            return { extraKosten, opties };
+        }
+
+        function updateModalPrijs() {
+            const p = currentProductForModal;
+            if (!p) return;
+            const prijs = p.price + (p.statiegeld || 0) + gekozenInModal().extraKosten;
+            document.getElementById('modalPrijs').textContent = `Vanaf ${euro(p.price)}`;
+            document.getElementById('modalConfirm').textContent = `Toevoegen · ${euro(prijs)}`;
         }
 
         function sluitModal() {
@@ -556,86 +1261,153 @@
 
         function bevestigProductOpties() {
             if (!currentProductForModal) return;
-
-            const selects = document.querySelectorAll("#modalQuestionsContainer select");
-            let extraKosten = 0;
-            let gekozenOpties = [];
-
-            selects.forEach(sel => {
-                const selectedOption = sel.options[sel.selectedIndex];
-                extraKosten += parseFloat(selectedOption.getAttribute("data-meerprijs")) || 0;
-                gekozenOpties.push(selectedOption.value);
-            });
-
-            document.querySelectorAll("#modalQuestionsContainer input[type=checkbox]:checked").forEach(cb => {
-                extraKosten += parseFloat(cb.getAttribute("data-meerprijs")) || 0;
-                gekozenOpties.push(cb.value);
-            });
-
-            voegToeAanMandje(currentProductForModal, extraKosten, gekozenOpties.join(", "));
+            const { extraKosten, opties } = gekozenInModal();
+            const product = currentProductForModal;
+            const foto = document.getElementById('modalFoto');
+            vliegNaarMandje(foto.style.display !== 'none' ? foto : (laatsteKaart && laatsteKaart.querySelector('.product-foto')), product);
             sluitModal();
+            voegToeAanMandje(product, extraKosten, opties.join(", "));
         }
 
         function voegToeAanMandje(product, extraKosten, optiesTekst) {
             // Statiegeld telt e-food automatisch op bij blikjes en flesjes
             const stuksprijs = product.price + (product.statiegeld || 0) + extraKosten;
             const uniekeNaam = product.name + (optiesTekst ? ` (${optiesTekst})` : '');
-            
+
             const existing = cart.find(item => item.name === uniekeNaam);
             if (existing) {
                 existing.qty++;
             } else {
                 cart.push({ name: uniekeNaam, baseName: product.name, price: stuksprijs, qty: 1 });
             }
-            renderCart();
-            renderProducts(document.querySelector('.cat-btn.active').innerText);
+            renderCart(true);
+            renderProducts(null, false);
+            toast(`${categorieIcoon(product.cat)} ${product.name} zit in je mandje!`);
         }
 
-        function renderCart() {
+        // ---------- Animatie: product vliegt naar het mandje ----------
+        function vliegNaarMandje(bronEl, product) {
+            if (minderBeweging || !bronEl) return;
+            const mobiel = window.matchMedia('(max-width: 960px)').matches;
+            const doel = document.getElementById(mobiel ? 'mobielMandjeIcoon' : 'mandjeIcoon');
+            const van = bronEl.getBoundingClientRect(), naar = doel.getBoundingClientRect();
+            const v = document.createElement('div');
+            v.className = 'vlieger';
+            if (product.foto) v.style.backgroundImage = `url("${product.foto}")`;
+            else v.textContent = categorieIcoon(product.cat);
+            v.style.left = (van.left + van.width / 2 - 35) + 'px';
+            v.style.top = (van.top + van.height / 2 - 35) + 'px';
+            document.body.appendChild(v);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                const dx = naar.left + naar.width / 2 - (van.left + van.width / 2);
+                const dy = naar.top + naar.height / 2 - (van.top + van.height / 2);
+                v.style.transform = `translate(${dx}px, ${dy}px) scale(0.25) rotate(540deg)`;
+                v.style.opacity = '0.4';
+            }));
+            setTimeout(() => v.remove(), 800);
+        }
+
+        function animeerTotaal(nieuw) {
+            const el = document.getElementById('cartTotal');
+            const mob = document.getElementById('mobielTotaal');
+            const start = getoondTotaal, t0 = performance.now(), duur = minderBeweging ? 0 : 450;
+            getoondTotaal = nieuw;
+            function stap(t) {
+                const f = duur ? Math.min(1, (t - t0) / duur) : 1;
+                const waarde = start + (nieuw - start) * (1 - Math.pow(1 - f, 3));
+                el.textContent = mob.textContent = euro(waarde);
+                if (f < 1) requestAnimationFrame(stap);
+            }
+            requestAnimationFrame(stap);
+        }
+
+        function renderCart(bump = false) {
             const cartContainer = document.getElementById("cartItems");
-            const totalContainer = document.getElementById("cartTotal");
-            
+            const aantal = cart.reduce((s, i) => s + i.qty, 0);
+            const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+            ['aantalBadge', 'mobielAantalBadge'].forEach(id => {
+                const b = document.getElementById(id);
+                b.dataset.aantal = aantal;
+                b.textContent = aantal || '';
+            });
+            if (bump && !minderBeweging) {
+                ['mandjeIcoon', 'mobielMandjeIcoon'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.classList.remove('bump');
+                    void el.offsetWidth;
+                    el.classList.add('bump');
+                });
+            }
+            animeerTotaal(total);
+
             if (cart.length === 0) {
-                cartContainer.innerHTML = '<p style="color: #888; text-align: center;">Je mandje is nog leeg</p>';
-                totalContainer.innerText = "Totaal: € 0,00";
+                cartContainer.innerHTML = '<div class="leeg-mandje"><span>🛒</span>Je mandje is nog leeg.<br>Tijd om te kiezen!</div>';
                 return;
             }
-            
-            cartContainer.innerHTML = "";
-            let total = 0;
-            
-            cart.forEach((item, index) => {
-                total += item.price * item.qty;
-                const div = document.createElement("div");
-                div.className = "cart-item";
-                div.innerHTML = `
-                    <span>${item.name} (x${item.qty})</span>
-                    <span>€ ${(item.price * item.qty).toFixed(2).replace('.', ',')} 
-                        <button onclick="removeItem(${index})" style="background:none;border:none;color:red;cursor:pointer;font-weight:bold;">×</button>
+
+            cartContainer.innerHTML = cart.map((item, index) => `
+                <div class="cart-item">
+                    <span class="cart-item-naam">${escapeHtml(item.name)}</span>
+                    <span class="cart-item-prijs">${euro(item.price * item.qty)}</span>
+                    <span class="aantal-knoppen">
+                        <button onclick="wijzigAantal(${index}, -1)" aria-label="Eén minder">−</button>
+                        <span>${item.qty}</span>
+                        <button onclick="wijzigAantal(${index}, 1)" aria-label="Eén meer">+</button>
                     </span>
-                `;
-                cartContainer.appendChild(div);
-            });
-            
-            totalContainer.innerText = "Totaal: € " + total.toFixed(2).replace('.', ',');
+                    <button class="verwijder-knop" onclick="removeItem(${index})">🗑️ Verwijder</button>
+                </div>`).join('');
+        }
+
+        function wijzigAantal(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) cart.splice(index, 1);
+            renderCart(delta > 0);
+            renderProducts(null, false);
         }
 
         function removeItem(index) {
             cart.splice(index, 1);
             renderCart();
-            if (document.querySelector('.cat-btn.active')) {
-                renderProducts(document.querySelector('.cat-btn.active').innerText);
-            }
+            renderProducts(null, false);
+        }
+
+        function toggleMandje(open) {
+            document.body.classList.toggle('mandje-open', open);
+        }
+        document.addEventListener('click', e => {
+            // isConnected: knoppen in het mandje worden bij een klik opnieuw getekend en hangen dan niet meer in de pagina
+            if (!e.target.isConnected) return;
+            if (document.body.classList.contains('mandje-open') && !e.target.closest('.cart-section, .mobiel-mandje-balk')) toggleMandje(false);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            sluitModal();
+            sluitAdminModal();
+            toggleMandje(false);
+        });
+
+        function feest() {
+            if (minderBeweging || typeof confetti !== 'function') return;
+            const kleuren = ['#ffc21a', '#ff7a2f', '#ff3d81', '#2fe3a3', '#b06bff'];
+            confetti({ particleCount: 160, spread: 100, origin: { y: 0.6 }, colors: kleuren });
+            setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors: kleuren }), 250);
+            setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors: kleuren }), 400);
         }
 
         async function plaatsBestelling() {
-            const naam = document.getElementById("naamInput").value.trim();
+            const naamVeld = document.getElementById("naamInput");
+            const naam = naamVeld.value.trim();
             if (!naam) {
-                alert("Vul eerst je naam in voordat je bestelt!");
+                naamVeld.classList.remove('schud');
+                void naamVeld.offsetWidth;
+                naamVeld.classList.add('schud');
+                naamVeld.focus();
+                toast("✍️ Vul eerst je naam in voordat je bestelt!", 'fout');
                 return;
             }
             if (cart.length === 0) {
-                alert("Je mandje is leeg!");
+                toast("🛒 Je mandje is nog leeg!", 'fout');
                 return;
             }
 
@@ -655,7 +1427,7 @@
             if (GOOGLE_SCRIPT_URL) {
                 const knop = document.querySelector('.checkout-btn');
                 knop.disabled = true;
-                knop.innerText = 'Bezig met versturen...';
+                knop.innerText = 'Bezig met versturen… 🛵';
                 try {
                     // text/plain voorkomt een CORS-preflight, die Apps Script niet ondersteunt
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -667,11 +1439,11 @@
                     if (!result.ok) throw new Error(result.error || 'Onbekende fout');
                 } catch (err) {
                     console.error("Versturen mislukt:", err);
-                    alert("Het versturen van je bestelling is mislukt. Je mandje is bewaard, probeer het nog eens.\n\n(" + err.message + ")");
+                    toast("😬 Versturen mislukt. Je mandje is bewaard, probeer het nog eens. (" + err.message + ")", 'fout');
                     return;
                 } finally {
                     knop.disabled = false;
-                    knop.innerText = 'Plaats Bestelling';
+                    knop.innerText = 'Bestelling plaatsen 🚀';
                 }
             } else {
                 // Geen centrale opslag ingesteld: opslaan in browsergeheugen
@@ -680,13 +1452,13 @@
                 localStorage.setItem('familyBestellingen', JSON.stringify(alleBestellingen));
             }
 
-            alert("Bedankt " + naam + "! Je bestelling is geplaatst.");
+            feest();
+            toast(`🎉 Bedankt ${naam}! Je bestelling is geplaatst.`, 'succes');
             cart = [];
-            document.getElementById("naamInput").value = "";
+            naamVeld.value = "";
+            toggleMandje(false);
             renderCart();
-            if (document.querySelector('.cat-btn.active')) {
-                renderProducts(document.querySelector('.cat-btn.active').innerText);
-            }
+            renderProducts(null, false);
         }
 
         function openAdminOverzicht() {
@@ -697,7 +1469,7 @@
         async function laadAdminOverzicht() {
             const container = document.getElementById("adminOrderList");
             const alleenVandaag = document.getElementById("alleenVandaag").checked;
-            container.innerHTML = "<p>Gegevens worden geladen...</p>";
+            container.innerHTML = "<p>Gegevens worden geladen… ⏳</p>";
 
             try {
                 if (GOOGLE_SCRIPT_URL) {
@@ -714,25 +1486,24 @@
             } catch (err) {
                 console.error(err);
                 geladenBestellingen = [];
-                container.innerHTML = `<p style="color:#9b2226;">Bestellingen ophalen mislukt: ${escapeHtml(err.message)}</p>`;
+                container.innerHTML = `<p style="color:var(--danger);">Bestellingen ophalen mislukt: ${escapeHtml(err.message)}</p>`;
                 return;
             }
 
             const bron = GOOGLE_SCRIPT_URL ? 'Google Sheet' : 'alleen deze browser';
             if (geladenBestellingen.length === 0) {
-                container.innerHTML = `<p>Er zijn ${alleenVandaag ? 'vandaag ' : ''}nog geen bestellingen geplaatst. <small>(bron: ${bron})</small></p>`;
+                container.innerHTML = `<p>Er zijn ${alleenVandaag ? 'vandaag ' : ''}nog geen bestellingen geplaatst. 🍽️ <span class="bron">(bron: ${bron})</span></p>`;
                 return;
             }
 
-            const cel = "style='padding:8px;'";
             let totaal = 0;
-            let html = `<p><small>Bron: ${bron}</small></p><table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th ${cel}>Naam</th><th ${cel}>Product</th><th ${cel}>Aantal</th><th ${cel}>Totaal</th><th ${cel}>Tijd</th></tr>`;
+            let html = `<p class="bron">Bron: ${bron}</p><table class="beheer-tabel"><thead><tr><th>Naam</th><th>Product</th><th>Aantal</th><th>Totaal</th><th>Tijd</th></tr></thead><tbody>`;
             geladenBestellingen.forEach(b => {
                 totaal += Number(b.Totaal) || 0;
                 const tijd = (alleenVandaag ? '' : (b.Datum || '') + ' ') + (b.Tijd || '');
-                html += `<tr style='border-bottom:1px solid #ddd;'><td ${cel}>${escapeHtml(b.Naam)}</td><td ${cel}>${escapeHtml(b.Product)}</td><td ${cel}>${escapeHtml(b.Aantal)}</td><td ${cel}>${euro(b.Totaal)}</td><td ${cel}>${escapeHtml(tijd)}</td></tr>`;
+                html += `<tr><td>${escapeHtml(b.Naam)}</td><td>${escapeHtml(b.Product)}</td><td>${escapeHtml(b.Aantal)}</td><td>${euro(b.Totaal)}</td><td>${escapeHtml(tijd)}</td></tr>`;
             });
-            html += `<tr style='font-weight:bold;'><td ${cel} colspan='3'>Totaal</td><td ${cel}>${euro(totaal)}</td><td ${cel}></td></tr></table>`;
+            html += `<tr class="totaal-rij"><td colspan="3">Totaal</td><td>${euro(totaal)}</td><td></td></tr></tbody></table>`;
             container.innerHTML = html;
         }
 
@@ -742,7 +1513,7 @@
 
         function downloadExcelOverzicht() {
             if (geladenBestellingen.length === 0) {
-                alert("Geen bestellingen om te exporteren!");
+                toast("Geen bestellingen om te exporteren!", 'fout');
                 return;
             }
 
