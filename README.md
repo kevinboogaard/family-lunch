@@ -14,6 +14,10 @@ wanneer het menu voor het laatst is opgehaald.
   of draai lokaal `node scripts/update-menu.js` en push `menu.json`.
 - **Mislukt het ophalen** (bijv. e-food.nl is offline), dan blijft het vorige menu
   gewoon staan en stuurt GitHub je een e-mail.
+- **Wijzigingen:** bij elke run komt in de map `wijzigingen/` een bestand per dag
+  (bijv. `wijzigingen/2026-10-29.md`) met prijsverhogingen, prijsverlagingen,
+  gewijzigde meerprijzen van sauzen/opties en nieuwe of verdwenen producten,
+  vergeleken met de vorige run.
 
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 
