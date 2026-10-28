@@ -435,16 +435,16 @@
             const container = document.getElementById("modalQuestionsContainer");
             container.innerHTML = "";
 
-            const uniekeVragen = {};
+            // Map i.p.v. object: een object sorteert numerieke keys (VraagID's), een Map behoudt de volgorde uit de Excel
+            const uniekeVragen = new Map();
             vragen.forEach(v => {
-                if (!uniekeVragen[v.vraagID]) {
-                    uniekeVragen[v.vraagID] = { tekst: v.vraagTekst, antwoorden: [] };
+                if (!uniekeVragen.has(v.vraagID)) {
+                    uniekeVragen.set(v.vraagID, { tekst: v.vraagTekst, antwoorden: [] });
                 }
-                uniekeVragen[v.vraagID].antwoorden.push(v);
+                uniekeVragen.get(v.vraagID).antwoorden.push(v);
             });
 
-            Object.keys(uniekeVragen).forEach(vraagID => {
-                const q = uniekeVragen[vraagID];
+            uniekeVragen.forEach((q, vraagID) => {
                 const div = document.createElement("div");
                 div.className = "question-group";
                 
