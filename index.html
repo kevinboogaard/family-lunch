@@ -262,7 +262,11 @@
     <!-- ADMIN MODAL OVERZICHT -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="width: 700px;">
-            <h3>📋 Centrale Bestellijst (Live Cloud & Lokaal)</h3>
+            <h3>📋 Centrale Bestellijst</h3>
+            <div style="display:flex; gap:15px; align-items:center; margin-bottom:10px; font-size:14px;">
+                <label><input type="checkbox" id="alleenVandaag" checked onchange="laadAdminOverzicht()"> Alleen vandaag</label>
+                <button class="btn-cancel" style="padding:6px 12px; border:none; border-radius:4px; cursor:pointer;" onclick="laadAdminOverzicht()">🔄 Vernieuwen</button>
+            </div>
             <div id="adminOrderList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px;">
                 <p>Gegevens worden geladen...</p>
             </div>
@@ -274,14 +278,38 @@
     </div>
 
     <script>
-        // Optioneel: Plak hier je gratis SheetDB.io API URL als je wilt dat bestellingen 
-        // direct naar een centrale cloud-Excel worden gestuurd (bijv. 'https://sheetdb.io/api/v1/jouw-code')
-        const SHEETDB_API_URL = ""; 
+        // Plak hier de web-app URL van het Google Apps Script (zie README.md),
+        // bijv. 'https://script.google.com/macros/s/AKfy.../exec'.
+        // Leeg = bestellingen worden alleen lokaal in deze browser bewaard.
+        const GOOGLE_SCRIPT_URL = "";
 
         let menuData = [];
         let vragenData = [];
         let cart = [];
         let currentProductForModal = null;
+        let geladenBestellingen = [];
+
+        function escapeHtml(tekst) {
+            return String(tekst ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function euro(bedrag) {
+            return '€ ' + Number(bedrag).toFixed(2).replace('.', ',');
+        }
+
+        function vandaagISO() {
+            return new Date().toLocaleDateString('sv-SE'); // yyyy-mm-dd
+        }
+
+        function leesLokaleBestellingen() {
+            try {
+                return JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
 
         window.onload = function() {
             const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
@@ -320,7 +348,8 @@
 
                     document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
                     document.getElementById('statusBanner').style.color = '#1b4332';
-                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten)`;
+                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten)` +
+                        (GOOGLE_SCRIPT_URL ? '' : ' — ⚠️ Centrale opslag niet ingesteld: bestellingen blijven alleen in deze browser.');
 
                     initApp();
                 })
@@ -505,7 +534,7 @@
             }
         }
 
-        function plaatsBestelling() {
+        async function plaatsBestelling() {
             const naam = document.getElementById("naamInput").value.trim();
             if (!naam) {
                 alert("Vul eerst je naam in voordat je bestelt!");
@@ -524,22 +553,37 @@
                     Aantal: item.qty,
                     Stuksprijs: item.price,
                     Totaal: item.price * item.qty,
-                    Tijd: new Date().toLocaleTimeString()
+                    Datum: vandaagISO(),
+                    Tijd: new Date().toLocaleTimeString('nl-NL')
                 });
             });
 
-            // Opslaan in browsergeheugen
-            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
-            alleBestellingen.push(...nieuweBestellingen);
-            localStorage.setItem('familyBestellingen', JSON.stringify(alleBestellingen));
-
-            // Optioneel: stuur naar Cloud via SheetDB als ingesteld
-            if (SHEETDB_API_URL) {
-                fetch(SHEETDB_API_URL, {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: nieuweBestellingen })
-                }).catch(err => console.error("Cloud sync mislukt:", err));
+            if (GOOGLE_SCRIPT_URL) {
+                const knop = document.querySelector('.checkout-btn');
+                knop.disabled = true;
+                knop.innerText = 'Bezig met versturen...';
+                try {
+                    // text/plain voorkomt een CORS-preflight, die Apps Script niet ondersteunt
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ data: nieuweBestellingen })
+                    });
+                    const result = await response.json();
+                    if (!result.ok) throw new Error(result.error || 'Onbekende fout');
+                } catch (err) {
+                    console.error("Versturen mislukt:", err);
+                    alert("Het versturen van je bestelling is mislukt. Je mandje is bewaard, probeer het nog eens.\n\n(" + err.message + ")");
+                    return;
+                } finally {
+                    knop.disabled = false;
+                    knop.innerText = 'Plaats Bestelling';
+                }
+            } else {
+                // Geen centrale opslag ingesteld: opslaan in browsergeheugen
+                const alleBestellingen = leesLokaleBestellingen();
+                alleBestellingen.push(...nieuweBestellingen);
+                localStorage.setItem('familyBestellingen', JSON.stringify(alleBestellingen));
             }
 
             alert("Bedankt " + naam + "! Je bestelling is geplaatst.");
@@ -552,20 +596,50 @@
         }
 
         function openAdminOverzicht() {
-            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
-            const container = document.getElementById("adminOrderList");
-            
-            if (alleBestellingen.length === 0) {
-                container.innerHTML = "<p>Er zijn nog geen bestellingen geplaatst.</p>";
-            } else {
-                let html = "<table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th style='padding:8px;'>Naam</th><th style='padding:8px;'>Product</th><th style='padding:8px;'>Aantal</th><th style='padding:8px;'>Totaal</th><th style='padding:8px;'>Tijd</th></tr>";
-                alleBestellingen.forEach(b => {
-                    html += `<tr style='border-bottom:1px solid #ddd;'><td style='padding:8px;'>${b.Naam}</td><td style='padding:8px;'>${b.Product}</td><td style='padding:8px;'>${b.Aantal}</td><td style='padding:8px;'>€ ${b.Totaal.toFixed(2).replace('.', ',')}</td><td style='padding:8px;'>${b.Tijd}</td></tr>`;
-                });
-                html += "</table>";
-                container.innerHTML = html;
-            }
             document.getElementById("adminModal").style.display = "flex";
+            laadAdminOverzicht();
+        }
+
+        async function laadAdminOverzicht() {
+            const container = document.getElementById("adminOrderList");
+            const alleenVandaag = document.getElementById("alleenVandaag").checked;
+            container.innerHTML = "<p>Gegevens worden geladen...</p>";
+
+            try {
+                if (GOOGLE_SCRIPT_URL) {
+                    const url = GOOGLE_SCRIPT_URL + (alleenVandaag ? '?datum=vandaag' : '');
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    if (!result.ok) throw new Error(result.error || 'Onbekende fout');
+                    geladenBestellingen = result.bestellingen;
+                } else {
+                    const vandaag = vandaagISO();
+                    geladenBestellingen = leesLokaleBestellingen()
+                        .filter(b => !alleenVandaag || b.Datum === vandaag);
+                }
+            } catch (err) {
+                console.error(err);
+                geladenBestellingen = [];
+                container.innerHTML = `<p style="color:#9b2226;">Bestellingen ophalen mislukt: ${escapeHtml(err.message)}</p>`;
+                return;
+            }
+
+            const bron = GOOGLE_SCRIPT_URL ? 'Google Sheet' : 'alleen deze browser';
+            if (geladenBestellingen.length === 0) {
+                container.innerHTML = `<p>Er zijn ${alleenVandaag ? 'vandaag ' : ''}nog geen bestellingen geplaatst. <small>(bron: ${bron})</small></p>`;
+                return;
+            }
+
+            const cel = "style='padding:8px;'";
+            let totaal = 0;
+            let html = `<p><small>Bron: ${bron}</small></p><table style='width:100%; border-collapse: collapse;'><tr style='background:#f1faee; text-align:left;'><th ${cel}>Naam</th><th ${cel}>Product</th><th ${cel}>Aantal</th><th ${cel}>Totaal</th><th ${cel}>Tijd</th></tr>`;
+            geladenBestellingen.forEach(b => {
+                totaal += Number(b.Totaal) || 0;
+                const tijd = (alleenVandaag ? '' : (b.Datum || '') + ' ') + (b.Tijd || '');
+                html += `<tr style='border-bottom:1px solid #ddd;'><td ${cel}>${escapeHtml(b.Naam)}</td><td ${cel}>${escapeHtml(b.Product)}</td><td ${cel}>${escapeHtml(b.Aantal)}</td><td ${cel}>${euro(b.Totaal)}</td><td ${cel}>${escapeHtml(tijd)}</td></tr>`;
+            });
+            html += `<tr style='font-weight:bold;'><td ${cel} colspan='3'>Totaal</td><td ${cel}>${euro(totaal)}</td><td ${cel}></td></tr></table>`;
+            container.innerHTML = html;
         }
 
         function sluitAdminModal() {
@@ -573,13 +647,12 @@
         }
 
         function downloadExcelOverzicht() {
-            let alleBestellingen = JSON.parse(localStorage.getItem('familyBestellingen') || '[]');
-            if (alleBestellingen.length === 0) {
+            if (geladenBestellingen.length === 0) {
                 alert("Geen bestellingen om te exporteren!");
                 return;
             }
 
-            const worksheet = XLSX.utils.json_to_sheet(alleBestellingen);
+            const worksheet = XLSX.utils.json_to_sheet(geladenBestellingen);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Bestellingen");
             XLSX.writeFile(workbook, "Totaaloverzicht_Lunchbestellingen.xlsx");
