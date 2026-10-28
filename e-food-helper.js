@@ -31,8 +31,9 @@
         return null;
     }
 
-    // Prijzen ("1,00") en slotpunten ("Mayonaise.") weghalen, zodat namen uit de app en van e-food gelijk worden
-    const norm = s => String(s || '').toLowerCase().replace(/\s*\d+,\d{2}\s*$/, '').replace(/[.\s]+$/, '').replace(/\s+/g, ' ').trim();
+    // Prijzen ("1,00" bij keuzes, "(0,90)" bij extra's) en slotpunten ("Mayonaise.") weghalen,
+    // zodat namen uit de app en van e-food gelijk worden
+    const norm = s => String(s || '').toLowerCase().replace(/\s*\(?\s*\d+,\d{2}\s*\)?\s*$/, '').replace(/[.\s]+$/, '').replace(/\s+/g, ' ').trim();
 
     // ---------- e-food ----------
     const orderService = () => angular.element(document.body).injector().get('ef2OrderService');
