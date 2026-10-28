@@ -15,9 +15,11 @@
 
     const scriptEl = document.currentScript;
     const srcUrl = scriptEl && scriptEl.src ? new URL(scriptEl.src) : null;
-    // Het menu staat naast dit script; ?orders=... overschrijft de bron van de bestellingen (voor testen)
-    const BASIS = srcUrl ? srcUrl.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '') : 'https://kevinboogaard.github.io/family-lunch/';
-    const BESTELLINGEN_URL = (srcUrl && srcUrl.searchParams.get('orders')) ||
+    // Voor testen: window.__familyHelperConfig = { basis, orders } of ?orders=... achter het script-adres.
+    // Zonder die instellingen staat het menu op GitHub Pages en komen de bestellingen uit de Google Sheet.
+    const cfg = window.__familyHelperConfig || {};
+    const BASIS = cfg.basis || (srcUrl ? srcUrl.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '') : 'https://kevinboogaard.github.io/family-lunch/');
+    const BESTELLINGEN_URL = cfg.orders || (srcUrl && srcUrl.searchParams.get('orders')) ||
         'https://script.google.com/macros/s/AKfycbyQoX7KhN74KetP3D8G9VTF59zRMauPE1V57Z-ThODdUtaSLfyWRhNsGCKBJrXF_rpSBw/exec';
 
     const wacht = ms => new Promise(r => setTimeout(r, ms));
