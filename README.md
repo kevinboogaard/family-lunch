@@ -46,6 +46,20 @@ Het tabblad **Bestellingen** wordt bij de eerste bestelling automatisch aangemaa
 2. Ga naar **Settings > Pages**, kies bij *Source* de branch `main` en map `/ (root)`.
 3. Na een minuut staat de app op `https://<gebruikersnaam>.github.io/<repo>/`.
 
+## Bestellen bij Family
+
+Als iedereen heeft besteld, open je in de app **Alle bestellingen**:
+
+- **Per product** telt alles op, in de volgorde van het menu, met afvinkvakjes
+  om bij te houden wat je al hebt ingevuld. **Kopieer lijst** geeft een tekst voor de groepsapp.
+- **Per persoon** laat zien wie wat besteld heeft en wat diegene moet betalen.
+
+Daarna kun je de lijst met de hand invullen, of het **e-food hulpje** gebruiken
+(`helper.html`): een bladwijzer die op e-food.nl de producten van vandaag, met alle keuzes
+en extra's, in het mandje zet. Afrekenen doe je zelf. Zie `helper.html` voor de uitleg.
+Het hulpje (`e-food-helper.js`) leest het menu uit `menu.json` en de bestellingen uit de
+Google Sheet; verandert e-food zijn pagina, dan kan het hulpje stuk gaan.
+
 ## Goed om te weten
 
 - Iedereen die de web-app URL kent, kan bestellingen plaatsen en het overzicht
