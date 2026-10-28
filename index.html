@@ -756,6 +756,49 @@
         .beheer-tabel tr:not(.totaal-rij):hover td { background: rgba(255, 255, 255, 0.04); }
         .beheer-tabel .totaal-rij td { font-weight: 700; font-family: 'Fredoka', sans-serif; font-size: 17px; color: var(--sun); border-bottom: none; }
         .bron { color: var(--muted); font-size: 13px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .tab {
+            padding: 9px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s;
+        }
+        .tab:hover { transform: translateY(-2px); }
+        .tab.actief { background: var(--vibe); color: #1c0d00; border-color: transparent; }
+        .samenvatting { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        .samenvatting .chip strong { color: var(--sun); }
+        .groep-kop {
+            margin: 18px 0 6px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 17px;
+            color: var(--sun);
+        }
+        .regel {
+            display: grid;
+            grid-template-columns: auto 52px 1fr;
+            gap: 8px 12px;
+            align-items: start;
+            padding: 10px 6px;
+            border-bottom: 1px dashed var(--border);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .regel:hover { background: rgba(255, 255, 255, 0.04); }
+        .regel input { accent-color: var(--mint); width: 20px; height: 20px; margin-top: 3px; }
+        .regel .stuks { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: var(--sun); }
+        .regel .wie { grid-column: 3; color: var(--muted); font-size: 13px; margin-top: -4px; }
+        .regel.klaar .naam { text-decoration: line-through; opacity: 0.5; }
+        .regel.klaar .stuks { opacity: 0.5; }
+        .persoon-blok { padding: 12px 4px; border-bottom: 1px dashed var(--border); }
+        .persoon-blok h4 { margin: 0 0 6px; font-family: 'Fredoka', sans-serif; font-size: 18px; display: flex; justify-content: space-between; }
+        .persoon-blok h4 span { color: var(--sun); }
+        .persoon-blok ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
 
         /* ---------- Mobiel ---------- */
         @media (max-width: 960px) {
@@ -906,9 +949,16 @@
                 <label><input type="checkbox" id="alleenVandaag" checked onchange="laadAdminOverzicht()"> Alleen vandaag</label>
                 <button class="glas-knop" onclick="laadAdminOverzicht()">🔄 Vernieuwen</button>
             </div>
+            <div class="tabs" role="tablist">
+                <button class="tab actief" data-tab="product" role="tab" onclick="kiesBeheerTab('product')">🧮 Per product</button>
+                <button class="tab" data-tab="persoon" role="tab" onclick="kiesBeheerTab('persoon')">👤 Per persoon</button>
+                <button class="tab" data-tab="regels" role="tab" onclick="kiesBeheerTab('regels')">📄 Alle regels</button>
+            </div>
             <div id="adminOrderList"><p>Gegevens worden geladen…</p></div>
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="sluitAdminModal()">Sluiten</button>
+                <button class="btn-cancel" onclick="kopieerGroepsbestelling()">📋 Kopieer lijst</button>
+                <button class="btn-cancel" onclick="window.open('helper.html', '_blank')">🤖 E-food hulpje</button>
                 <button class="btn-confirm" onclick="downloadExcelOverzicht()">⬇️ Exporteer naar Excel</button>
             </div>
         </div>
@@ -1463,6 +1513,8 @@
 
         function openAdminOverzicht() {
             document.getElementById("adminModal").style.display = "flex";
+            beheerTab = 'product';
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('actief', t.dataset.tab === 'product'));
             laadAdminOverzicht();
         }
 
@@ -1490,21 +1542,150 @@
                 return;
             }
 
+            renderBeheer();
+        }
+
+        // ---------- Beheer: groepsoverzicht ----------
+        let beheerTab = 'product';
+
+        function kiesBeheerTab(tab) {
+            beheerTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('actief', t.dataset.tab === tab));
+            renderBeheer();
+        }
+
+        // "Frites Mayonaise (Zonder zout)" -> product "Frites Mayonaise" uit het menu (langste naam wint,
+        // zodat "Chaudfontaine blauw (PET)" niet als "Chaudfontaine blauw" met opties wordt gezien)
+        function menuProductBijRegel(regel) {
+            let beste = null;
+            menuData.forEach(p => {
+                if ((regel === p.name || regel.startsWith(p.name + ' (')) && (!beste || p.name.length > beste.name.length)) beste = p;
+            });
+            return beste;
+        }
+
+        function categorieVolgorde() {
+            return [...new Set(menuData.map(p => p.cat))];
+        }
+
+        function afgevinktKey() { return 'familyAfgevinkt:' + vandaagISO(); }
+        function leesAfgevinkt() {
+            try { return new Set(JSON.parse(localStorage.getItem(afgevinktKey()) || '[]')); } catch (e) { return new Set(); }
+        }
+        function zetAfgevinkt(regel, aan) {
+            const set = leesAfgevinkt();
+            aan ? set.add(regel) : set.delete(regel);
+            try { localStorage.setItem(afgevinktKey(), JSON.stringify([...set])); } catch (e) { /* zonder opslag werkt afvinken gewoon voor deze sessie niet na herladen */ }
+        }
+
+        // Alle regels met dezelfde product + opties samengevoegd, in de volgorde van het menu
+        function groepeerPerProduct() {
+            const groepen = new Map();
+            geladenBestellingen.forEach(b => {
+                const g = groepen.get(b.Product) || { product: b.Product, aantal: 0, totaal: 0, wie: new Map() };
+                const n = Number(b.Aantal) || 0;
+                g.aantal += n;
+                g.totaal += Number(b.Totaal) || 0;
+                g.wie.set(b.Naam, (g.wie.get(b.Naam) || 0) + n);
+                groepen.set(b.Product, g);
+            });
+            const volgorde = categorieVolgorde();
+            const lijst = [...groepen.values()].map(g => {
+                const mp = menuProductBijRegel(g.product);
+                return { ...g, cat: mp ? mp.cat : 'Overig' };
+            });
+            lijst.sort((a, b) => {
+                const ia = volgorde.indexOf(a.cat), ib = volgorde.indexOf(b.cat);
+                return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.product.localeCompare(b.product, 'nl');
+            });
+            return lijst;
+        }
+
+        function wieTekst(wie) {
+            return [...wie].map(([naam, n]) => n > 1 ? `${naam} (${n}×)` : naam).join(', ');
+        }
+
+        function renderBeheer() {
+            const container = document.getElementById("adminOrderList");
+            const alleenVandaag = document.getElementById("alleenVandaag").checked;
             const bron = GOOGLE_SCRIPT_URL ? 'Google Sheet' : 'alleen deze browser';
             if (geladenBestellingen.length === 0) {
                 container.innerHTML = `<p>Er zijn ${alleenVandaag ? 'vandaag ' : ''}nog geen bestellingen geplaatst. 🍽️ <span class="bron">(bron: ${bron})</span></p>`;
                 return;
             }
 
-            let totaal = 0;
-            let html = `<p class="bron">Bron: ${bron}</p><table class="beheer-tabel"><thead><tr><th>Naam</th><th>Product</th><th>Aantal</th><th>Totaal</th><th>Tijd</th></tr></thead><tbody>`;
-            geladenBestellingen.forEach(b => {
-                totaal += Number(b.Totaal) || 0;
-                const tijd = (alleenVandaag ? '' : (b.Datum || '') + ' ') + (b.Tijd || '');
-                html += `<tr><td>${escapeHtml(b.Naam)}</td><td>${escapeHtml(b.Product)}</td><td>${escapeHtml(b.Aantal)}</td><td>${euro(b.Totaal)}</td><td>${escapeHtml(tijd)}</td></tr>`;
-            });
-            html += `<tr class="totaal-rij"><td colspan="3">Totaal</td><td>${euro(totaal)}</td><td></td></tr></tbody></table>`;
+            const totaal = geladenBestellingen.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
+            const stuks = geladenBestellingen.reduce((s, b) => s + (Number(b.Aantal) || 0), 0);
+            const mensen = new Set(geladenBestellingen.map(b => b.Naam)).size;
+            let html = `<div class="samenvatting"><span class="chip">👥 <strong>${mensen}</strong> ${mensen === 1 ? 'persoon' : 'mensen'}</span><span class="chip">🍽️ <strong>${stuks}</strong> stuks</span><span class="chip">💶 <strong>${euro(totaal)}</strong></span><span class="chip bron">bron: ${bron}</span></div>`;
+
+            if (beheerTab === 'product') {
+                const afgevinkt = leesAfgevinkt();
+                let huidigeCat = null;
+                groepeerPerProduct().forEach(g => {
+                    if (g.cat !== huidigeCat) {
+                        huidigeCat = g.cat;
+                        html += `<div class="groep-kop">${categorieIcoon(g.cat)} ${escapeHtml(g.cat)}</div>`;
+                    }
+                    const klaar = afgevinkt.has(g.product);
+                    html += `<label class="regel${klaar ? ' klaar' : ''}"><input type="checkbox" data-regel="${escapeHtml(g.product)}"${klaar ? ' checked' : ''} onchange="vinkAf(this)">` +
+                        `<span class="stuks">${g.aantal}×</span><span class="naam">${escapeHtml(g.product)}</span>` +
+                        `<span class="wie">${escapeHtml(wieTekst(g.wie))}</span></label>`;
+                });
+            } else if (beheerTab === 'persoon') {
+                const perPersoon = new Map();
+                geladenBestellingen.forEach(b => {
+                    const p = perPersoon.get(b.Naam) || { regels: [], totaal: 0 };
+                    p.regels.push(`${Number(b.Aantal) > 1 ? b.Aantal + '× ' : ''}${b.Product}`);
+                    p.totaal += Number(b.Totaal) || 0;
+                    perPersoon.set(b.Naam, p);
+                });
+                [...perPersoon].sort((a, b) => a[0].localeCompare(b[0], 'nl')).forEach(([naam, p]) => {
+                    html += `<div class="persoon-blok"><h4>${escapeHtml(naam)} <span>${euro(p.totaal)}</span></h4><ul>${p.regels.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>`;
+                });
+            } else {
+                html += `<table class="beheer-tabel"><thead><tr><th>Naam</th><th>Product</th><th>Aantal</th><th>Totaal</th><th>Tijd</th></tr></thead><tbody>`;
+                geladenBestellingen.forEach(b => {
+                    const tijd = (alleenVandaag ? '' : (b.Datum || '') + ' ') + (b.Tijd || '');
+                    html += `<tr><td>${escapeHtml(b.Naam)}</td><td>${escapeHtml(b.Product)}</td><td>${escapeHtml(b.Aantal)}</td><td>${euro(b.Totaal)}</td><td>${escapeHtml(tijd)}</td></tr>`;
+                });
+                html += `<tr class="totaal-rij"><td colspan="3">Totaal</td><td>${euro(totaal)}</td><td></td></tr></tbody></table>`;
+            }
             container.innerHTML = html;
+        }
+
+        function vinkAf(checkbox) {
+            zetAfgevinkt(checkbox.dataset.regel, checkbox.checked);
+            checkbox.closest('.regel').classList.toggle('klaar', checkbox.checked);
+        }
+
+        // Tekstlijst om in een groepsapp of mail te plakken, in de volgorde van het menu
+        function kopieerGroepsbestelling() {
+            if (geladenBestellingen.length === 0) {
+                toast("Er is nog niets om te kopiëren!", 'fout');
+                return;
+            }
+            const totaal = geladenBestellingen.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
+            const datum = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+            let tekst = `Family bestelling ${datum}\n`;
+            let huidigeCat = null;
+            groepeerPerProduct().forEach(g => {
+                if (g.cat !== huidigeCat) { huidigeCat = g.cat; tekst += `\n${g.cat}\n`; }
+                tekst += `${g.aantal}× ${g.product}\n`;
+            });
+            tekst += `\nTotaal: ${euro(totaal)}`;
+
+            const klaar = () => toast('📋 Lijst gekopieerd!', 'succes');
+            const noodgeval = () => {
+                const ta = document.createElement('textarea');
+                ta.value = tekst;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy') ? klaar() : toast('Kopiëren is niet gelukt', 'fout'); } catch (e) { toast('Kopiëren is niet gelukt', 'fout'); }
+                ta.remove();
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tekst).then(klaar, noodgeval);
+            else noodgeval();
         }
 
         function sluitAdminModal() {

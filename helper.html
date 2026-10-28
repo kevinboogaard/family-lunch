@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family e-food hulpje</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #120b24;
+            --panel: #22173f;
+            --border: rgba(255, 255, 255, 0.13);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --mint: #2fe3a3;
+            --danger: #ff5a6e;
+            --vibe: linear-gradient(120deg, #ffc21a, #ff7a2f 45%, #ff3d81);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+            background: radial-gradient(1000px 700px at 50% -10%, #2c1a5c, var(--bg) 65%);
+            padding: 32px 16px 60px;
+        }
+        main { max-width: 680px; margin: 0 auto; }
+        h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(30px, 6vw, 44px); margin: 0 0 6px; }
+        h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; margin: 28px 0 10px; }
+        p, li { color: var(--muted); line-height: 1.6; }
+        a { color: var(--sun); }
+        .terug { display: inline-block; margin-bottom: 18px; color: var(--muted); text-decoration: none; }
+        .terug:hover { color: var(--sun); }
+        .stap {
+            display: grid;
+            grid-template-columns: 44px 1fr;
+            gap: 16px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border-radius: 22px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+        }
+        .nummer {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--vibe);
+            color: #1c0d00;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .stap h3 { margin: 2px 0 6px; font-family: 'Fredoka', sans-serif; font-size: 19px; }
+        .stap p { margin: 6px 0; }
+        .bladwijzer {
+            display: inline-block;
+            padding: 14px 22px;
+            margin: 8px 0;
+            border-radius: 16px;
+            background: var(--vibe);
+            color: #1c0d00;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+            cursor: grab;
+            box-shadow: 0 12px 28px -10px rgba(255, 61, 129, 0.8);
+        }
+        .knop {
+            display: inline-block;
+            padding: 11px 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .knop:hover { background: rgba(255, 255, 255, 0.15); }
+        .kaart { padding: 18px 20px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 12px; }
+        .kaart.ja { background: rgba(47, 227, 163, 0.08); }
+        .kaart.nee { background: rgba(255, 90, 110, 0.08); }
+        .kaart b { color: var(--text); }
+        ul { margin: 6px 0 0; padding-left: 20px; }
+        textarea {
+            width: 100%;
+            height: 96px;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            font: 12px/1.4 ui-monospace, Consolas, monospace;
+        }
+        details { margin-top: 18px; }
+        summary { cursor: pointer; color: var(--sun); font-weight: 600; }
+    </style>
+</head>
+<body>
+<main>
+    <a class="terug" href="./">← Terug naar de bestel-app</a>
+    <h1>🤖 E-food hulpje</h1>
+    <p>Als iedereen heeft besteld, hoef je de lijst niet meer met de hand op e-food in te vullen. Het hulpje zet alles voor je in het mandje. Afrekenen doe je zelf.</p>
+
+    <h2>Zo gebruik je het</h2>
+
+    <div class="stap">
+        <div class="nummer">1</div>
+        <div>
+            <h3>Zet het hulpje in je bladwijzers (eenmalig)</h3>
+            <p>Sleep deze knop naar je bladwijzerbalk. Zie je die balk niet? Druk dan op <b>Ctrl + Shift + B</b>.</p>
+            <a class="bladwijzer" id="bladwijzer" href="#" onclick="return false" title="Sleep mij naar je bladwijzerbalk">🍟 Family hulpje</a>
+            <details>
+                <summary>Slepen lukt niet?</summary>
+                <p>Maak zelf een bladwijzer aan (rechtsklik op de bladwijzerbalk, “Pagina toevoegen”). Zet bij de URL de tekst hieronder.</p>
+                <textarea id="code" readonly></textarea>
+                <button class="knop" id="kopieer">📋 Kopieer</button>
+            </details>
+        </div>
+    </div>
+
+    <div class="stap">
+        <div class="nummer">2</div>
+        <div>
+            <h3>Open de menukaart van Family</h3>
+            <p>Het hulpje werkt alleen op de menukaart van Cafetaria Family Mijdrecht.</p>
+            <a class="knop" href="https://e-food.nl/skin/family/mijdrecht/cafetaria-family-mijdrecht/browse" target="_blank" rel="noopener">Open e-food ↗</a>
+        </div>
+    </div>
+
+    <div class="stap">
+        <div class="nummer">3</div>
+        <div>
+            <h3>Klik op de bladwijzer</h3>
+            <p>Er verschijnt een venstertje met alles wat vandaag besteld is, opgeteld per product. Klopt het? Klik dan op <b>Zet in mandje</b>.</p>
+        </div>
+    </div>
+
+    <div class="stap">
+        <div class="nummer">4</div>
+        <div>
+            <h3>Controleer het mandje en reken af</h3>
+            <p>Kijk het mandje even na en rond de bestelling zelf af op e-food. Wat het hulpje niet kon toevoegen, staat in een lijstje zodat je dat met de hand doet.</p>
+        </div>
+    </div>
+
+    <h2>Goed om te weten</h2>
+    <div class="kaart ja">
+        <b>Het hulpje doet:</b>
+        <ul>
+            <li>de bestellingen van <b>vandaag</b> uit de Google Sheet ophalen</li>
+            <li>gelijke producten met dezelfde keuzes optellen</li>
+            <li>keuzes, extra's (zoals “Zonder zout”) en aantallen invullen in e-food</li>
+            <li>achteraf controleren of het mandje klopt</li>
+        </ul>
+    </div>
+    <div class="kaart nee">
+        <b>Het hulpje doet niet:</b>
+        <ul>
+            <li>inloggen, een tijd kiezen of afrekenen: dat doe jij</li>
+            <li>je eigen gegevens ergens naartoe sturen</li>
+        </ul>
+    </div>
+    <p>Verandert e-food zijn website, dan kan het hulpje ineens niet meer werken. Het zegt dat dan, en je kunt de lijst nog gewoon met de hand invullen vanuit het overzicht in de bestel-app (“Per product”).</p>
+</main>
+
+<script>
+    const basis = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+    const loader = "(function(){var s=document.createElement('script');s.src='" + basis + "e-food-helper.js?'+Date.now();document.head.appendChild(s)})();";
+    document.getElementById('bladwijzer').setAttribute('href', 'javascript:' + loader);
+    document.getElementById('code').value = 'javascript:' + loader;
+    document.getElementById('kopieer').onclick = () => {
+        const ta = document.getElementById('code');
+        ta.select();
+        (navigator.clipboard ? navigator.clipboard.writeText(ta.value) : Promise.reject()).catch(() => document.execCommand('copy'));
+        document.getElementById('kopieer').textContent = '✅ Gekopieerd';
+    };
+</script>
+</body>
+</html>
