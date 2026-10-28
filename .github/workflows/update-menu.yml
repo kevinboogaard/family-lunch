@@ -1,0 +1,36 @@
+name: Menukaart bijwerken
+
+on:
+  schedule:
+    # Elke donderdag om 06:00 UTC (07:00 wintertijd, 08:00 zomertijd)
+    - cron: '0 6 * * 4'
+  # Handmatig starten via Actions > Menukaart bijwerken > Run workflow
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Menu ophalen bij e-food.nl
+        run: node scripts/update-menu.js
+
+      - name: Wijzigingen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add menu.json
+          if git diff --cached --quiet; then
+            echo "Geen wijzigingen"
+          else
+            git commit -m "Menukaart bijgewerkt ($(date +%Y-%m-%d))"
+            git push
+          fi

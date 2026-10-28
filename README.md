@@ -1,8 +1,19 @@
 # Family Vrijdagmiddag Bestel-App
 
-Bestelapp voor de vrijdagmiddaglunch. De menukaart komt uit
-`FamilyMenu_PowerApps_Ready.xlsx`; bestellingen van iedereen komen samen in één
-Google Sheet.
+Bestelapp voor de vrijdagmiddaglunch. De menukaart staat in `menu.json`;
+bestellingen van iedereen komen samen in één Google Sheet.
+
+## Menukaart
+
+Elke donderdag om 07:00 (08:00 zomertijd) haalt GitHub Actions het actuele menu
+van [Cafetaria Family Mijdrecht op e-food.nl](https://e-food.nl/skin/family/mijdrecht/cafetaria-family-mijdrecht/browse)
+op en werkt `menu.json` bij (`scripts/update-menu.js`). De app toont bovenaan
+wanneer het menu voor het laatst is opgehaald.
+
+- **Direct bijwerken:** ga op GitHub naar **Actions > Menukaart bijwerken > Run workflow**,
+  of draai lokaal `node scripts/update-menu.js` en push `menu.json`.
+- **Mislukt het ophalen** (bijv. e-food.nl is offline), dan blijft het vorige menu
+  gewoon staan en stuurt GitHub je een e-mail.
 
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 

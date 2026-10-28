@@ -312,43 +312,34 @@
         }
 
         window.onload = function() {
-            const excelFilename = 'FamilyMenu_PowerApps_Ready.xlsx';
-            
-            fetch(excelFilename)
+            // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
+            fetch('menu.json', { cache: 'no-cache' })
                 .then(response => {
-                    if (!response.ok) throw new Error("Kon Excel-bestand niet vinden in de repository.");
-                    return response.arrayBuffer();
+                    if (!response.ok) throw new Error("Kon menu.json niet vinden in de repository.");
+                    return response.json();
                 })
-                .then(arrayBuffer => {
-                    const data = new Uint8Array(arrayBuffer);
-                    const workbook = XLSX.read(data, { type: 'array' });
-
-                    if (!workbook.Sheets['Producten'] || !workbook.Sheets['Productvragen_Plat']) {
-                        throw new Error("Tabbladen ontbreken.");
-                    }
-
-                    const prodRows = XLSX.utils.sheet_to_json(workbook.Sheets['Producten']);
-                    menuData = prodRows.map(row => ({
-                        id: row['Product-ID'],
-                        cat: row['Hoofdcategorie'] || 'Overig',
-                        name: row['Product'] || 'Onbekend',
-                        price: parseFloat(row['Prijs (€)']) || 0.0,
-                        desc: row['Beschrijving'] || '',
-                        vragenSetID: row['Productopties-vragen-ID'] || null
+                .then(menu => {
+                    menuData = menu.producten.map(p => ({
+                        id: p.id,
+                        cat: p.cat || 'Overig',
+                        name: p.name || 'Onbekend',
+                        price: Number(p.price) || 0.0,
+                        desc: p.desc || '',
+                        vragenSetID: p.vragenSetID || null
                     }));
 
-                    const vraagRows = XLSX.utils.sheet_to_json(workbook.Sheets['Productvragen_Plat']);
-                    vragenData = vraagRows.map(row => ({
-                        vragenSetID: row['VragenSetID'],
-                        vraagID: row['VraagID'],
-                        vraagTekst: row['VraagTekst'] || 'Maak uw keuze',
-                        antwoordTekst: row['AntwoordTekst'] || '',
-                        meerprijs: parseFloat(row['Meerprijs']) || 0.0
+                    vragenData = menu.vragen.map(v => ({
+                        vragenSetID: v.vragenSetID,
+                        vraagID: v.vraagID,
+                        vraagTekst: v.vraagTekst || 'Maak uw keuze',
+                        antwoordTekst: v.antwoordTekst || '',
+                        meerprijs: Number(v.meerprijs) || 0.0
                     }));
 
+                    const opgehaald = new Date(menu.opgehaald).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
                     document.getElementById('statusBanner').style.backgroundColor = '#d8f3dc';
                     document.getElementById('statusBanner').style.color = '#1b4332';
-                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart succesvol geladen (${menuData.length} producten)` +
+                    document.getElementById('statusBanner').innerHTML = `✅ Menukaart geladen (${menuData.length} producten, bijgewerkt op ${opgehaald})` +
                         (GOOGLE_SCRIPT_URL ? '' : ' — ⚠️ Centrale opslag niet ingesteld: bestellingen blijven alleen in deze browser.');
 
                     initApp();
@@ -357,7 +348,7 @@
                     console.error(error);
                     document.getElementById('statusBanner').style.backgroundColor = '#ffccd5';
                     document.getElementById('statusBanner').style.color = '#9b2226';
-                    document.getElementById('statusBanner').innerHTML = `⚠️ Kan '${excelFilename}' niet vinden in dezelfde map. Zorg dat het bestand in de repository staat!`;
+                    document.getElementById('statusBanner').innerHTML = `⚠️ Menukaart kon niet worden geladen. Zorg dat menu.json in de repository staat!`;
                 });
         };
 
