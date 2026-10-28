@@ -959,6 +959,7 @@
                 <button class="btn-cancel" onclick="sluitAdminModal()">Sluiten</button>
                 <button class="btn-cancel" onclick="kopieerGroepsbestelling()">📋 Kopieer lijst</button>
                 <button class="btn-cancel" onclick="window.open('helper.html', '_blank')">🤖 E-food hulpje</button>
+                <button class="btn-cancel" onclick="kopieerVoorEfood()" title="Plan B als de bladwijzer niet werkt">📎 Kopieer voor e-food</button>
                 <button class="btn-confirm" onclick="downloadExcelOverzicht()">⬇️ Exporteer naar Excel</button>
             </div>
         </div>
@@ -1657,6 +1658,51 @@
         function vinkAf(checkbox) {
             zetAfgevinkt(checkbox.dataset.regel, checkbox.checked);
             checkbox.closest('.regel').classList.toggle('klaar', checkbox.checked);
+        }
+
+        // Plan B voor het e-food hulpje: code + de bestellingen van nu in één stuk tekst, om op e-food in de
+        // console te plakken. Zo hoeft e-food zelf niets bij GitHub of Google op te halen.
+        async function maakEfoodPakket() {
+            const regels = [...new Set(geladenBestellingen.map(b => b.Product))];
+            const gekozen = new Map();
+            regels.forEach(r => { const p = menuProductBijRegel(r); if (p) gekozen.set(p.id, p); });
+            const sets = new Set([...gekozen.values()].map(p => String(p.vragenSetID)).filter(s => s !== 'null'));
+            const extraIds = new Set([...gekozen.values()].flatMap(p => p.extraSets));
+            const gegevens = {
+                menu: {
+                    producten: [...gekozen.values()].map(p => ({ id: p.id, name: p.name, vragenSetID: p.vragenSetID, extraSets: p.extraSets })),
+                    vragen: vragenData.filter(v => sets.has(String(v.vragenSetID))).map(v => ({ vragenSetID: v.vragenSetID, vraagID: v.vraagID, antwoordTekst: v.antwoordTekst })),
+                    extras: Object.fromEntries(Object.entries(extrasData).filter(([id]) => extraIds.has(id) || extraIds.has(Number(id))))
+                },
+                bestellingen: geladenBestellingen.map(b => ({ Naam: b.Naam, Product: b.Product, Aantal: b.Aantal }))
+            };
+            const code = await (await fetch('e-food-helper.js?' + Date.now())).text();
+            return { tekst: `window.__familyHelperData=${JSON.stringify(gegevens)};\n${code}`, gegevens };
+        }
+
+        async function kopieerVoorEfood() {
+            if (geladenBestellingen.length === 0) {
+                toast("Er zijn nog geen bestellingen om mee te nemen!", 'fout');
+                return;
+            }
+            let pakket;
+            try {
+                pakket = await maakEfoodPakket();
+            } catch (err) {
+                toast('Voorbereiden mislukt: ' + err.message, 'fout');
+                return;
+            }
+            const klaar = () => toast('📎 Gekopieerd! Open e-food, druk op F12, kies "Console" en plak de tekst (Ctrl+V).', 'succes');
+            const noodgeval = () => {
+                const ta = document.createElement('textarea');
+                ta.value = pakket.tekst;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy') ? klaar() : toast('Kopiëren is niet gelukt', 'fout'); } catch (e) { toast('Kopiëren is niet gelukt', 'fout'); }
+                ta.remove();
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(pakket.tekst).then(klaar, noodgeval);
+            else noodgeval();
         }
 
         // Tekstlijst om in een groepsapp of mail te plakken, in de volgorde van het menu

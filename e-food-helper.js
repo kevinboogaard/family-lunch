@@ -11,6 +11,14 @@
 (function () {
     'use strict';
 
+    // Plan B: de app plakt de gegevens (menu + bestellingen) zelf voor het script, zodat er geen
+    // verbinding vanaf e-food nodig is. Zie "Kopieer voor e-food" in de app.
+    let ingebouwd = null;
+    function neemIngebouwd() {
+        if (window.__familyHelperData) { ingebouwd = window.__familyHelperData; delete window.__familyHelperData; }
+    }
+    neemIngebouwd();
+
     if (window.__familyHelper) { window.__familyHelper.open(); return; }
 
     const scriptEl = document.currentScript;
@@ -257,11 +265,13 @@
                     [knopMaken('Naar de menukaart', true, () => { location.href = 'https://e-food.nl/skin/family/mijdrecht/cafetaria-family-mijdrecht/browse'; })]);
                 return;
             }
-            const [menu, antwoord] = await Promise.all([
-                fetch(BASIS + 'menu.json?' + Date.now()).then(r => r.json()),
-                // (een data:-adres, gebruikt bij testen, laat je ongemoeid)
-                fetch(/^https?:/.test(BESTELLINGEN_URL) ? BESTELLINGEN_URL + (BESTELLINGEN_URL.includes('?') ? '&' : '?') + 'datum=vandaag' : BESTELLINGEN_URL).then(r => r.json())
-            ]);
+            const [menu, antwoord] = ingebouwd
+                ? [ingebouwd.menu, { ok: true, bestellingen: ingebouwd.bestellingen }]
+                : await Promise.all([
+                    fetch(BASIS + 'menu.json?' + Date.now()).then(r => r.json()),
+                    // (een data:-adres, gebruikt bij testen, laat je ongemoeid)
+                    fetch(/^https?:/.test(BESTELLINGEN_URL) ? BESTELLINGEN_URL + (BESTELLINGEN_URL.includes('?') ? '&' : '?') + 'datum=vandaag' : BESTELLINGEN_URL).then(r => r.json())
+                ]);
             if (!antwoord.ok) throw new Error(antwoord.error || 'Bestellingen ophalen mislukt');
             if (!antwoord.bestellingen.length) {
                 toon([regel('Er zijn vandaag nog geen bestellingen. 🍽️')], [knopMaken('Opnieuw kijken', false, laden)]);
@@ -362,12 +372,13 @@
 
     function sluitPaneel() {
         if (bezig) return;
+        ingebouwd = null; // de volgende keer weer verse gegevens gebruiken
         paneel.style.display = 'none';
     }
     sluit.onclick = sluitPaneel;
 
     window.__familyHelper = {
-        open() { paneel.style.display = 'flex'; if (!bezig) laden(); }
+        open() { neemIngebouwd(); paneel.style.display = 'flex'; if (!bezig) laden(); }
     };
     paneel.style.display = 'flex';
     laden();

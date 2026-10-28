@@ -90,7 +90,8 @@
         .kaart.ja { background: rgba(47, 227, 163, 0.08); }
         .kaart.nee { background: rgba(255, 90, 110, 0.08); }
         .kaart b { color: var(--text); }
-        ul { margin: 6px 0 0; padding-left: 20px; }
+        ul, ol { margin: 6px 0 0; padding-left: 22px; }
+        code { background: rgba(0, 0, 0, 0.35); padding: 2px 6px; border-radius: 6px; color: var(--sun); }
         textarea {
             width: 100%;
             height: 96px;
@@ -151,6 +152,21 @@
         <div>
             <h3>Controleer het mandje en reken af</h3>
             <p>Kijk het mandje even na en rond de bestelling zelf af op e-food. Wat het hulpje niet kon toevoegen, staat in een lijstje zodat je dat met de hand doet.</p>
+        </div>
+    </div>
+
+    <h2>Werkt de bladwijzer niet? Plan B</h2>
+    <div class="stap">
+        <div class="nummer">B</div>
+        <div>
+            <h3>Plakken in de console (werkt ook als e-food geen verbinding mag maken)</h3>
+            <p>Sommige browsers of bedrijfsnetwerken blokkeren dat e-food iets ophaalt bij GitHub, en dan meldt de bladwijzer “Failed to fetch”. Bij Plan B zit alles al in de tekst die je plakt.</p>
+            <ol>
+                <li>Open in de bestel-app <b>Alle bestellingen</b> en klik op <b>📎 Kopieer voor e-food</b>.</li>
+                <li>Open de menukaart van Family op e-food.nl, druk op <b>F12</b> en kies het tabblad <b>Console</b>.</li>
+                <li>Plak met <b>Ctrl + V</b> en druk op Enter. Vraagt de browser om toestemming? Typ dan <code>allow pasting</code>, druk op Enter en plak opnieuw.</li>
+            </ol>
+            <p>Er verschijnt hetzelfde venstertje als bij de bladwijzer. Plak je zelf niets anders dan wat de app heeft gekopieerd: voer nooit code in die je niet vertrouwt.</p>
         </div>
     </div>
 
