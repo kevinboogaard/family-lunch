@@ -80,6 +80,28 @@ buitenstaanders tegen, niet iemand in je team die de code doorgeeft.
 nog steeds een paar keer bestellen. Het beperkt de schade tot een paar regels. Rommel haal je weg door
 de rijen in het tabblad **Bestellingen** te verwijderen.
 
+## Afrekenen met een QR-code (beheer)
+
+Op `admin.html` (`https://kevinboogaard.github.io/family-lunch/admin.html`) zet je de QR-code waarmee
+collega's jou kunnen betalen, bijvoorbeeld een Tikkie- of bank-QR. In de app verschijnt dan een knop
+**💶 Afrekenen** en na het plaatsen van een bestelling opent het afrekenscherm vanzelf, met de QR, jouw
+tekst en het bedrag dat die persoon vandaag moet betalen.
+
+**Instellen (eenmalig):**
+1. Zet in Apps Script bij **Projectinstellingen > Scripteigenschappen** de eigenschap `BEHEERCODE` met een
+   lange code (minimaal 8 tekens). Deze is een andere dan de teamcode.
+2. Plak de nieuwe `google-apps-script.gs` in je project en publiceer een **nieuwe versie** (zie hierboven).
+3. Open `admin.html`, log in met de beheercode, kies je QR-afbeelding en klik op **Opslaan voor iedereen**.
+
+- De afbeelding wordt in je browser verkleind (max 640 px) en de pagina probeert de QR te lezen, zodat je
+  zeker weet dat hij ook na het verkleinen scant. Bevat de QR een https-link, dan wordt die als betaallink ingevuld.
+- Een **betaallink** is handig: wie op zijn telefoon bestelt, kan zijn eigen scherm niet scannen en tikt dan op de link.
+- De QR staat in een tabblad **Instellingen** van je Google Sheet, naast **Bestellingen**.
+- Beheer werkt alleen met de beheercode. Na 10 foute pogingen is het een uur geblokkeerd, en zonder
+  `BEHEERCODE` is beheer uitgeschakeld. Wie je beheercode kent, kan de QR vervangen door een eigen rekening:
+  deel hem dus niet.
+- Wil je de QR weghalen, klik dan op `admin.html` op **Verwijderen**.
+
 ## Publiceren via GitHub Pages
 
 1. Push deze repository naar GitHub.

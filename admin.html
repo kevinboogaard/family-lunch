@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Beheer Family Vrijdag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <style>
+        :root {
+            --bg: #120b24;
+            --panel: #22173f;
+            --border: rgba(255, 255, 255, 0.13);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --mint: #2fe3a3;
+            --danger: #ff5a6e;
+            --vibe: linear-gradient(120deg, #ffc21a, #ff7a2f 45%, #ff3d81);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+            background: radial-gradient(1000px 700px at 50% -10%, #2c1a5c, var(--bg) 65%);
+            padding: 32px 16px 60px;
+        }
+        main { max-width: 680px; margin: 0 auto; }
+        h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(30px, 6vw, 42px); margin: 0 0 6px; }
+        h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; margin: 0 0 10px; }
+        p, li, label { color: var(--muted); line-height: 1.55; }
+        a { color: var(--sun); }
+        .terug { display: inline-block; margin-bottom: 18px; color: var(--muted); text-decoration: none; }
+        .terug:hover { color: var(--sun); }
+        .kaart { padding: 22px; margin-bottom: 16px; border-radius: 22px; background: var(--panel); border: 1px solid var(--border); }
+        .verborgen { display: none !important; }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 13px 16px;
+            margin: 6px 0 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            font: 15px 'Inter', sans-serif;
+        }
+        input:focus { outline: none; border-color: #ff7a2f; box-shadow: 0 0 0 4px rgba(255, 122, 47, 0.25); }
+        .veld-label { display: block; font-size: 13px; font-weight: 600; margin-top: 4px; }
+        button, .knop {
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 14px;
+            font: 700 15px 'Inter', sans-serif;
+            cursor: pointer;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.12);
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        button.hoofd { background: var(--vibe); color: #1c0d00; box-shadow: 0 10px 24px -8px rgba(255, 61, 129, 0.8); }
+        button.gevaar { background: rgba(255, 90, 110, 0.18); color: #ffd0d6; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .melding { padding: 12px 14px; border-radius: 14px; margin: 10px 0; font-size: 14px; }
+        .melding.ok { background: rgba(47, 227, 163, 0.12); color: #b9f7e0; }
+        .melding.fout { background: rgba(255, 90, 110, 0.12); color: #ffd0d6; }
+        .melding.waarschuwing { background: rgba(255, 194, 26, 0.12); color: #ffe7a3; }
+        .qr-weergave { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+        .qr-weergave img { width: 200px; height: 200px; object-fit: contain; background: #fff; padding: 10px; border-radius: 16px; }
+        .qr-weergave .info { flex: 1; min-width: 200px; }
+        .drop {
+            display: grid;
+            place-items: center;
+            gap: 6px;
+            padding: 30px 16px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.28);
+            border-radius: 18px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .drop:hover, .drop.sleep { background: rgba(255, 194, 26, 0.08); border-color: var(--sun); }
+        .drop .groot { font-size: 40px; }
+        .rij { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+        code { background: rgba(0, 0, 0, 0.35); padding: 2px 6px; border-radius: 6px; color: var(--sun); }
+        .klein { font-size: 13px; }
+    </style>
+</head>
+<body>
+<main>
+    <a class="terug" href="./">← Terug naar de bestel-app</a>
+    <h1>🔧 Beheer</h1>
+    <p>Hier stel je in wat je collega's zien als ze willen afrekenen.</p>
+
+    <!-- Inloggen -->
+    <section class="kaart" id="loginKaart">
+        <h2>🔑 Inloggen</h2>
+        <label class="veld-label" for="beheercode">Beheercode</label>
+        <input type="password" id="beheercode" autocomplete="current-password" placeholder="Jouw beheercode" onkeydown="if (event.key === 'Enter') inloggen()">
+        <button class="hoofd" id="loginKnop" onclick="inloggen()">Inloggen</button>
+        <div id="loginMelding"></div>
+        <p class="klein">De beheercode stel je in bij Apps Script, onder <b>Projectinstellingen &gt; Scripteigenschappen</b>, als eigenschap <code>BEHEERCODE</code> (minimaal 8 tekens). Hij verschilt van de teamcode.</p>
+    </section>
+
+    <div id="beheerGedeelte" class="verborgen">
+        <!-- Huidige QR -->
+        <section class="kaart">
+            <h2>💶 QR-code die collega's nu zien</h2>
+            <div id="huidige">Even laden…</div>
+        </section>
+
+        <!-- Uploaden -->
+        <section class="kaart">
+            <h2>⬆️ Nieuwe QR-code uploaden</h2>
+            <label class="drop" id="drop" for="bestand">
+                <span class="groot">📷</span>
+                <b>Kies een afbeelding of sleep hem hierheen</b>
+                <span class="klein">Een screenshot of foto van je Tikkie- of bank-QR (png of jpeg)</span>
+            </label>
+            <input type="file" id="bestand" accept="image/png,image/jpeg,image/webp" class="verborgen" onchange="bestandGekozen(this.files[0])">
+
+            <div id="voorbeeldBlok" class="verborgen">
+                <div class="qr-weergave" style="margin-top:16px">
+                    <img id="voorbeeld" alt="Voorbeeld van de QR-code">
+                    <div class="info">
+                        <div id="controle"></div>
+                    </div>
+                </div>
+
+                <label class="veld-label" for="tekst">Tekst bij de QR-code</label>
+                <input type="text" id="tekst" maxlength="300" placeholder="Bijv. Betaal aan Kevin en zet je naam erbij">
+
+                <label class="veld-label" for="link">Betaallink <span class="klein">(optioneel, voor collega's op hun telefoon)</span></label>
+                <input type="text" id="link" maxlength="500" placeholder="https://tikkie.me/pay/…">
+                <p class="klein" style="margin-top:-6px">Wie op zijn telefoon bestelt, kan zijn eigen scherm niet scannen. Met een link kan hij toch direct betalen. Heb je een Tikkie-link, plak die dan hier.</p>
+
+                <div class="rij">
+                    <button class="hoofd" id="opslaanKnop" onclick="opslaan()">💾 Opslaan voor iedereen</button>
+                    <button onclick="annuleer()">Annuleren</button>
+                </div>
+                <div id="opslaanMelding"></div>
+            </div>
+        </section>
+
+        <p class="klein">Let op: wie je beheercode kent, kan de QR-code vervangen door zijn eigen rekening. Deel de code niet en kies een lange.</p>
+    </div>
+</main>
+
+<script>
+    // Zelfde adres als in index.html (het Google-script)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQoX7KhN74KetP3D8G9VTF59zRMauPE1V57Z-ThODdUtaSLfyWRhNsGCKBJrXF_rpSBw/exec";
+
+    const $ = id => document.getElementById(id);
+    let beheercode = '';
+    let voorbereid = null; // { data, ... } van de gekozen afbeelding
+
+    function melding(el, soort, tekst) {
+        el.replaceChildren();
+        if (!tekst) return;
+        const d = document.createElement('div');
+        d.className = 'melding ' + soort;
+        d.textContent = tekst;
+        el.appendChild(d);
+    }
+
+    async function postActie(actie, extra = {}) {
+        const r = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // geen preflight, net als in de bestel-app
+            body: JSON.stringify({ actie, beheercode, ...extra })
+        });
+        return r.json();
+    }
+
+    // ---------- Inloggen ----------
+    async function inloggen(automatisch) {
+        const code = automatisch || $('beheercode').value;
+        if (!code) { melding($('loginMelding'), 'fout', 'Vul je beheercode in.'); return; }
+        beheercode = code;
+        $('loginKnop').disabled = true;
+        melding($('loginMelding'), 'ok', 'Controleren…');
+        try {
+            const r = await postActie('controleer');
+            if (!r.ok) {
+                beheercode = '';
+                try { sessionStorage.removeItem('familyBeheercode'); } catch (e) {}
+                melding($('loginMelding'), 'fout', r.error || 'Inloggen mislukt.');
+                return;
+            }
+            try { sessionStorage.setItem('familyBeheercode', code); } catch (e) { /* zonder opslag vraagt hij na een verversing opnieuw */ }
+            $('loginKaart').classList.add('verborgen');
+            $('beheerGedeelte').classList.remove('verborgen');
+            laadHuidige();
+        } catch (err) {
+            beheercode = '';
+            melding($('loginMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
+        } finally {
+            $('loginKnop').disabled = false;
+        }
+    }
+
+    // ---------- Huidige QR ----------
+    async function laadHuidige() {
+        const vak = $('huidige');
+        try {
+            const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=qr')).json();
+            if (!r.ok) throw new Error(r.error || 'Onbekende fout');
+            if (!r.qr) { vak.textContent = 'Er staat nog geen QR-code. Collega\'s zien dus geen afreken-knop.'; return; }
+            const wrap = document.createElement('div');
+            wrap.className = 'qr-weergave';
+            const img = document.createElement('img');
+            img.src = r.qr;
+            img.alt = 'QR-code';
+            const info = document.createElement('div');
+            info.className = 'info';
+            const tekst = document.createElement('p');
+            tekst.textContent = r.tekst || '(geen tekst)';
+            info.appendChild(tekst);
+            if (r.link) {
+                const l = document.createElement('p');
+                l.className = 'klein';
+                l.textContent = 'Betaallink: ' + r.link;
+                info.appendChild(l);
+            }
+            const b = document.createElement('p');
+            b.className = 'klein';
+            b.textContent = 'Laatst gewijzigd: ' + (r.bijgewerkt || 'onbekend');
+            info.appendChild(b);
+            const weg = document.createElement('button');
+            weg.className = 'gevaar';
+            weg.textContent = '🗑️ Verwijderen';
+            weg.onclick = verwijderen;
+            info.appendChild(weg);
+            wrap.append(img, info);
+            vak.replaceChildren(wrap);
+        } catch (err) {
+            vak.textContent = 'Ophalen mislukt: ' + err.message;
+        }
+    }
+
+    async function verwijderen() {
+        if (!confirm('De QR-code verwijderen? Collega\'s kunnen dan niet meer via de app afrekenen.')) return;
+        const r = await postActie('verwijderQr');
+        if (!r.ok) { alert(r.error || 'Verwijderen mislukt'); return; }
+        laadHuidige();
+    }
+
+    // ---------- Uploaden ----------
+    const drop = $('drop');
+    ['dragenter', 'dragover'].forEach(n => drop.addEventListener(n, e => { e.preventDefault(); drop.classList.add('sleep'); }));
+    ['dragleave', 'drop'].forEach(n => drop.addEventListener(n, e => { e.preventDefault(); drop.classList.remove('sleep'); }));
+    drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) bestandGekozen(e.dataTransfer.files[0]); });
+
+    function laadAfbeelding(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Deze afbeelding kan niet worden gelezen.'));
+            img.src = url;
+        });
+    }
+
+    // Verkleint naar maximaal 640 pixels: scherp genoeg voor een scan en klein genoeg om op te slaan
+    async function maakKlein(file) {
+        const url = URL.createObjectURL(file);
+        try {
+            const img = await laadAfbeelding(url);
+            const schaal = Math.min(1, 640 / Math.max(img.naturalWidth, img.naturalHeight));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.naturalWidth * schaal));
+            canvas.height = Math.max(1, Math.round(img.naturalHeight * schaal));
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            let data = canvas.toDataURL('image/png');
+            if (data.length > 120000) data = canvas.toDataURL('image/jpeg', 0.92);
+            if (data.length > 150000) throw new Error('De afbeelding is te groot, ook na verkleinen. Probeer een kleinere of eenvoudigere screenshot.');
+            return { data, canvas, ctx };
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    async function bestandGekozen(file) {
+        if (!file) return;
+        melding($('opslaanMelding'), '', '');
+        if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+            melding($('opslaanMelding'), 'fout', 'Kies een png- of jpeg-afbeelding.');
+            $('voorbeeldBlok').classList.remove('verborgen');
+            return;
+        }
+        try {
+            const klein = await maakKlein(file);
+            voorbereid = klein.data;
+            $('voorbeeld').src = klein.data;
+            $('voorbeeldBlok').classList.remove('verborgen');
+            controleerQr(klein);
+        } catch (err) {
+            voorbereid = null;
+            $('voorbeeldBlok').classList.remove('verborgen');
+            melding($('controle'), 'fout', err.message);
+            $('opslaanKnop').disabled = true;
+        }
+    }
+
+    // Probeert de QR in de verkleinde afbeelding te lezen: zo weet je zeker dat hij ook scant na het verkleinen
+    function controleerQr({ canvas, ctx, data }) {
+        const vak = $('controle');
+        $('opslaanKnop').disabled = false;
+        const kb = Math.round(data.length * 0.75 / 1024);
+        if (typeof jsQR !== 'function') {
+            melding(vak, 'waarschuwing', 'De QR-controle is niet beschikbaar (geen internet naar de bibliotheek). Test de code na het opslaan zelf met je telefoon. (' + kb + ' KB)');
+            return;
+        }
+        const beeld = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const gevonden = jsQR(beeld.data, beeld.width, beeld.height);
+        if (!gevonden) {
+            melding(vak, 'waarschuwing', 'Ik kan hier geen QR-code in lezen. Staat de hele QR scherp in beeld, met wat witte rand? Je kunt hem wel opslaan, maar test hem dan eerst zelf met je telefoon.');
+            return;
+        }
+        const inhoud = gevonden.data || '';
+        melding(vak, 'ok', '✅ QR-code herkend (' + kb + ' KB). Hij bevat: ' + (inhoud.length > 90 ? inhoud.slice(0, 90) + '…' : inhoud));
+        // Veel Tikkie-codes bevatten gewoon de betaallink: dan hoef je die niet zelf te zoeken
+        if (/^https:\/\/\S+$/.test(inhoud) && !$('link').value) $('link').value = inhoud;
+    }
+
+    async function opslaan() {
+        if (!voorbereid) return;
+        const knop = $('opslaanKnop');
+        knop.disabled = true;
+        melding($('opslaanMelding'), 'ok', 'Opslaan…');
+        try {
+            const r = await postActie('zetQr', { qr: voorbereid, tekst: $('tekst').value, link: $('link').value.trim() });
+            if (!r.ok) { melding($('opslaanMelding'), 'fout', r.error || 'Opslaan mislukt.'); return; }
+            melding($('opslaanMelding'), 'ok', '✅ Opgeslagen! Collega\'s zien deze QR-code nu bij "Afrekenen".');
+            $('voorbeeldBlok').classList.add('verborgen');
+            $('bestand').value = '';
+            $('tekst').value = '';
+            $('link').value = '';
+            voorbereid = null;
+            laadHuidige();
+        } catch (err) {
+            melding($('opslaanMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
+        } finally {
+            knop.disabled = false;
+        }
+    }
+
+    function annuleer() {
+        voorbereid = null;
+        $('bestand').value = '';
+        $('voorbeeldBlok').classList.add('verborgen');
+        melding($('opslaanMelding'), '', '');
+    }
+
+    // Na een verversing opnieuw inloggen met de code uit deze sessie
+    try {
+        const bewaard = sessionStorage.getItem('familyBeheercode');
+        if (bewaard) inloggen(bewaard);
+    } catch (e) { /* geen opslag beschikbaar */ }
+</script>
+</body>
+</html>

@@ -34,6 +34,17 @@ const LIMIETEN = {
   MAX_PRODUCT_TEKST: 250
 };
 
+// Beheer (admin.html): de QR-code om af te rekenen. Alleen met de beheercode te wijzigen.
+const INSTELLINGEN_SHEET = 'Instellingen';
+const BEHEER = {
+  MIN_CODE_LENGTE: 8,          // een korte beheercode wordt niet geaccepteerd
+  MAX_FOUTE_POGINGEN_PER_UUR: 10,
+  MAX_QR_TEKENS: 150000,       // grootte van de afbeelding (als tekst)
+  BLOK: 40000,                 // een cel in Google Sheets kan maximaal 50.000 tekens
+  MAX_TEKST: 300,
+  MAX_LINK: 500
+};
+
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -207,6 +218,101 @@ function valideerBestelling_(body, instellingen) {
   return { ok: true, naam: naam, regels: uit };
 }
 
+// ---------- Beheer: QR-code om af te rekenen ----------
+
+function instellingenSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(INSTELLINGEN_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(INSTELLINGEN_SHEET);
+    sheet.getRange('A:B').setNumberFormat('@');
+    sheet.appendRow(['Sleutel', 'Waarde']);
+  }
+  return sheet;
+}
+
+// Alle waarden krijgen een "~" voorop: zo ziet Google Sheets lange tekens als "=" of "+" nooit voor een formule aan
+function leesInstellingen_() {
+  const waarden = instellingenSheet_().getDataRange().getValues();
+  const uit = {};
+  for (let i = 1; i < waarden.length; i++) {
+    uit[String(waarden[i][0])] = String(waarden[i][1]).replace(/^~/, '');
+  }
+  return uit;
+}
+
+function schrijfInstellingen_(instellingen) {
+  const sheet = instellingenSheet_();
+  const rijen = [['Sleutel', 'Waarde']];
+  Object.keys(instellingen).forEach(function (sleutel) { rijen.push([sleutel, '~' + instellingen[sleutel]]); });
+  sheet.clear();
+  sheet.getRange('A:B').setNumberFormat('@');
+  sheet.getRange(1, 1, rijen.length, 2).setValues(rijen);
+}
+
+function leesQr_() {
+  const i = leesInstellingen_();
+  let qr = '';
+  for (let n = 0; i['qr:' + n] !== undefined; n++) qr += i['qr:' + n];
+  return { ok: true, qr: qr || null, tekst: i.qr_tekst || '', link: i.qr_link || '', bijgewerkt: i.qr_bijgewerkt || '' };
+}
+
+function schoneTekst_(waarde, maxLengte) {
+  return String(waarde == null ? '' : waarde).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLengte);
+}
+
+/** Controleert de beheercode. Te veel foute pogingen blokkeren het beheer een uur lang. */
+function controleerBeheercode_(code) {
+  const echt = PropertiesService.getScriptProperties().getProperty('BEHEERCODE');
+  if (!echt || echt.length < BEHEER.MIN_CODE_LENGTE) {
+    return fout_('GEEN_BEHEER', 'Beheer staat uit. Zet in Apps Script bij Scripteigenschappen een BEHEERCODE van minimaal ' + BEHEER.MIN_CODE_LENGTE + ' tekens.');
+  }
+  const cache = CacheService.getScriptCache();
+  const fouten = Number(cache.get('beheerFouten')) || 0;
+  if (fouten >= BEHEER.MAX_FOUTE_POGINGEN_PER_UUR) {
+    return fout_('GEBLOKKEERD', 'Te veel foute pogingen. Probeer het over een uur opnieuw.');
+  }
+  if (String(code || '') !== echt) {
+    cache.put('beheerFouten', String(fouten + 1), 3600);
+    Utilities.sleep(1500); // trager raden
+    return fout_('CODE', 'De beheercode klopt niet.');
+  }
+  cache.remove('beheerFouten');
+  return { ok: true };
+}
+
+function beheerActie_(body) {
+  const toegang = controleerBeheercode_(body.beheercode);
+  if (!toegang.ok) return toegang;
+
+  if (body.actie === 'controleer') return { ok: true };
+
+  if (body.actie === 'verwijderQr') {
+    schrijfInstellingen_({});
+    return { ok: true };
+  }
+
+  if (body.actie === 'zetQr') {
+    const qr = String(body.qr || '');
+    // Alleen een echte afbeelding (geen svg of html, daar kan script in zitten)
+    if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(qr)) return fout_('ONGELDIG', 'Dit is geen geldige png- of jpeg-afbeelding.');
+    if (qr.length > BEHEER.MAX_QR_TEKENS) return fout_('ONGELDIG', 'De afbeelding is te groot. Gebruik een kleinere foto of screenshot.');
+
+    const link = schoneTekst_(body.link, BEHEER.MAX_LINK);
+    if (link && !/^https:\/\/[^\s"'<>]+$/.test(link)) return fout_('ONGELDIG', 'De betaallink moet met https:// beginnen.');
+
+    const instellingen = {};
+    for (let n = 0; n * BEHEER.BLOK < qr.length; n++) instellingen['qr:' + n] = qr.slice(n * BEHEER.BLOK, (n + 1) * BEHEER.BLOK);
+    instellingen.qr_tekst = schoneTekst_(body.tekst, BEHEER.MAX_TEKST);
+    instellingen.qr_link = link;
+    instellingen.qr_bijgewerkt = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    schrijfInstellingen_(instellingen);
+    return { ok: true };
+  }
+
+  return fout_('ONGELDIG', 'Onbekende beheeractie.');
+}
+
 /** Bestelling opslaan. Verwacht JSON: { code?, data: [{ Naam, Product, Aantal, Stuksprijs }, ...] } */
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -218,6 +324,8 @@ function doPost(e) {
     } catch (err) {
       return json_(fout_('ONGELDIG', 'De bestelling kon niet gelezen worden.'));
     }
+
+    if (body && body.actie) return json_(beheerActie_(body));
 
     const sheet = getSheet_();
     const resultaat = valideerBestelling_(body, {
@@ -251,6 +359,8 @@ function doPost(e) {
 /** Bestellingen ophalen. Optioneel ?datum=vandaag of ?datum=2026-10-30 */
 function doGet(e) {
   try {
+    if (e && e.parameter && e.parameter.actie === 'qr') return json_(leesQr_());
+
     const sheet = getSheet_();
     const values = sheet.getDataRange().getValues();
     let filterDatum = (e && e.parameter && e.parameter.datum) || '';

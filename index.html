@@ -130,6 +130,16 @@
             transition: background 0.2s, transform 0.2s;
         }
         .glas-knop:hover { background: var(--panel-hover); transform: translateY(-2px); }
+        .verborgen { display: none !important; }
+        .topbar .acties { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+        /* ---------- Afrekenen ---------- */
+        .betaal-bedrag { font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; color: var(--sun); min-height: 42px; }
+        .betaal-bedrag small { display: block; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
+        .betaal-qr { display: block; width: min(300px, 80%); aspect-ratio: 1; object-fit: contain; margin: 14px auto; padding: 12px; background: #fff; border-radius: 20px; box-shadow: 0 16px 40px -14px rgba(0, 0, 0, 0.7); animation: draaiIn 0.6s cubic-bezier(.34, 1.56, .64, 1); }
+        .betaal-tekst { margin: 0 0 14px; font-weight: 600; }
+        .betaal-label { display: block; text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+        .knop-link { display: inline-block; padding: 13px 22px; border-radius: 14px; background: var(--vibe); color: #1c0d00; font-weight: 700; text-decoration: none; box-shadow: 0 10px 24px -8px rgba(255, 61, 129, 0.8); }
 
         .hero {
             max-width: 1400px;
@@ -875,7 +885,10 @@
 
     <div class="topbar">
         <div class="logo"><span class="logo-icoon">🍟</span><span class="logo-tekst">Family Vrijdag</span></div>
-        <button class="glas-knop" onclick="openAdminOverzicht()">📋 Alle bestellingen</button>
+        <div class="acties">
+            <button class="glas-knop verborgen" id="betaalKnop" onclick="openBetaalModal()">💶 Afrekenen</button>
+            <button class="glas-knop" onclick="openAdminOverzicht()">📋 Alle bestellingen</button>
+        </div>
     </div>
 
     <header class="hero">
@@ -937,6 +950,21 @@
                 <button class="btn-cancel" onclick="sluitModal()">Annuleren</button>
                 <button class="btn-confirm" id="modalConfirm" onclick="bevestigProductOpties()">Toevoegen</button>
             </div>
+        </div>
+    </div>
+
+    <!-- POP-UP AFREKENEN -->
+    <div id="betaalModal" class="modal" onclick="if (event.target === this) sluitBetaalModal()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="betaalTitel" style="width: min(440px, 100%); text-align: center;">
+            <button class="modal-sluit" onclick="sluitBetaalModal()" aria-label="Sluiten">✕</button>
+            <h3 id="betaalTitel">💶 Afrekenen</h3>
+            <div id="betaalBedrag" class="betaal-bedrag"></div>
+            <img id="betaalQr" class="betaal-qr" alt="QR-code om af te rekenen">
+            <p id="betaalTekst" class="betaal-tekst"></p>
+            <a id="betaalLink" class="knop-link verborgen" target="_blank" rel="noopener noreferrer">📱 Open betaallink</a>
+            <p class="bron" style="margin: 10px 0 14px;">Op je telefoon? Gebruik de betaallink, of open een screenshot van de QR-code in je bank-app.</p>
+            <label class="betaal-label" for="betaalNaam">Je naam</label>
+            <input type="text" id="betaalNaam" autocomplete="name" placeholder="Zie hier je bedrag" oninput="bedragUitgesteld()" style="margin-bottom: 0;">
         </div>
     </div>
 
@@ -1073,6 +1101,7 @@
             updateAftellen();
             setInterval(updateAftellen, 1000);
             renderCart();
+            laadBetaling();
 
             // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
             fetch('menu.json', { cache: 'no-cache' })
@@ -1470,6 +1499,7 @@
         });
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
+            sluitBetaalModal();
             annuleerCode();
             sluitModal();
             sluitAdminModal();
@@ -1482,6 +1512,74 @@
             confetti({ particleCount: 160, spread: 100, origin: { y: 0.6 }, colors: kleuren });
             setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors: kleuren }), 250);
             setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors: kleuren }), 400);
+        }
+
+        // ---------- Afrekenen: de QR-code die de beheerder in admin.html heeft gezet ----------
+        let betaling = null;
+        let bedragTimer = null;
+
+        async function laadBetaling() {
+            if (!GOOGLE_SCRIPT_URL) return;
+            try {
+                const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=qr')).json();
+                // Een ouder script kent "actie=qr" niet en geeft dan de bestellijst terug: geen qr, dus geen knop
+                if (r.ok && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(r.qr || '')) {
+                    betaling = r;
+                    document.getElementById('betaalKnop').classList.remove('verborgen');
+                }
+            } catch (err) {
+                console.warn('Betaalgegevens ophalen mislukt:', err);
+            }
+        }
+
+        function bewaarNaam(naam) { try { localStorage.setItem('familyNaam', naam); } catch (e) { /* alleen een gemak */ } }
+        function leesNaam() { try { return localStorage.getItem('familyNaam') || ''; } catch (e) { return ''; } }
+
+        function openBetaalModal(naam) {
+            if (!betaling) return;
+            document.getElementById('betaalQr').src = betaling.qr;
+            document.getElementById('betaalTekst').textContent = betaling.tekst || '';
+            const link = document.getElementById('betaalLink');
+            // Alleen een https-link, ook al controleert het script dat ook al
+            if (/^https:\/\/[^\s"'<>]+$/.test(betaling.link || '')) {
+                link.href = betaling.link;
+                link.classList.remove('verborgen');
+            } else {
+                link.classList.add('verborgen');
+            }
+            const veld = document.getElementById('betaalNaam');
+            veld.value = (typeof naam === 'string' && naam) || veld.value || leesNaam() || document.getElementById('naamInput').value.trim();
+            document.getElementById('betaalModal').style.display = 'flex';
+            toonBedrag();
+        }
+
+        function sluitBetaalModal() {
+            document.getElementById('betaalModal').style.display = 'none';
+        }
+
+        function bedragUitgesteld() {
+            clearTimeout(bedragTimer);
+            bedragTimer = setTimeout(toonBedrag, 400);
+        }
+
+        // Telt de bestellingen van vandaag op voor de ingevulde naam
+        async function toonBedrag() {
+            const vak = document.getElementById('betaalBedrag');
+            const naam = document.getElementById('betaalNaam').value.trim();
+            if (!naam) { vak.textContent = ''; return; }
+            vak.innerHTML = '<small>Even rekenen…</small>';
+            try {
+                const r = await (await fetch(GOOGLE_SCRIPT_URL + '?datum=vandaag')).json();
+                if (!r.ok) throw new Error(r.error || 'Onbekende fout');
+                if (naam !== document.getElementById('betaalNaam').value.trim()) return; // intussen verder getypt
+                const van = r.bestellingen.filter(b => String(b.Naam).toLowerCase() === naam.toLowerCase());
+                if (!van.length) { vak.innerHTML = '<small>Geen bestelling van vandaag gevonden voor deze naam.</small>'; return; }
+                const totaal = van.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
+                const stuks = van.reduce((s, b) => s + (Number(b.Aantal) || 0), 0);
+                vak.innerHTML = `${euro(totaal)}<small>${stuks} ${stuks === 1 ? 'product' : 'producten'} vandaag · ${escapeHtml(van[0].Naam)}</small>`;
+            } catch (err) {
+                vak.innerHTML = '<small>Je bedrag kon niet worden opgehaald. Kijk in je bestelling hoeveel je moet betalen.</small>';
+            }
         }
 
         // ---------- Versturen naar het Google-script, met optionele teamcode ----------
@@ -1592,6 +1690,9 @@
 
             feest();
             toast(`🎉 Bedankt ${naam}! Je bestelling is geplaatst.`, 'succes');
+            bewaarNaam(naam);
+            // Is er een QR-code ingesteld, dan na het feestje meteen de gelegenheid om af te rekenen
+            if (betaling) setTimeout(() => openBetaalModal(naam), 1800);
             cart = [];
             naamVeld.value = "";
             toggleMandje(false);
