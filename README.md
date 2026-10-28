@@ -40,6 +40,46 @@ Het tabblad **Bestellingen** wordt bij de eerste bestelling automatisch aangemaa
 > Pas je het script later aan? Kies dan **Implementeren > Implementaties beheren >
 > Bewerken > Nieuwe versie**, anders blijft de oude versie actief. De URL blijft gelijk.
 
+## Misbruik voorkomen
+
+De web-app URL van het Google-script is openbaar: wie hem kent kan er bestellingen naartoe
+sturen, ook zonder de website. Daarom controleert het script zelf elke bestelling
+(`valideerBestelling_` in `google-apps-script.gs`):
+
+| Controle | Standaard |
+|---|---|
+| Verschillende producten per bestelling | max 25 |
+| Stuks van hetzelfde product | max 10 |
+| Stuks per bestelling | max 40 |
+| Bedrag per bestelling | max € 200 |
+| Bestellingen per naam per dag | max 3 |
+| Stuks per naam per dag | max 60 |
+| Stuks per dag voor iedereen samen (noodrem) | max 500 |
+| Product en prijs | moet op het menu staan, met een prijs die klopt |
+
+Het totaalbedrag rekent het script zelf uit; wat een bezoeker als totaal meestuurt telt niet.
+De getallen staan bovenaan het script in `LIMIETEN` en gelden na een nieuwe versie van de implementatie.
+De website heeft dezelfde grenzen (`MANDJE_LIMIETEN` in `index.html`), zodat iemand niet pas
+bij het versturen een afwijzing krijgt.
+
+**Na het bijwerken van het script (eenmalig):**
+1. Plak de nieuwe `google-apps-script.gs` in je Apps Script-project en sla op.
+2. Kies bij de functie-keuzelijst bovenin `toestemmingTesten` en klik op **Uitvoeren**. Geef toestemming
+   om een externe dienst te gebruiken (nodig om het menu op te halen). Zie je "Google heeft deze app niet
+   gecontroleerd"? Kies **Geavanceerd > Ga naar (naam van je project)**: het is je eigen script.
+3. **Implementeren > Implementaties beheren > Bewerken (potlood) > Versie: Nieuwe versie > Implementeren.**
+   De URL blijft gelijk.
+
+**Teamcode (optioneel):** wil je dat alleen collega's kunnen bestellen, zet dan in Apps Script bij
+**Projectinstellingen > Scripteigenschappen** een eigenschap `BESTELCODE` met een code naar keuze,
+en deel die code met je team. De app vraagt er één keer om en onthoudt hem daarna in de browser.
+Verwijder je de eigenschap, dan is er geen code meer nodig. Het is een gedeeld wachtwoord: het houdt
+buitenstaanders tegen, niet iemand in je team die de code doorgeeft.
+
+**Wat dit niet kan:** het script ziet niet wie iemand is, dus een collega kan onder een andere naam
+nog steeds een paar keer bestellen. Het beperkt de schade tot een paar regels. Rommel haal je weg door
+de rijen in het tabblad **Bestellingen** te verwijderen.
+
 ## Publiceren via GitHub Pages
 
 1. Push deze repository naar GitHub.

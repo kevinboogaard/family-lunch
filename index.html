@@ -940,6 +940,20 @@
         </div>
     </div>
 
+    <!-- POP-UP TEAMCODE -->
+    <div id="codeModal" class="modal" onclick="if (event.target === this) annuleerCode()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="codeTitel" style="width: min(420px, 100%);">
+            <button class="modal-sluit" onclick="annuleerCode()" aria-label="Sluiten">✕</button>
+            <h3 id="codeTitel">🔑 Teamcode</h3>
+            <p id="codeUitleg" class="bron"></p>
+            <input type="text" id="codeInput" autocomplete="off" placeholder="Teamcode" onkeydown="if (event.key === 'Enter') bevestigCode()">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="annuleerCode()">Annuleren</button>
+                <button class="btn-confirm" onclick="bevestigCode()">Doorgaan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- POP-UP BEHEER -->
     <div id="adminModal" class="modal" onclick="if (event.target === this) sluitAdminModal()">
         <div class="modal-content breed" role="dialog" aria-modal="true" aria-labelledby="beheerTitel">
@@ -1215,6 +1229,8 @@
                 openModal(product, relevanteVragen);
                 return;
             }
+            const melding = mandjeLimiet(product.name);
+            if (melding) { toast('✋ ' + melding, 'fout'); return; }
             vliegNaarMandje(kaart && kaart.querySelector('.product-foto'), product);
             voegToeAanMandje(product, 0, "");
         }
@@ -1314,16 +1330,33 @@
             if (!currentProductForModal) return;
             const { extraKosten, opties } = gekozenInModal();
             const product = currentProductForModal;
+            const melding = mandjeLimiet(product.name + (opties.length ? ` (${opties.join(', ')})` : ''));
+            if (melding) { toast('✋ ' + melding, 'fout'); return; }
             const foto = document.getElementById('modalFoto');
             vliegNaarMandje(foto.style.display !== 'none' ? foto : (laatsteKaart && laatsteKaart.querySelector('.product-foto')), product);
             sluitModal();
             voegToeAanMandje(product, extraKosten, opties.join(", "));
         }
 
+        // Dezelfde grenzen als in het Google-script (LIMIETEN). Het script is de echte controle;
+        // dit is om te voorkomen dat iemand pas bij het versturen een afwijzing krijgt.
+        const MANDJE_LIMIETEN = { regels: 25, perRegel: 10, stuks: 40 };
+
+        function mandjeLimiet(uniekeNaam) {
+            const bestaand = cart.find(item => item.name === uniekeNaam);
+            const stuks = cart.reduce((s, i) => s + i.qty, 0);
+            if (bestaand && bestaand.qty >= MANDJE_LIMIETEN.perRegel) return `Maximaal ${MANDJE_LIMIETEN.perRegel} stuks van hetzelfde product.`;
+            if (!bestaand && cart.length >= MANDJE_LIMIETEN.regels) return `Maximaal ${MANDJE_LIMIETEN.regels} verschillende producten in één bestelling.`;
+            if (stuks >= MANDJE_LIMIETEN.stuks) return `Maximaal ${MANDJE_LIMIETEN.stuks} stuks in één bestelling. Plaats de rest in een tweede bestelling.`;
+            return null;
+        }
+
         function voegToeAanMandje(product, extraKosten, optiesTekst) {
             // Statiegeld telt e-food automatisch op bij blikjes en flesjes
             const stuksprijs = product.price + (product.statiegeld || 0) + extraKosten;
             const uniekeNaam = product.name + (optiesTekst ? ` (${optiesTekst})` : '');
+            const melding = mandjeLimiet(uniekeNaam);
+            if (melding) { toast('✋ ' + melding, 'fout'); return; }
 
             const existing = cart.find(item => item.name === uniekeNaam);
             if (existing) {
@@ -1411,6 +1444,10 @@
         }
 
         function wijzigAantal(index, delta) {
+            if (delta > 0) {
+                const melding = mandjeLimiet(cart[index].name);
+                if (melding) { toast('✋ ' + melding, 'fout'); return; }
+            }
             cart[index].qty += delta;
             if (cart[index].qty <= 0) cart.splice(index, 1);
             renderCart(delta > 0);
@@ -1433,6 +1470,7 @@
         });
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
+            annuleerCode();
             sluitModal();
             sluitAdminModal();
             toggleMandje(false);
@@ -1444,6 +1482,61 @@
             confetti({ particleCount: 160, spread: 100, origin: { y: 0.6 }, colors: kleuren });
             setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors: kleuren }), 250);
             setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors: kleuren }), 400);
+        }
+
+        // ---------- Versturen naar het Google-script, met optionele teamcode ----------
+        function leesTeamcode() { try { return localStorage.getItem('familyTeamcode') || ''; } catch (e) { return ''; } }
+        function bewaarTeamcode(code) { try { localStorage.setItem('familyTeamcode', code); } catch (e) { /* zonder opslag vraagt hij de volgende keer opnieuw */ } }
+
+        let codeBelofte = null;
+        function vraagTeamcode(vorigeFout) {
+            return new Promise(resolve => {
+                codeBelofte = resolve;
+                document.getElementById('codeUitleg').textContent = vorigeFout
+                    ? 'Die code klopt niet. Vraag de juiste code aan degene die de bestelling regelt.'
+                    : 'Voor deze bestelling is een teamcode nodig. Vraag hem aan degene die de bestelling regelt. Je hoeft hem maar één keer in te vullen.';
+                document.getElementById('codeModal').style.display = 'flex';
+                const veld = document.getElementById('codeInput');
+                veld.value = '';
+                veld.focus();
+            });
+        }
+        function sluitCodeModal(waarde) {
+            document.getElementById('codeModal').style.display = 'none';
+            if (codeBelofte) { codeBelofte(waarde); codeBelofte = null; }
+        }
+        function bevestigCode() { sluitCodeModal(document.getElementById('codeInput').value.trim() || null); }
+        function annuleerCode() { sluitCodeModal(null); }
+
+        async function verstuurBestelling(regels) {
+            let code = leesTeamcode();
+            for (let poging = 0; poging < 3; poging++) {
+                // text/plain voorkomt een CORS-preflight, die Apps Script niet ondersteunt
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ code, data: regels })
+                });
+                const result = await response.json();
+                if (result.ok) {
+                    if (code) bewaarTeamcode(code);
+                    return;
+                }
+                if (result.code === 'CODE') {
+                    code = await vraagTeamcode(poging > 0 || !!code);
+                    if (!code) { const e = new Error('Zonder teamcode kan er niet besteld worden.'); e.afgewezen = true; throw e; }
+                    continue;
+                }
+                // Het script heeft de bestelling bewust geweigerd (te veel, onbekend product, ...): toon zijn uitleg.
+                // De code zelf was dan wel goed, want die wordt als eerste gecontroleerd.
+                if (code) bewaarTeamcode(code);
+                const e = new Error(result.error || 'Onbekende fout');
+                e.afgewezen = result.code === 'LIMIET' || result.code === 'ONGELDIG';
+                throw e;
+            }
+            const e = new Error('De teamcode klopt niet.');
+            e.afgewezen = true;
+            throw e;
         }
 
         async function plaatsBestelling() {
@@ -1480,17 +1573,11 @@
                 knop.disabled = true;
                 knop.innerText = 'Bezig met versturen… 🛵';
                 try {
-                    // text/plain voorkomt een CORS-preflight, die Apps Script niet ondersteunt
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ data: nieuweBestellingen })
-                    });
-                    const result = await response.json();
-                    if (!result.ok) throw new Error(result.error || 'Onbekende fout');
+                    await verstuurBestelling(nieuweBestellingen);
                 } catch (err) {
                     console.error("Versturen mislukt:", err);
-                    toast("😬 Versturen mislukt. Je mandje is bewaard, probeer het nog eens. (" + err.message + ")", 'fout');
+                    if (err.afgewezen) toast('🚫 ' + err.message, 'fout');
+                    else toast("😬 Versturen mislukt. Je mandje is bewaard, probeer het nog eens. (" + err.message + ")", 'fout');
                     return;
                 } finally {
                     knop.disabled = false;
