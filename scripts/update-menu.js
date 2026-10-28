@@ -36,10 +36,13 @@ function productenPerId(producten) {
   return map;
 }
 
-// Meerprijzen per optie (bijv. "Mayonaise"), ontdubbeld over alle vragensets
-function optiePrijzen(vragen) {
+// Meerprijzen per optie (bijv. "Mayonaise"), ontdubbeld over alle vragensets en extra's
+function optiePrijzen(menu) {
   const map = new Map();
-  for (const v of vragen) map.set(v.antwoordTekst.replace(/\.$/, '').trim(), v.meerprijs);
+  for (const v of menu.vragen) map.set(v.antwoordTekst.replace(/\.$/, '').trim(), v.meerprijs);
+  for (const set of Object.values(menu.extras || {})) {
+    for (const o of set.opties) map.set(`${o.naam.replace(/\.$/, '').trim()} (extra)`, o.prijs);
+  }
   return map;
 }
 
@@ -54,7 +57,7 @@ function vergelijk(oud, nieuw) {
   }
   for (const [id, o] of oudP) if (!nieuwP.has(id)) verdwenen.push(o);
 
-  const oudO = optiePrijzen(oud.vragen), nieuwO = optiePrijzen(nieuw.vragen);
+  const oudO = optiePrijzen(oud), nieuwO = optiePrijzen(nieuw);
   const opties = [];
   for (const [naam, prijs] of nieuwO) {
     if (oudO.has(naam) && oudO.get(naam) !== prijs) opties.push({ naam, van: oudO.get(naam), naar: prijs });
@@ -108,6 +111,10 @@ async function main() {
         const pr = a.products[pp.productId];
         const naam = pp.name || (pr && pr.name);
         if (!pr || isGeenGerecht(naam) || pr.inStock === false) continue;
+        // Zelfde logica als e-food (getProductAdditions): extra's van de subcategorie + van het product zelf
+        const extraSets = [...new Set([sg.extraSetId, ...(pp.extraSetIds || [])].filter(id => id && a.extraSets[id]))];
+        // Gekoppelde producten (statiegeld) telt e-food automatisch bij de prijs op
+        const statiegeld = (pr.productLinks || []).reduce((som, id) => som + ((a.products[id] || {}).price || 0), 0);
         producten.push({
           id: pr.id,
           menuItemId: pp.id,
@@ -116,13 +123,26 @@ async function main() {
           name: naam,
           desc: stripHtml(pp.description || pr.description),
           price: pr.price,
+          statiegeld: Math.round(statiegeld * 100) / 100,
           vragenSetID: pp.questionSetId || pr.questionSetId || null,
+          extraSets,
           foto: pr.mediaName ? FOTO_URL(5, pr.mediaName) : null,
           fotoGroot: pr.mediaName ? FOTO_URL(2, pr.mediaName) : null
         });
       }
     }
   }
+
+  // Extra's (aanvinkbaar, bijv. "Zonder zout" of "Met bestek"); alleen sets die een product gebruikt
+  const extras = {};
+  for (const id of new Set(producten.flatMap(p => p.extraSets))) {
+    const es = a.extraSets[id];
+    const titel = /^Extra's groep/i.test(es.name) ? "Extra's" : es.name.charAt(0).toUpperCase() + es.name.slice(1);
+    const opties = es.products.filter(x => x.isActive && a.products[x.productId]).sort(byPos)
+      .map(x => ({ id: x.productId, naam: a.products[x.productId].name, prijs: a.products[x.productId].price || 0 }));
+    if (opties.length) extras[id] = { titel, opties };
+  }
+  producten.forEach(p => { p.extraSets = p.extraSets.filter(id => extras[id]); });
 
   const gebruikteSets = new Set(producten.map(p => p.vragenSetID).filter(Boolean));
   const vragen = [];
@@ -143,12 +163,13 @@ async function main() {
   // Veiligheidscheck: liever het oude menu houden dan een leeg of kapot menu publiceren
   if (producten.length < 50) throw new Error(`Maar ${producten.length} producten gevonden, menu niet bijgewerkt`);
 
-  const menu = { opgehaald: new Date().toISOString(), geldigVanaf: a.validFrom, bron: 'e-food.nl', producten, vragen };
+  const menu = { opgehaald: new Date().toISOString(), geldigVanaf: a.validFrom, bron: 'e-food.nl', producten, vragen, extras };
   if (fs.existsSync(OUT_FILE)) {
     schrijfWijzigingen(JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')), menu);
   }
   fs.writeFileSync(OUT_FILE, JSON.stringify(menu, null, 1) + '\n');
-  console.log(`menu.json geschreven: ${producten.length} producten, ${vragen.length} antwoordopties (geldig vanaf ${a.validFrom})`);
+  console.log(`menu.json geschreven: ${producten.length} producten, ${vragen.length} antwoordopties, ` +
+    `${Object.keys(extras).length} sets met extra's (geldig vanaf ${a.validFrom})`);
 }
 
 main().catch(err => {
