@@ -292,7 +292,7 @@
         .kies-stap { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
         .kies-balk { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 0 48px 20px 0; }
         .kies-balk span { display: block; height: 100%; background: var(--vibe); border-radius: inherit; transition: width 0.4s cubic-bezier(.34, 1.56, .64, 1); }
-        .kies-vraag { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 600; margin: 0 0 18px; line-height: 1.25; }
+        .kies-vraag { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 600; margin: 0 44px 18px 0; line-height: 1.25; }
         .kies-antwoorden { display: grid; gap: 10px; }
         .kies-antwoord {
             display: flex;
@@ -330,6 +330,40 @@
         .kies-erbij button:hover { background: rgba(255, 194, 26, 0.2); }
         .kies-erbij button:disabled { opacity: 0.6; cursor: default; border-style: solid; }
         .kies-knoppen button { flex: 1; }
+        .kies-knoppen button:disabled { opacity: 0.5; cursor: default; transform: none; }
+        .kies-sub { color: var(--muted); font-size: 13px; }
+        .rad-budget { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 22px; }
+        .rad { position: relative; width: min(300px, 100%); aspect-ratio: 1; margin: 0 auto; }
+        .rad-schijf { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.12), 0 20px 50px -18px rgba(0, 0, 0, 0.8); }
+        .rad-schijf text { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 600; }
+        .rad-pijl {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            z-index: 2;
+            transform: translateX(-50%);
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 26px solid #fff;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+        }
+        .rad-knop {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 64px;
+            height: 64px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            background: var(--panel-solid);
+            color: var(--text);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .rad-knop:disabled { cursor: default; }
         .kies-knoppen .btn-confirm { flex-basis: 100%; font-family: 'Fredoka', sans-serif; font-size: 18px; }
         .zoek input {
             width: 100%;
@@ -694,6 +728,41 @@
         }
 
         /* ---------- Toasts ---------- */
+        .deadline-balk {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 950;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: max-content;
+            max-width: calc(100% - 32px);
+            padding: 10px 10px 10px 18px;
+            border-radius: 999px;
+            background: var(--vibe);
+            color: #1c0d00;
+            font-size: 14px;
+            box-shadow: 0 14px 34px -10px rgba(255, 61, 129, 0.9);
+            animation: toastIn 0.45s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .deadline-balk strong { font-variant-numeric: tabular-nums; font-family: 'Fredoka', sans-serif; font-size: 16px; }
+        .deadline-balk button {
+            flex: none;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.15);
+            color: inherit;
+            cursor: pointer;
+        }
+        .deadline-balk.urgent { background: var(--danger); color: #fff; animation: puls-rood 1.6s ease-in-out infinite; }
+        @keyframes puls-rood {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 110, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 90, 110, 0); }
+        }
         .toasts {
             position: fixed;
             top: 20px;
@@ -914,6 +983,10 @@
     </div>
     <div class="zwevers" id="zwevers" aria-hidden="true"></div>
     <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+    <div class="deadline-balk verborgen" id="deadlineBalk" role="status">
+        <span id="deadlineTekst"></span>
+        <button onclick="sluitDeadlineBalk()" aria-label="Herinnering sluiten">✕</button>
+    </div>
 
     <div class="topbar">
         <div class="logo"><span class="logo-icoon">🍟</span><span class="logo-tekst">Family Vrijdag</span></div>
@@ -1046,6 +1119,10 @@
         // Leeg = bestellingen worden alleen lokaal in deze browser bewaard.
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQoX7KhN74KetP3D8G9VTF59zRMauPE1V57Z-ThODdUtaSLfyWRhNsGCKBJrXF_rpSBw/exec";
 
+        // Tot hoe laat collega's op vrijdag kunnen bestellen. Het laatste half uur verschijnt bovenin een herinnering.
+        const BESTELLEN_TOT = { uur: 11, minuut: 30 };
+        const HERINNER_MINUTEN = 30;
+
         let menuData = [];
         let vragenData = [];
         let extrasData = {};
@@ -1111,8 +1188,36 @@
             }
         }
 
+        let deadlineWeggeklikt = null;
+
+        function sluitDeadlineBalk() {
+            deadlineWeggeklikt = document.getElementById('deadlineBalk').classList.contains('urgent') ? 'urgent' : 'gewoon';
+            document.getElementById('deadlineBalk').classList.add('verborgen');
+        }
+
+        function updateDeadline(nu) {
+            const balk = document.getElementById('deadlineBalk');
+            const deadline = new Date(nu);
+            deadline.setHours(BESTELLEN_TOT.uur, BESTELLEN_TOT.minuut, 0, 0);
+            const s = Math.ceil((deadline - nu) / 1000);
+            if (nu.getDay() !== 5 || s <= 0 || s > HERINNER_MINUTEN * 60) {
+                balk.classList.add('verborgen');
+                return;
+            }
+            // Weggeklikt blijft weg, behalve als de laatste 5 minuten ingaan
+            const urgent = s <= 5 * 60;
+            if (deadlineWeggeklikt === 'urgent' || (deadlineWeggeklikt === 'gewoon' && !urgent)) return;
+            balk.classList.remove('verborgen');
+            balk.classList.toggle('urgent', urgent);
+            const tijd = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+            const klok = `${BESTELLEN_TOT.uur}:${String(BESTELLEN_TOT.minuut).padStart(2, '0')}`;
+            const mandje = cart.length ? ' <b>Je mandje is nog niet verstuurd!</b> 👀' : '';
+            document.getElementById('deadlineTekst').innerHTML = `⏰ Nog <strong>${tijd}</strong> om te bestellen (tot ${klok}).${mandje}`;
+        }
+
         function updateAftellen() {
             const nu = new Date();
+            updateDeadline(nu);
             const el = document.getElementById('aftellen');
             if (nu.getDay() === 5 && nu.getHours() >= 12 && nu.getHours() < 17) {
                 el.innerHTML = '🎉 <strong>Het is vrijdag!</strong> Eet smakelijk';
@@ -1693,9 +1798,20 @@
 
         function openKiesModal() {
             if (!menuData.length) return;
-            // Vlees/vega altijd, zodat een vegetariër nooit een frikandel voorgesteld krijgt; daarna drie willekeurige vragen
-            kies = { vragen: [KIES_DIEET, ...husselen(KIES_VRAGEN).slice(0, 3)], antwoorden: [], uitslag: [], index: 0 };
+            kies = null;
             document.getElementById('kiesModal').style.display = 'flex';
+            document.getElementById('kiesInhoud').innerHTML = `
+                <h3 class="kies-vraag" id="kiesTitel">Geen idee? Geen probleem! 🤔</h3>
+                <div class="kies-antwoorden">
+                    <button class="kies-antwoord" onclick="startKiesVragen()"><span class="emoji">🧠</span><span>Beantwoord 4 vragen<br><small class="kies-sub">en wij kiezen iets dat bij je past</small></span></button>
+                    <button class="kies-antwoord" onclick="startRad()"><span class="emoji">🎡</span><span>Draai aan het rad<br><small class="kies-sub">en eet wat eruit komt, geen weg terug</small></span></button>
+                </div>`;
+            document.querySelector('#kiesInhoud .kies-antwoord').focus({ preventScroll: true });
+        }
+
+        function startKiesVragen() {
+            // Vlees/vega altijd, zodat een vegetariër nooit een frikandel voorgesteld krijgt; daarna drie willekeurige vragen
+            kies = { modus: 'vragen', vragen: [KIES_DIEET, ...husselen(KIES_VRAGEN).slice(0, 3)], antwoorden: [], uitslag: [], index: 0 };
             toonKiesVraag();
         }
 
@@ -1727,14 +1843,19 @@
             toonKiesUitkomst();
         }
 
-        function berekenKeuze(antwoorden) {
+        // Producten die de keuzehulp en het rad mogen voorstellen: geen sauzen, ijs, dranken of gezinsbestellingen
+        function kiesKandidaten() {
             const gezien = new Set();
-            const kandidaten = menuData.filter(p => {
+            return menuData.filter(p => {
                 if (!["Actie", 'Frites', 'Snacks', 'Burgers', "Menu's", 'Salades', 'Broodjes'].includes(p.cat)) return false;
                 if (p.price > 20 || KIES_UITGESLOTEN.test(p.name) || gezien.has(p.name)) return false;
                 gezien.add(p.name);
                 return true;
             });
+        }
+
+        function berekenKeuze(antwoorden) {
+            const kandidaten = kiesKandidaten();
             const scoren = metFilter => kandidaten
                 .map(p => ({ p, k: kiesKenmerken(p) }))
                 .filter(({ k }) => !metFilter || antwoorden.every(a => !a.weg || !a.weg(k)))
@@ -1769,14 +1890,15 @@
             const keuze = kies.uitslag[kies.index % kies.uitslag.length];
             const p = keuze.p;
             const redenen = keuze.redenen.slice(0, 2);
-            const waarom = kies.index > 0 ? 'Niet goed? Dan deze misschien.'
+            const waarom = kies.modus === 'rad' ? 'Het rad heeft gesproken! 🎡'
+                : kies.index > 0 ? 'Niet goed? Dan deze misschien.'
                 : redenen.length ? `Omdat ${redenen.join(' en ')}.`
                 : 'Gewoon een goeie keuze.';
             const erbij = kiesErbij(p, keuze.k);
             const icoon = `<div class="kies-icoon">${categorieIcoon(p.cat)}</div>`;
             document.getElementById('kiesInhoud').innerHTML = `
                 <div class="kies-uitkomst">
-                    <p class="kies-stap">${kies.index === 0 ? '✨ Wij denken' : '🎲 Nog een idee'}</p>
+                    <p class="kies-stap">${kies.modus === 'rad' ? '🎡 Het rad zegt' : kies.index === 0 ? '✨ Wij denken' : '🎲 Nog een idee'}</p>
                     ${p.fotoGroot ? `<img class="modal-foto" src="${escapeHtml(p.fotoGroot)}" alt="${escapeHtml(p.name)}" onerror="this.outerHTML='${icoon.replace(/"/g, '&quot;')}'">` : icoon}
                     <h3 id="kiesTitel">${escapeHtml(p.name)}</h3>
                     <div class="modal-prijs" style="margin-bottom: 0;">${euro(p.price)}</div>
@@ -1786,12 +1908,80 @@
                 </div>
                 <div class="modal-buttons kies-knoppen">
                     <button class="btn-confirm" id="kiesConfirm" onclick="kiesVoegToe(${p.id})">Doe maar! 🛒</button>
-                    ${kies.uitslag.length > 1 ? '<button class="btn-cancel" onclick="kies.index++; toonKiesUitkomst()">🎲 Iets anders</button>' : ''}
+                    ${kies.modus === 'rad' ? '<button class="btn-cancel" onclick="startRad(kies.budget)">🎡 Nog een keer draaien</button>'
+                        : kies.uitslag.length > 1 ? '<button class="btn-cancel" onclick="kies.index++; toonKiesUitkomst()">🎲 Iets anders</button>' : ''}
                     <button class="btn-cancel" onclick="openKiesModal()">↺ Opnieuw</button>
                 </div>`;
             document.querySelector('#kiesModal .modal-content').scrollTop = 0;
             document.getElementById('kiesConfirm').focus({ preventScroll: true });
             if (kies.index === 0) feest();
+        }
+
+        // ---------- Rad van Fortuin: acht willekeurige producten binnen je budget ----------
+        const RAD_VAKKEN = 8;
+        const RAD_KLEUREN = [['#ff3d81', '#fff'], ['#ffc21a', '#2a1600'], ['#6d3bff', '#fff'], ['#ff7a2f', '#2a1600']];
+        const RAD_BUDGETTEN = [{ tot: 5, tekst: 'Tot € 5' }, { tot: 8, tekst: 'Tot € 8' }, { tot: 99, tekst: 'Maakt niet uit' }];
+
+        function startRad(budget = 99) {
+            const binnenBudget = kiesKandidaten().filter(p => p.price <= budget);
+            const vakken = husselen(binnenBudget).slice(0, RAD_VAKKEN);
+            kies = { modus: 'rad', budget, vakken, draaiend: false, antwoorden: [] };
+            const r = 150, hoek = 360 / vakken.length;
+            const punt = (graden, straal) => {
+                const rad = (graden - 90) * Math.PI / 180;
+                return `${(r + straal * Math.cos(rad)).toFixed(1)} ${(r + straal * Math.sin(rad)).toFixed(1)}`;
+            };
+            const stukken = vakken.map((p, i) => {
+                const [vul, tekst] = RAD_KLEUREN[i % RAD_KLEUREN.length];
+                const naam = p.name.length > 17 ? p.name.slice(0, 16) + '…' : p.name;
+                const midden = i * hoek + hoek / 2;
+                // Op de linkerhelft de tekst omdraaien, anders staat hij op zijn kop
+                const links = midden > 180;
+                const plaats = links ? `rotate(${midden + 90} ${r} ${r}) translate(${16 - r} 0)` : `rotate(${midden - 90} ${r} ${r}) translate(${r - 16} 0)`;
+                return `<path d="M${r} ${r} L${punt(i * hoek, r)} A${r} ${r} 0 0 1 ${punt((i + 1) * hoek, r)} Z" fill="${vul}"/>
+                    <text x="${r}" y="${r}" transform="${plaats}" text-anchor="${links ? 'start' : 'end'}" dominant-baseline="middle" fill="${tekst}">${escapeHtml(naam)}</text>`;
+            }).join('');
+            document.getElementById('kiesInhoud').innerHTML = `
+                <h3 class="kies-vraag" id="kiesTitel">🎡 Draai aan het rad</h3>
+                <div class="rad-budget" role="radiogroup" aria-label="Budget">
+                    ${RAD_BUDGETTEN.map(b => `<label class="keuze"><input type="radio" name="radBudget" ${b.tot === budget ? 'checked' : ''} onchange="startRad(${b.tot})"><span>${b.tekst}</span></label>`).join('')}
+                </div>
+                ${vakken.length < 2 ? '<p class="kies-waarom">Te weinig producten binnen dit budget. Kies een ander budget.</p>' : `
+                <div class="rad">
+                    <div class="rad-pijl" aria-hidden="true"></div>
+                    <svg class="rad-schijf" id="radSchijf" viewBox="0 0 ${r * 2} ${r * 2}" role="img" aria-label="Rad met ${vakken.length} producten">${stukken}</svg>
+                    <button class="rad-knop" id="radKnop" onclick="draaiRad()" aria-label="Draai">DRAAI</button>
+                </div>`}
+                <div class="modal-buttons kies-knoppen">
+                    ${vakken.length >= 2 ? '<button class="btn-confirm" onclick="draaiRad()">🎡 Draaien maar!</button>' : ''}
+                    <button class="btn-cancel" onclick="openKiesModal()">← Terug</button>
+                </div>`;
+            document.querySelector('#kiesModal .modal-content').scrollTop = 0;
+        }
+
+        function draaiRad() {
+            if (!kies || kies.modus !== 'rad' || kies.draaiend) return;
+            kies.draaiend = true;
+            const winnaar = Math.floor(Math.random() * kies.vakken.length);
+            const hoek = 360 / kies.vakken.length;
+            // De pijl staat bovenaan: draai zo dat het winnende vak (met wat speling binnen het vak) daar uitkomt
+            const speling = (Math.random() - 0.5) * hoek * 0.7;
+            const eind = 360 * 6 + (360 - (winnaar * hoek + hoek / 2)) + speling;
+            const schijf = document.getElementById('radSchijf');
+            const vakken = kies.vakken;
+            document.querySelectorAll('.kies-knoppen button, .rad-knop, .rad-budget input').forEach(b => b.disabled = true);
+            const klaar = () => {
+                if (!kies || kies.vakken !== vakken) return;
+                const p = vakken[winnaar];
+                kies.uitslag = [{ p, k: kiesKenmerken(p), redenen: [] }];
+                kies.index = 0;
+                kies.draaiend = false;
+                toonKiesUitkomst();
+            };
+            if (minderBeweging) { schijf.style.transform = `rotate(${eind}deg)`; setTimeout(klaar, 300); return; }
+            schijf.style.transition = 'transform 4.2s cubic-bezier(.12, .8, .1, 1)';
+            schijf.style.transform = `rotate(${eind}deg)`;
+            schijf.addEventListener('transitionend', () => setTimeout(klaar, 500), { once: true });
         }
 
         // Producten met keuzes (saus, extra's) gaan via het gewone keuzevenster; de rest gaat meteen in het mandje

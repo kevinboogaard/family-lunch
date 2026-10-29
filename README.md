@@ -21,15 +21,29 @@ wanneer het menu voor het laatst is opgehaald.
 
 ## "Ik weet het niet"
 
-Naast de zoekbalk staat de knop **🤔 Ik weet het niet**. Die stelt vier vragen: altijd of je zin hebt in
-vlees, kip, vis of vega, en daarna drie willekeurige uit een rijtje (trek, pittig, budget, warm of koud,
-handen of vork, iets nieuws, wat voor vrijdag, superkracht). Daarna stelt de app iets uit het menu voor, met de
-reden erbij, friet en een drankje als tip en de knoppen **Iets anders** en **Opnieuw**.
+Naast de zoekbalk staat de knop **🤔 Ik weet het niet**. Je kiest daar tussen:
+
+- **🧠 Beantwoord 4 vragen**: altijd of je zin hebt in vlees, kip, vis of vega, en daarna drie willekeurige
+  uit een rijtje (trek, pittig, budget, warm of koud, handen of vork, iets nieuws, wat voor vrijdag, superkracht).
+  Daarna stelt de app iets uit het menu voor, met de reden erbij en de knoppen **Iets anders** en **Opnieuw**.
+- **🎡 Draai aan het rad**: een rad met acht willekeurige producten, binnen een budget dat je kiest
+  (tot € 5, tot € 8 of maakt niet uit). Waar de pijl stopt, dat eet je.
+
+Bij beide krijg je friet (bij een snack of burger) en een drankje als tip, die je met één tik toevoegt.
 
 - Wat vlees, vega, pittig of licht is, raadt de app aan de naam en omschrijving van het product
   (`kiesKenmerken` in `index.html`). Komt er een nieuw product bij, dan gaat dat meestal vanzelf goed.
 - Kies je **Vega** of **Helemaal niet pittig**, dan valt de rest weg. De andere antwoorden geven alleen voorrang.
 - Grote bestellingen (gezinszakken, bittergarnituur, Family deal) en ijs stelt hij niet voor.
+
+## Herinnering voor de deadline
+
+Op vrijdag verschijnt in het laatste half uur voor **11:30** bovenin een balk: "⏰ Nog 14:59 om te bestellen".
+Heeft iemand iets in zijn mandje dat nog niet is verstuurd, dan staat dat erbij. In de laatste 5 minuten wordt de
+balk rood. Wegklikken kan; in de laatste 5 minuten komt hij één keer terug.
+
+De tijd staat bovenin het script van `index.html` in `BESTELLEN_TOT` (en `HERINNER_MINUTEN` voor hoe lang van
+tevoren). Het is alleen een herinnering: na 11:30 kun je nog steeds bestellen.
 
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 
