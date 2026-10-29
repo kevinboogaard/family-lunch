@@ -102,6 +102,28 @@ tekst en het bedrag dat die persoon vandaag moet betalen.
   deel hem dus niet.
 - Wil je de QR weghalen, klik dan op `admin.html` op **Verwijderen**.
 
+## Wie heeft betaald?
+
+De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je Google Sheet (naast
+**Bestellingen** en **Instellingen**). Er zijn drie standen:
+
+| Stand | Betekenis |
+|---|---|
+| ⏳ open | nog niets gemeld |
+| 🟡 zegt betaald | de collega heeft in het afrekenscherm op **Ik heb betaald** getikt |
+| ✅ bevestigd | jij hebt in je bank- of Tikkie-app gezien dat het bedrag binnen is |
+
+- **Collega's** tikken in het afrekenscherm op **✅ Ik heb betaald**. Het scherm laat de laatste bestelling
+  van die naam zien (dus maandag ook nog die van vrijdag). Met **Toch nog niet betaald** halen ze de melding weer weg.
+- **Jij** ziet op `admin.html` onder **Wie heeft betaald?** per persoon het bedrag en de stand, met
+  **Bevestig betaald** en **Terug naar open**, en een knop **Kopieer herinnering voor de groepsapp** met de namen
+  van wie nog niets gemeld heeft. In het overzicht in de app staan bij **Per persoon** dezelfde stickers.
+- Een melding van een collega is alleen een melding: bevestigen kan alleen met de beheercode, en een bevestiging
+  kan een collega niet meer terugzetten. De melding werkt alleen voor een naam die op die dag echt iets heeft besteld
+  (maximaal 31 dagen terug), en met de teamcode als je die hebt ingesteld.
+- Een oud script kent dit nog niet. Dan zie je in de app geen **Ik heb betaald** en op `admin.html` een melding
+  dat je een nieuwe versie moet publiceren.
+
 ## Publiceren via GitHub Pages
 
 1. Push deze repository naar GitHub.

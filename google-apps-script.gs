@@ -45,6 +45,10 @@ const BEHEER = {
   MAX_LINK: 500
 };
 
+// Wie heeft betaald? Per dag en naam: "zegt" (collega meldde dat hij betaald heeft) of "bevestigd" (door de beheerder)
+const BETALINGEN_SHEET = 'Betalingen';
+const BETAAL = { MAX_DAGEN_TERUG: 31 };
+
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -261,6 +265,95 @@ function schoneTekst_(waarde, maxLengte) {
   return String(waarde == null ? '' : waarde).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLengte);
 }
 
+// ---------- Betalingen ----------
+
+function betalingenSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(BETALINGEN_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(BETALINGEN_SHEET);
+    sheet.getRange('A:D').setNumberFormat('@');
+    sheet.appendRow(['Datum', 'Naam', 'Status', 'Bijgewerkt']);
+  }
+  return sheet;
+}
+
+function leesBetalingen_() {
+  const waarden = betalingenSheet_().getDataRange().getValues();
+  const lijst = [];
+  for (let i = 1; i < waarden.length; i++) {
+    lijst.push({
+      Datum: celNaarTekst_(waarden[i][0], 'yyyy-MM-dd'),
+      Naam: String(waarden[i][1]).replace(/^~/, ''),
+      Status: String(waarden[i][2]),
+      Bijgewerkt: String(waarden[i][3])
+    });
+  }
+  return lijst;
+}
+
+function schrijfBetalingen_(lijst) {
+  const sheet = betalingenSheet_();
+  const rijen = [['Datum', 'Naam', 'Status', 'Bijgewerkt']];
+  // "~" voor de naam: zo wordt een naam als "=SOM(…)" nooit een formule
+  lijst.forEach(function (b) { rijen.push([b.Datum, '~' + b.Naam, b.Status, b.Bijgewerkt]); });
+  sheet.clear();
+  sheet.getRange('A:D').setNumberFormat('@');
+  sheet.getRange(1, 1, rijen.length, 4).setValues(rijen);
+}
+
+/** Zet de status van een naam op een dag. Status "open" haalt de regel weg. */
+function zetBetaling_(datum, naam, status) {
+  const lijst = leesBetalingen_();
+  const sleutel = naam.toLowerCase();
+  const rest = lijst.filter(function (b) { return !(b.Datum === datum && b.Naam.toLowerCase() === sleutel); });
+  if (status !== 'open') {
+    rest.push({ Datum: datum, Naam: naam, Status: status, Bijgewerkt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm') });
+  }
+  schrijfBetalingen_(rest);
+}
+
+/** Zoekt de naam zoals die in de bestellingen van die dag staat (hoofdletters maken niet uit). null als er niets besteld is. */
+function vindBestelNaam_(naam, datum) {
+  const waarden = getSheet_().getDataRange().getValues();
+  const sleutel = String(naam).toLowerCase();
+  for (let i = 1; i < waarden.length; i++) {
+    if (celNaarTekst_(waarden[i][1], 'yyyy-MM-dd') === datum && String(waarden[i][3]).toLowerCase() === sleutel) return String(waarden[i][3]);
+  }
+  return null;
+}
+
+function datumGeldig_(datum) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(datum) && !isNaN(new Date(datum).getTime());
+}
+
+/** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
+function betaaldMelding_(body) {
+  const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
+  if (teamcode && String(body.code || '') !== teamcode) return fout_('CODE', 'De teamcode ontbreekt of klopt niet.');
+
+  const naam = schoneTekst_(body.naam, LIMIETEN.MAX_NAAM);
+  if (naam.length < LIMIETEN.MIN_NAAM) return fout_('ONGELDIG', 'Vul je naam in.');
+
+  const datum = body.datum ? String(body.datum) : vandaag_();
+  if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
+  const grens = Utilities.formatDate(new Date(Date.now() - BETAAL.MAX_DAGEN_TERUG * 86400000), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  if (datum < grens || datum > vandaag_()) return fout_('ONGELDIG', 'Alleen bestellingen van de afgelopen ' + BETAAL.MAX_DAGEN_TERUG + ' dagen.');
+
+  const echteNaam = vindBestelNaam_(naam, datum);
+  if (!echteNaam) return fout_('ONGELDIG', 'Geen bestelling gevonden voor "' + naam + '" op deze dag.');
+
+  const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === echteNaam.toLowerCase(); })[0];
+  if (huidig && huidig.Status === 'bevestigd') return { ok: true, status: 'bevestigd' };
+
+  if (body.actie === 'zegtBetaald') {
+    zetBetaling_(datum, echteNaam, 'zegt');
+    return { ok: true, status: 'zegt' };
+  }
+  zetBetaling_(datum, echteNaam, 'open'); // zegtNietBetaald
+  return { ok: true, status: 'open' };
+}
+
 /** Controleert de beheercode. Te veel foute pogingen blokkeren het beheer een uur lang. */
 function controleerBeheercode_(code) {
   const echt = PropertiesService.getScriptProperties().getProperty('BEHEERCODE');
@@ -286,6 +379,16 @@ function beheerActie_(body) {
   if (!toegang.ok) return toegang;
 
   if (body.actie === 'controleer') return { ok: true };
+
+  if (body.actie === 'zetBetaling') {
+    const datum = String(body.datum || '');
+    if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
+    if (body.status !== 'bevestigd' && body.status !== 'open') return fout_('ONGELDIG', 'Onbekende status.');
+    const naam = vindBestelNaam_(schoneTekst_(body.naam, LIMIETEN.MAX_NAAM), datum);
+    if (!naam) return fout_('ONGELDIG', 'Geen bestelling gevonden voor deze naam op deze dag.');
+    zetBetaling_(datum, naam, body.status);
+    return { ok: true };
+  }
 
   if (body.actie === 'verwijderQr') {
     schrijfInstellingen_({});
@@ -325,6 +428,7 @@ function doPost(e) {
       return json_(fout_('ONGELDIG', 'De bestelling kon niet gelezen worden.'));
     }
 
+    if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
     if (body && body.actie) return json_(beheerActie_(body));
 
     const sheet = getSheet_();
@@ -360,6 +464,11 @@ function doPost(e) {
 function doGet(e) {
   try {
     if (e && e.parameter && e.parameter.actie === 'qr') return json_(leesQr_());
+    if (e && e.parameter && e.parameter.actie === 'betaald') {
+      let dag = e.parameter.datum || '';
+      if (dag === 'vandaag') dag = vandaag_();
+      return json_({ ok: true, betalingen: leesBetalingen_().filter(function (b) { return !dag || b.Datum === dag; }) });
+    }
 
     const sheet = getSheet_();
     const values = sheet.getDataRange().getValues();

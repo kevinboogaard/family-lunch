@@ -138,6 +138,17 @@
         .betaal-bedrag small { display: block; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
         .betaal-qr { display: block; width: min(300px, 80%); aspect-ratio: 1; object-fit: contain; margin: 14px auto; padding: 12px; background: #fff; border-radius: 20px; box-shadow: 0 16px 40px -14px rgba(0, 0, 0, 0.7); animation: draaiIn 0.6s cubic-bezier(.34, 1.56, .64, 1); }
         .betaal-tekst { margin: 0 0 14px; font-weight: 600; }
+        .betaal-status { margin: 0 0 16px; }
+        .betaal-status-tekst { margin: 0 0 6px; font-weight: 600; }
+        .betaal-status-tekst.ok { color: var(--mint); }
+        .betaal-status-tekst.wacht { color: var(--sun); }
+        .knop-betaald { padding: 13px 24px; border: 0; border-radius: 14px; background: rgba(47, 227, 163, 0.18); color: #b9f7e0; font: 700 16px 'Inter', sans-serif; cursor: pointer; border: 1px solid rgba(47, 227, 163, 0.5); transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s; }
+        .knop-betaald:hover { transform: translateY(-2px); background: rgba(47, 227, 163, 0.3); }
+        .knop-tekst { background: none; border: 0; color: var(--muted); font: 13px 'Inter', sans-serif; text-decoration: underline; cursor: pointer; }
+        .status-badge { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 8px; white-space: nowrap; }
+        .status-badge.open { background: rgba(255, 255, 255, 0.1); color: var(--muted); }
+        .status-badge.zegt { background: rgba(255, 194, 26, 0.18); color: #ffe7a3; }
+        .status-badge.bevestigd { background: rgba(47, 227, 163, 0.18); color: #b9f7e0; }
         .betaal-label { display: block; text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
         .knop-link { display: inline-block; padding: 13px 22px; border-radius: 14px; background: var(--vibe); color: #1c0d00; font-weight: 700; text-decoration: none; box-shadow: 0 10px 24px -8px rgba(255, 61, 129, 0.8); }
 
@@ -807,7 +818,7 @@
         .regel.klaar .stuks { opacity: 0.5; }
         .persoon-blok { padding: 12px 4px; border-bottom: 1px dashed var(--border); }
         .persoon-blok h4 { margin: 0 0 6px; font-family: 'Fredoka', sans-serif; font-size: 18px; display: flex; justify-content: space-between; }
-        .persoon-blok h4 span { color: var(--sun); }
+        .persoon-blok h4 .bedrag { color: var(--sun); }
         .persoon-blok ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
 
         /* ---------- Mobiel ---------- */
@@ -963,6 +974,7 @@
             <p id="betaalTekst" class="betaal-tekst"></p>
             <a id="betaalLink" class="knop-link verborgen" target="_blank" rel="noopener noreferrer">📱 Open betaallink</a>
             <p class="bron" style="margin: 10px 0 14px;">Op je telefoon? Gebruik de betaallink, of open een screenshot van de QR-code in je bank-app.</p>
+            <div id="betaalStatus" class="betaal-status"></div>
             <label class="betaal-label" for="betaalNaam">Je naam</label>
             <input type="text" id="betaalNaam" autocomplete="name" placeholder="Zie hier je bedrag" oninput="bedragUitgesteld()" style="margin-bottom: 0;">
         </div>
@@ -1562,23 +1574,79 @@
             bedragTimer = setTimeout(toonBedrag, 400);
         }
 
-        // Telt de bestellingen van vandaag op voor de ingevulde naam
+        // Gegevens van de laatste bestelling voor de ingevulde naam: { naam, datum, status, kanMelden }
+        let betaalContext = null;
+
+        // Telt de laatste bestelling van de ingevulde naam op en laat zien of die al betaald is.
+        // Dat is de laatste dag waarop iemand besteld heeft, dus ook maandag nog de vrijdagbestelling.
         async function toonBedrag() {
             const vak = document.getElementById('betaalBedrag');
             const naam = document.getElementById('betaalNaam').value.trim();
+            betaalContext = null;
+            toonBetaalStatus();
             if (!naam) { vak.textContent = ''; return; }
             vak.innerHTML = '<small>Even rekenen…</small>';
             try {
-                const r = await (await fetch(GOOGLE_SCRIPT_URL + '?datum=vandaag')).json();
+                const [r, b] = await Promise.all([
+                    fetch(GOOGLE_SCRIPT_URL).then(x => x.json()),
+                    // een script van vóór de betaalstatus geeft hier de bestellijst terug; dan is er geen knop
+                    fetch(GOOGLE_SCRIPT_URL + '?actie=betaald').then(x => x.json()).catch(() => null)
+                ]);
                 if (!r.ok) throw new Error(r.error || 'Onbekende fout');
                 if (naam !== document.getElementById('betaalNaam').value.trim()) return; // intussen verder getypt
-                const van = r.bestellingen.filter(b => String(b.Naam).toLowerCase() === naam.toLowerCase());
-                if (!van.length) { vak.innerHTML = '<small>Geen bestelling van vandaag gevonden voor deze naam.</small>'; return; }
-                const totaal = van.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
-                const stuks = van.reduce((s, b) => s + (Number(b.Aantal) || 0), 0);
-                vak.innerHTML = `${euro(totaal)}<small>${stuks} ${stuks === 1 ? 'product' : 'producten'} vandaag · ${escapeHtml(van[0].Naam)}</small>`;
+                const van = r.bestellingen.filter(x => String(x.Naam).toLowerCase() === naam.toLowerCase());
+                if (!van.length) { vak.innerHTML = '<small>Geen bestelling gevonden voor deze naam.</small>'; return; }
+                const datum = van.map(x => x.Datum).sort().pop();
+                const opDag = van.filter(x => x.Datum === datum);
+                const totaal = opDag.reduce((s, x) => s + (Number(x.Totaal) || 0), 0);
+                const stuks = opDag.reduce((s, x) => s + (Number(x.Aantal) || 0), 0);
+                const dag = datum === vandaagISO() ? 'vandaag' : new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+                vak.innerHTML = `${euro(totaal)}<small>${stuks} ${stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dag)} · ${escapeHtml(opDag[0].Naam)}</small>`;
+
+                const bekend = !!(b && b.ok && Array.isArray(b.betalingen));
+                const huidig = bekend ? b.betalingen.find(x => x.Datum === datum && String(x.Naam).toLowerCase() === opDag[0].Naam.toLowerCase()) : null;
+                betaalContext = { naam: opDag[0].Naam, datum, kanMelden: bekend, status: huidig ? huidig.Status : 'open' };
+                toonBetaalStatus();
             } catch (err) {
                 vak.innerHTML = '<small>Je bedrag kon niet worden opgehaald. Kijk in je bestelling hoeveel je moet betalen.</small>';
+            }
+        }
+
+        // De knop "Ik heb betaald", of de stand van zaken als dat al gemeld of bevestigd is
+        function toonBetaalStatus() {
+            const vak = document.getElementById('betaalStatus');
+            vak.replaceChildren();
+            const c = betaalContext;
+            if (!c || !c.kanMelden) return;
+            const regel = (tekst, klasse) => { const p = document.createElement('p'); p.className = 'betaal-status-tekst ' + (klasse || ''); p.textContent = tekst; return p; };
+            if (c.status === 'bevestigd') {
+                vak.appendChild(regel('✅ Je betaling is bevestigd. Bedankt!', 'ok'));
+            } else if (c.status === 'zegt') {
+                vak.appendChild(regel('🟡 Je hebt gemeld dat je betaald hebt. Het wordt nog gecontroleerd.', 'wacht'));
+                const terug = document.createElement('button');
+                terug.className = 'knop-tekst';
+                terug.textContent = 'Toch nog niet betaald';
+                terug.onclick = () => meldBetaald('zegtNietBetaald');
+                vak.appendChild(terug);
+            } else {
+                const knop = document.createElement('button');
+                knop.className = 'knop-betaald';
+                knop.textContent = '✅ Ik heb betaald';
+                knop.onclick = () => meldBetaald('zegtBetaald');
+                vak.appendChild(knop);
+            }
+        }
+
+        async function meldBetaald(actie) {
+            const c = betaalContext;
+            if (!c) return;
+            try {
+                const r = await postMetCode({ actie, naam: c.naam, datum: c.datum });
+                c.status = r.status;
+                toonBetaalStatus();
+                toast(r.status === 'zegt' ? '🙏 Bedankt! Je betaling wordt gecontroleerd.' : r.status === 'bevestigd' ? '✅ Je betaling was al bevestigd.' : 'Oké, je betaling staat weer op open.', r.status === 'open' ? '' : 'succes');
+            } catch (err) {
+                toast(err.afgewezen ? '🚫 ' + err.message : '😬 Versturen mislukt, probeer het nog eens. (' + err.message + ')', 'fout');
             }
         }
 
@@ -1607,18 +1675,23 @@
         function annuleerCode() { sluitCodeModal(null); }
 
         async function verstuurBestelling(regels) {
+            await postMetCode({ data: regels });
+        }
+
+        // Stuurt iets naar het Google-script, met de teamcode erbij als die nodig is
+        async function postMetCode(extra) {
             let code = leesTeamcode();
             for (let poging = 0; poging < 3; poging++) {
                 // text/plain voorkomt een CORS-preflight, die Apps Script niet ondersteunt
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ code, data: regels })
+                    body: JSON.stringify({ code, ...extra })
                 });
                 const result = await response.json();
                 if (result.ok) {
                     if (code) bewaarTeamcode(code);
-                    return;
+                    return result;
                 }
                 if (result.code === 'CODE') {
                     code = await vraagTeamcode(poging > 0 || !!code);
@@ -1731,11 +1804,23 @@
                 return;
             }
 
+            // Wie heeft er vandaag al betaald? Alleen voor de dagweergave en alleen als het script dat kent
+            betalingStatus = null;
+            if (GOOGLE_SCRIPT_URL && alleenVandaag) {
+                try {
+                    const b = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=betaald&datum=vandaag')).json();
+                    if (b.ok && Array.isArray(b.betalingen)) betalingStatus = new Map(b.betalingen.map(x => [String(x.Naam).toLowerCase(), x.Status]));
+                } catch (err) { /* zonder status laat het overzicht gewoon geen betaalstatus zien */ }
+            }
+
             renderBeheer();
         }
 
         // ---------- Beheer: groepsoverzicht ----------
         let beheerTab = 'product';
+        let betalingStatus = null; // Map van naam (kleine letters) naar open / zegt / bevestigd, of null als onbekend
+
+        const STATUS_TEKST = { open: '⏳ open', zegt: '🟡 zegt betaald', bevestigd: '✅ bevestigd' };
 
         function kiesBeheerTab(tab) {
             beheerTab = tab;
@@ -1806,7 +1891,14 @@
             const totaal = geladenBestellingen.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
             const stuks = geladenBestellingen.reduce((s, b) => s + (Number(b.Aantal) || 0), 0);
             const mensen = new Set(geladenBestellingen.map(b => b.Naam)).size;
-            let html = `<div class="samenvatting"><span class="chip">👥 <strong>${mensen}</strong> ${mensen === 1 ? 'persoon' : 'mensen'}</span><span class="chip">🍽️ <strong>${stuks}</strong> stuks</span><span class="chip">💶 <strong>${euro(totaal)}</strong></span><span class="chip bron">bron: ${bron}</span></div>`;
+            let html = `<div class="samenvatting"><span class="chip">👥 <strong>${mensen}</strong> ${mensen === 1 ? 'persoon' : 'mensen'}</span><span class="chip">🍽️ <strong>${stuks}</strong> stuks</span><span class="chip">💶 <strong>${euro(totaal)}</strong></span><span class="chip bron">bron: ${bron}</span>`;
+            if (betalingStatus) {
+                const nogOpen = geladenBestellingen
+                    .filter(b => betalingStatus.get(String(b.Naam).toLowerCase()) !== 'bevestigd')
+                    .reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
+                html += `<span class="chip">⏳ nog niet bevestigd <strong>${euro(nogOpen)}</strong></span><a class="chip" href="admin.html" style="text-decoration:none;color:inherit;">💰 Betalingen beheren →</a>`;
+            }
+            html += '</div>';
 
             if (beheerTab === 'product') {
                 const afgevinkt = leesAfgevinkt();
@@ -1830,7 +1922,9 @@
                     perPersoon.set(b.Naam, p);
                 });
                 [...perPersoon].sort((a, b) => a[0].localeCompare(b[0], 'nl')).forEach(([naam, p]) => {
-                    html += `<div class="persoon-blok"><h4>${escapeHtml(naam)} <span>${euro(p.totaal)}</span></h4><ul>${p.regels.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>`;
+                    const status = betalingStatus ? (betalingStatus.get(naam.toLowerCase()) || 'open') : null;
+                    const badge = status ? `<span class="status-badge ${status}">${STATUS_TEKST[status]}</span>` : '';
+                    html += `<div class="persoon-blok"><h4><span>${escapeHtml(naam)}${badge}</span><span class="bedrag">${euro(p.totaal)}</span></h4><ul>${p.regels.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>`;
                 });
             } else {
                 html += `<table class="beheer-tabel"><thead><tr><th>Naam</th><th>Product</th><th>Aantal</th><th>Totaal</th><th>Tijd</th></tr></thead><tbody>`;

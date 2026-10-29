@@ -87,6 +87,26 @@
         .drop .groot { font-size: 40px; }
         .rij { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
         code { background: rgba(0, 0, 0, 0.35); padding: 2px 6px; border-radius: 6px; color: var(--sun); }
+        input[type="date"] {
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            font: 15px 'Inter', sans-serif;
+            color-scheme: dark;
+        }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .chip { padding: 7px 13px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); font-size: 13px; color: var(--text); }
+        .betaalrij { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; padding: 12px 4px; border-bottom: 1px dashed var(--border); }
+        .betaalrij .naam { font-weight: 700; color: var(--text); }
+        .betaalrij .bedrag { color: var(--muted); font-size: 13px; }
+        .betaalrij .acties { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+        .betaalrij button { padding: 8px 14px; font-size: 13px; }
+        .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .badge.open { background: rgba(255, 255, 255, 0.1); color: var(--muted); }
+        .badge.zegt { background: rgba(255, 194, 26, 0.18); color: #ffe7a3; }
+        .badge.bevestigd { background: rgba(47, 227, 163, 0.18); color: #b9f7e0; }
         .klein { font-size: 13px; }
     </style>
 </head>
@@ -111,6 +131,22 @@
         <section class="kaart">
             <h2>💶 QR-code die collega's nu zien</h2>
             <div id="huidige">Even laden…</div>
+        </section>
+
+        <!-- Betalingen -->
+        <section class="kaart">
+            <h2>💰 Wie heeft betaald?</h2>
+            <p class="klein" style="margin-top:0">Controleer in je bank- of Tikkie-app of het bedrag binnen is en bevestig het hier. "Zegt betaald" is wat een collega zelf heeft aangegeven.</p>
+            <div class="rij" style="margin:0 0 12px">
+                <input type="date" id="betaalDatum" onchange="toonBetalingen()" aria-label="Dag">
+                <button onclick="laadBetalingen()">🔄 Vernieuwen</button>
+            </div>
+            <div id="betaalSamenvatting"></div>
+            <div id="betaalLijst">Even laden…</div>
+            <div class="rij">
+                <button onclick="kopieerHerinnering()">📋 Kopieer herinnering voor de groepsapp</button>
+            </div>
+            <div id="betaalMelding"></div>
         </section>
 
         <!-- Uploaden -->
@@ -195,6 +231,7 @@
             $('loginKaart').classList.add('verborgen');
             $('beheerGedeelte').classList.remove('verborgen');
             laadHuidige();
+            laadBetalingen();
         } catch (err) {
             beheercode = '';
             melding($('loginMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
@@ -247,6 +284,126 @@
         const r = await postActie('verwijderQr');
         if (!r.ok) { alert(r.error || 'Verwijderen mislukt'); return; }
         laadHuidige();
+    }
+
+    // ---------- Betalingen ----------
+    let alleBestellingen = [], alleBetalingen = [], betalingenBekend = true, eersteKeer = true;
+    const euro = n => '€ ' + Number(n).toFixed(2).replace('.', ',');
+    const vandaagISO = () => new Date().toLocaleDateString('sv-SE');
+    const dagNaam = datum => new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    async function laadBetalingen() {
+        $('betaalLijst').textContent = 'Even laden…';
+        try {
+            const [bestel, bet] = await Promise.all([
+                fetch(GOOGLE_SCRIPT_URL).then(r => r.json()),
+                fetch(GOOGLE_SCRIPT_URL + '?actie=betaald').then(r => r.json())
+            ]);
+            if (!bestel.ok) throw new Error(bestel.error || 'Bestellingen ophalen mislukt');
+            alleBestellingen = bestel.bestellingen;
+            // Een script van vóór deze functie geeft hier de bestellijst terug in plaats van betalingen
+            betalingenBekend = bet.ok && Array.isArray(bet.betalingen);
+            alleBetalingen = betalingenBekend ? bet.betalingen : [];
+            if (eersteKeer) {
+                eersteKeer = false;
+                // Standaard de laatste dag met bestellingen: bijvoorbeeld vrijdag, ook als je er maandag naar kijkt
+                const dagen = alleBestellingen.map(b => b.Datum).filter(d => d <= vandaagISO()).sort();
+                $('betaalDatum').value = dagen.length ? dagen[dagen.length - 1] : vandaagISO();
+            }
+            toonBetalingen();
+        } catch (err) {
+            $('betaalLijst').textContent = 'Ophalen mislukt: ' + err.message;
+        }
+    }
+
+    // Per persoon op de gekozen dag: wat is er besteld en wat is de status
+    function personenVanDag() {
+        const datum = $('betaalDatum').value;
+        const perNaam = new Map();
+        alleBestellingen.filter(b => b.Datum === datum).forEach(b => {
+            const sleutel = String(b.Naam).toLowerCase();
+            const p = perNaam.get(sleutel) || { naam: b.Naam, totaal: 0, stuks: 0, status: 'open' };
+            p.totaal += Number(b.Totaal) || 0;
+            p.stuks += Number(b.Aantal) || 0;
+            perNaam.set(sleutel, p);
+        });
+        alleBetalingen.filter(b => b.Datum === datum).forEach(b => {
+            const p = perNaam.get(String(b.Naam).toLowerCase());
+            if (p) p.status = b.Status;
+        });
+        const volgorde = { open: 0, zegt: 1, bevestigd: 2 };
+        return [...perNaam.values()].sort((a, b) => volgorde[a.status] - volgorde[b.status] || a.naam.localeCompare(b.naam, 'nl'));
+    }
+
+    function toonBetalingen() {
+        const datum = $('betaalDatum').value;
+        const lijst = $('betaalLijst'), samen = $('betaalSamenvatting');
+        samen.replaceChildren();
+        if (!betalingenBekend) {
+            lijst.textContent = 'Je Google-script kent betalingen nog niet. Plak de nieuwe google-apps-script.gs in Apps Script en publiceer een nieuwe versie (zie de README).';
+            return;
+        }
+        const mensen = personenVanDag();
+        if (!mensen.length) { lijst.textContent = 'Geen bestellingen op ' + (datum ? dagNaam(datum) : 'deze dag') + '.'; return; }
+
+        const som = status => mensen.filter(p => p.status === status).reduce((s, p) => s + p.totaal, 0);
+        const aantal = status => mensen.filter(p => p.status === status).length;
+        [
+            '🍽️ ' + dagNaam(datum) + ': ' + euro(mensen.reduce((s, p) => s + p.totaal, 0)) + ' (' + mensen.length + ' mensen)',
+            '✅ bevestigd ' + euro(som('bevestigd')) + ' (' + aantal('bevestigd') + ')',
+            '🟡 zegt betaald ' + euro(som('zegt')) + ' (' + aantal('zegt') + ')',
+            '⏳ open ' + euro(som('open')) + ' (' + aantal('open') + ')'
+        ].forEach(t => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = t; samen.appendChild(c); });
+        samen.className = 'chips';
+
+        lijst.replaceChildren(...mensen.map(p => {
+            const rij = document.createElement('div');
+            rij.className = 'betaalrij';
+            const links = document.createElement('div');
+            const naam = document.createElement('div'); naam.className = 'naam'; naam.textContent = p.naam;
+            const bedrag = document.createElement('div'); bedrag.className = 'bedrag'; bedrag.textContent = euro(p.totaal) + ' · ' + p.stuks + (p.stuks === 1 ? ' product' : ' producten');
+            links.append(naam, bedrag);
+            const badge = document.createElement('span');
+            badge.className = 'badge ' + p.status;
+            badge.textContent = { open: '⏳ Open', zegt: '🟡 Zegt betaald', bevestigd: '✅ Bevestigd' }[p.status];
+            const acties = document.createElement('div'); acties.className = 'acties';
+            if (p.status !== 'bevestigd') {
+                const b = document.createElement('button'); b.className = 'hoofd'; b.textContent = '✅ Bevestig betaald';
+                b.onclick = () => zetBetaling(p.naam, 'bevestigd');
+                acties.appendChild(b);
+            }
+            if (p.status !== 'open') {
+                const b = document.createElement('button'); b.textContent = '↩️ Terug naar open';
+                b.onclick = () => zetBetaling(p.naam, 'open');
+                acties.appendChild(b);
+            }
+            rij.append(links, badge, acties);
+            return rij;
+        }));
+    }
+
+    async function zetBetaling(naam, status) {
+        melding($('betaalMelding'), '', '');
+        try {
+            const r = await postActie('zetBetaling', { datum: $('betaalDatum').value, naam, status });
+            if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Opslaan mislukt.'); return; }
+            await laadBetalingen();
+        } catch (err) {
+            melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
+        }
+    }
+
+    // Tekst voor de groepsapp met wie nog niets heeft betaald of gemeld
+    function kopieerHerinnering() {
+        const datum = $('betaalDatum').value;
+        const open = personenVanDag().filter(p => p.status === 'open');
+        if (!open.length) { melding($('betaalMelding'), 'ok', 'Iedereen heeft betaald of gemeld. 🎉'); return; }
+        const tekst = 'Hoi allemaal! 🍟 Nog niet betaald voor de Family lunch van ' + dagNaam(datum) + ': ' +
+            open.map(p => p.naam + ' (' + euro(p.totaal) + ')').join(', ') +
+            '. Betalen kan via https://kevinboogaard.github.io/family-lunch/ met de knop "Afrekenen". Bedankt!';
+        const klaar = () => melding($('betaalMelding'), 'ok', '📋 Gekopieerd! Plak het in de groepsapp.');
+        const noodgeval = () => { const ta = document.createElement('textarea'); ta.value = tekst; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); klaar(); } catch (e) { melding($('betaalMelding'), 'fout', 'Kopiëren is niet gelukt.'); } ta.remove(); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tekst).then(klaar, noodgeval); else noodgeval();
     }
 
     // ---------- Uploaden ----------
