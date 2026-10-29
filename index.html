@@ -251,10 +251,82 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(18px) saturate(1.4);
         }
-        .zoek {
-            position: relative;
+        .zoek-rij {
+            display: flex;
+            gap: 10px;
             margin-bottom: 14px;
         }
+        .zoek {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+        .weetniet-knop {
+            flex: none;
+            padding: 0 20px;
+            border: none;
+            border-radius: 999px;
+            background: var(--vibe);
+            color: #1c0d00;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 10px 24px -10px rgba(255, 61, 129, 0.8);
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), filter 0.2s;
+        }
+        .weetniet-knop:hover { transform: translateY(-2px) rotate(-1deg); filter: brightness(1.08); }
+        .weetniet-knop:disabled { opacity: 0.5; cursor: default; transform: none; }
+        .weetniet-knop .kort { display: none; }
+        @media (max-width: 520px) {
+            .weetniet-knop { padding: 0 14px; }
+            .weetniet-knop .lang { display: none; }
+            .weetniet-knop .kort { display: inline; }
+        }
+
+        /* ---------- Keuzehulp "Ik weet het niet" ---------- */
+        .kies-stap { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
+        .kies-balk { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 0 48px 20px 0; }
+        .kies-balk span { display: block; height: 100%; background: var(--vibe); border-radius: inherit; transition: width 0.4s cubic-bezier(.34, 1.56, .64, 1); }
+        .kies-vraag { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 600; margin: 0 0 18px; line-height: 1.25; }
+        .kies-antwoorden { display: grid; gap: 10px; }
+        .kies-antwoord {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font: inherit;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s, border-color 0.2s;
+        }
+        .kies-antwoord:hover, .kies-antwoord:focus-visible { transform: translateX(4px); border-color: rgba(255, 194, 26, 0.6); background: rgba(255, 255, 255, 0.09); outline: none; }
+        .kies-antwoord .emoji { font-size: 24px; width: 30px; text-align: center; flex: none; }
+        .kies-uitkomst { text-align: center; }
+        .kies-uitkomst .modal-foto { height: 200px; }
+        .kies-icoon { font-size: 90px; line-height: 1; margin: 6px 0 14px; }
+        .kies-waarom { color: var(--muted); margin: 10px 0 0; font-size: 15px; }
+        .kies-erbij { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+        .kies-erbij button {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px dashed rgba(255, 194, 26, 0.6);
+            background: rgba(255, 194, 26, 0.08);
+            color: var(--text);
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .kies-erbij button:hover { background: rgba(255, 194, 26, 0.2); }
+        .kies-erbij button:disabled { opacity: 0.6; cursor: default; border-style: solid; }
+        .kies-knoppen button { flex: 1; }
+        .kies-knoppen .btn-confirm { flex-basis: 100%; font-family: 'Fredoka', sans-serif; font-size: 18px; }
         .zoek input {
             width: 100%;
             padding: 15px 18px 15px 50px;
@@ -864,8 +936,11 @@
     <div class="container">
         <main class="menu-section">
             <div class="menu-kop">
-                <div class="zoek">
-                    <input type="search" id="zoekInput" placeholder="Zoek in het hele menu… (bijv. kroket, mayo, cola)" aria-label="Zoek een product" oninput="zoekProducten()">
+                <div class="zoek-rij">
+                    <div class="zoek">
+                        <input type="search" id="zoekInput" placeholder="Zoek in het hele menu… (bijv. kroket, mayo, cola)" aria-label="Zoek een product" oninput="zoekProducten()">
+                    </div>
+                    <button class="weetniet-knop" id="weetNietKnop" onclick="openKiesModal()" disabled>🤔 <span class="lang">Ik weet het niet</span><span class="kort">Weet niet</span></button>
                 </div>
                 <div id="categoryContainer" class="categories" role="tablist"></div>
             </div>
@@ -915,6 +990,13 @@
     </div>
 
     <!-- POP-UP AFREKENEN -->
+    <div id="kiesModal" class="modal" onclick="if (event.target === this) sluitKiesModal()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="kiesTitel" style="width: min(460px, 100%);">
+            <button class="modal-sluit" onclick="sluitKiesModal()" aria-label="Sluiten">✕</button>
+            <div id="kiesInhoud"></div>
+        </div>
+    </div>
+
     <div id="betaalModal" class="modal" onclick="if (event.target === this) sluitBetaalModal()">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="betaalTitel" style="width: min(440px, 100%); text-align: center;">
             <button class="modal-sluit" onclick="sluitBetaalModal()" aria-label="Sluiten">✕</button>
@@ -1103,6 +1185,7 @@
         function initApp() {
             if (menuData.length === 0) return;
             activeCat = [...new Set(menuData.map(item => item.cat))][0];
+            document.getElementById('weetNietKnop').disabled = false;
             renderCategories();
             renderProducts(activeCat);
         }
@@ -1451,12 +1534,254 @@
         });
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
+            sluitKiesModal();
             sluitBetaalModal();
             sluitMijnModal();
             annuleerCode();
             sluitModal();
             toggleMandje(false);
         });
+
+        // ---------- Keuzehulp "Ik weet het niet": een paar vragen en dan een voorstel uit het menu ----------
+        // De kenmerken worden geraden uit de naam en omschrijving, want menu.json zegt niet wat pittig of vega is.
+        const KIES_UITGESLOTEN = /gezinszak|bittergarnituur|family deal|kinderfestival|milkshake|sundae|rauwkost|slaatje|zonder$/i;
+        const KIES_VEGA = /vega|groente/i;
+        const KIES_VIS = /zalm|tonijn|gamba|fish|vis\b|kibbeling|lekkerbek/i;
+        const KIES_KIP = /kip|chicken|wings|nuggets|tenders/i;
+        const KIES_VLEES = /vlees|bacon|ham\b|uitsmijter|\bbal\b|burger|beef|rund|kalf|gehakt|frikandel|kroket|sate|shoarma|pulled|carpaccio|ossenworst|americain|tartaar|rosbief|fricandeau|grill|schnitzel|loempia|smulrol|mexicano|pikanto|berehap|nasi|bami|goulash|kapsalon|bitterbal|snackmenu|vlammetjes/i;
+        const KIES_PITTIG = /spicy|pikant|hete|chili|vlammetjes|mexicano|oorlog|rendang|sambal|peri/i;
+        const KIES_NIEUW = /special|truffel|premium|bbq|bali|dubai|parmezaan|creamy/i;
+        const KIES_KLASSIEK = /^(frikandel|rundvleeskroket|kaassouffle|frites mayonaise|hamburger classic|cheeseburger|broodje kroket|frikandel speciaal curry|gehaktbal|broodje kaas|broodje ham\/kaas|bitterballen \(5st\)|kipnuggets \(5st\))$/i;
+
+        function kiesKenmerken(p) {
+            const tekst = p.name + ' ' + p.desc;
+            const soort = KIES_VEGA.test(p.name) ? 'vega' : KIES_VIS.test(tekst) ? 'vis' : KIES_KIP.test(tekst) ? 'kip' : KIES_VLEES.test(tekst) ? 'vlees' : 'vega';
+            const koud = p.cat === 'Salades' || (p.cat === 'Broodjes' && !/warm|hete|gebakken|uitsmijter|kroket|frikandel|shoarma|pulled|teriyaki/i.test(p.name));
+            const zwaar = p.cat === "Menu's" || p.price >= 9 || /kapsalon|jumbo|schotel|halve kip|stoofvlees/i.test(p.name);
+            return {
+                soort, koud, zwaar,
+                licht: p.cat === 'Salades' || /gezond|rauwkost|caprese|salade/i.test(p.name),
+                pittig: KIES_PITTIG.test(tekst),
+                gefrituurd: ['Frites', 'Snacks'].includes(p.cat) || /kapsalon|kroket|frikandel|schnitzel|fish and chips/i.test(p.name),
+                handen: ['Snacks', 'Burgers', 'Broodjes'].includes(p.cat) && !/halve kip|kipsate/i.test(p.name),
+                vork: ["Menu's", 'Salades'].includes(p.cat) || /kapsalon|stoofvlees|pulled|spicy chicken|halve kip|kipsate/i.test(p.name),
+                nieuw: p.cat === 'Actie' || KIES_NIEUW.test(p.name),
+                klassiek: KIES_KLASSIEK.test(p.name),
+                burger: p.cat === 'Burgers'
+            };
+        }
+
+        // Elk antwoord geeft punten aan producten die erbij passen; "weg" haalt producten helemaal weg (bijv. vlees bij vega).
+        // "waarom" komt in de uitleg als het antwoord punten opleverde voor het voorstel.
+        const KIES_DIEET = {
+            vraag: 'Waar heb je zin in?',
+            antwoorden: [
+                { emoji: '🥩', tekst: 'Vlees', waarom: 'je zin hebt in vlees', punten: k => k.soort === 'vlees' ? 5 : k.soort === 'kip' ? 0 : -2 },
+                { emoji: '🐔', tekst: 'Kip', waarom: 'je zin hebt in kip', punten: k => k.soort === 'kip' ? 6 : -1 },
+                { emoji: '🐟', tekst: 'Vis', waarom: 'je zin hebt in vis', punten: k => k.soort === 'vis' ? 8 : -2 },
+                { emoji: '🌱', tekst: 'Vega', waarom: 'je vega wilt', punten: () => 0, weg: k => k.soort !== 'vega' },
+                { emoji: '🤷', tekst: 'Maakt me niet uit', punten: () => 0 }
+            ]
+        };
+        const KIES_VRAGEN = [
+            {
+                vraag: 'Hoeveel trek heb je?',
+                antwoorden: [
+                    { emoji: '🐭', tekst: 'Een klein beetje', klein: true, waarom: 'je maar een beetje trek hebt', punten: (k, p) => (k.licht ? 2 : 0) + (p.price < 5 ? 3 : 0) - (k.zwaar ? 5 : 0) },
+                    { emoji: '🐻', tekst: 'Best wel flink', waarom: 'je flinke trek hebt', punten: (k, p) => p.price >= 5 && p.price < 11 ? 3 : 0 },
+                    { emoji: '🦖', tekst: 'Ik kan een paard op', waarom: 'je een paard op kunt', punten: k => (k.zwaar ? 6 : 0) - (k.licht ? 3 : 0) }
+                ]
+            },
+            {
+                vraag: 'Hoe pittig mag het zijn?',
+                antwoorden: [
+                    { emoji: '🧊', tekst: 'Helemaal niet', punten: () => 0, weg: k => k.pittig },
+                    { emoji: '🌶️', tekst: 'Een beetje pit is fijn', waarom: 'je wel van een beetje pit houdt', punten: k => k.pittig ? 2 : 0 },
+                    { emoji: '🔥', tekst: 'Zo heet mogelijk!', waarom: 'je het heet wilt hebben', punten: k => k.pittig ? 7 : -1 }
+                ]
+            },
+            {
+                vraag: 'Hoe voel je je vandaag?',
+                antwoorden: [
+                    { emoji: '🥗', tekst: 'Een beetje gezond doen', waarom: 'je gezond wilt doen', punten: k => (k.licht ? 6 : 0) - (k.gefrituurd ? 3 : 0) },
+                    { emoji: '😌', tekst: 'Gewoon iets lekkers', waarom: 'je gewoon iets lekkers wilt', punten: k => k.klassiek ? 3 : 0 },
+                    { emoji: '🎉', tekst: 'Het is vrijdag, alles mag!', waarom: 'het vrijdag is en alles mag', punten: k => (k.gefrituurd ? 3 : 0) + (k.zwaar ? 2 : 0) - (k.licht ? 3 : 0) }
+                ]
+            },
+            {
+                vraag: 'Wat mag het kosten?',
+                antwoorden: [
+                    { emoji: '🪙', tekst: 'Zo goedkoop mogelijk', waarom: 'het niet veel mag kosten', punten: (k, p) => p.price <= 4 ? 5 : p.price > 8 ? -5 : 0 },
+                    { emoji: '💶', tekst: 'Maakt niet zoveel uit', punten: () => 0 },
+                    { emoji: '💎', tekst: 'Ik trakteer mezelf', waarom: 'je jezelf trakteert', punten: (k, p) => (k.nieuw ? 3 : 0) + (p.price >= 7 ? 2 : 0) }
+                ]
+            },
+            {
+                vraag: 'Warm of koud?',
+                antwoorden: [
+                    { emoji: '♨️', tekst: 'Lekker warm', waarom: 'je iets warms wilt', punten: k => k.koud ? -5 : 1 },
+                    { emoji: '❄️', tekst: 'Liever koud', waarom: 'je iets kouds wilt', punten: k => k.koud ? 6 : -3 }
+                ]
+            },
+            {
+                vraag: 'Eet je met je handen of met een vork?',
+                antwoorden: [
+                    { emoji: '🤲', tekst: 'Handen, aan mijn bureau', waarom: 'je het uit de hand wilt eten', punten: k => k.handen ? 4 : -2 },
+                    { emoji: '🍴', tekst: 'Vork, ik ga er even voor zitten', waarom: 'je er even voor gaat zitten', punten: k => (k.vork ? 5 : 0) - (k.handen ? 1 : 0) }
+                ]
+            },
+            {
+                vraag: 'Zin in iets nieuws?',
+                antwoorden: [
+                    { emoji: '🆕', tekst: 'Ja, verras me', waarom: 'je iets nieuws wilt proberen', punten: k => k.nieuw ? 5 : 0 },
+                    { emoji: '🛋️', tekst: 'Nee, doe maar vertrouwd', waarom: 'je voor vertrouwd gaat', punten: k => k.klassiek ? 6 : 0 }
+                ]
+            },
+            {
+                vraag: 'Wat voor vrijdag wordt het?',
+                antwoorden: [
+                    { emoji: '🏖️', tekst: 'Rustig aan', waarom: 'het een rustige vrijdag is', punten: k => (k.licht ? 2 : 0) + (k.vork ? 1 : 0) },
+                    { emoji: '🚀', tekst: 'Nog bergen werk', waarom: 'je nog bergen werk hebt', punten: k => (k.handen ? 2 : 0) + (k.burger ? 2 : 0) },
+                    { emoji: '🍻', tekst: 'Hoofd zit al in het weekend', waarom: 'je hoofd al in het weekend zit', punten: k => (k.gefrituurd ? 2 : 0) + (k.zwaar ? 2 : 0) }
+                ]
+            },
+            {
+                vraag: 'Welke superkracht zou je willen?',
+                antwoorden: [
+                    { emoji: '🕊️', tekst: 'Vliegen', waarom: 'je licht wilt blijven om te kunnen vliegen', punten: k => k.licht ? 4 : k.zwaar ? -2 : 0 },
+                    { emoji: '💪', tekst: 'Superkracht', waarom: 'superkracht brandstof nodig heeft', punten: k => (k.zwaar ? 4 : 0) + (k.soort === 'vlees' || k.soort === 'kip' ? 1 : 0) },
+                    { emoji: '🐉', tekst: 'Vuur spuwen', waarom: 'je vuur wilt spuwen', punten: k => k.pittig ? 5 : 0 },
+                    { emoji: '🫥', tekst: 'Onzichtbaar worden', waarom: 'niemand hoeft te zien wat je eet', punten: k => k.handen ? 2 : 0 }
+                ]
+            }
+        ];
+
+        let kies = null;
+
+        function husselen(lijst) {
+            const kopie = [...lijst];
+            for (let i = kopie.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
+            }
+            return kopie;
+        }
+
+        function openKiesModal() {
+            if (!menuData.length) return;
+            // Vlees/vega altijd, zodat een vegetariër nooit een frikandel voorgesteld krijgt; daarna drie willekeurige vragen
+            kies = { vragen: [KIES_DIEET, ...husselen(KIES_VRAGEN).slice(0, 3)], antwoorden: [], uitslag: [], index: 0 };
+            document.getElementById('kiesModal').style.display = 'flex';
+            toonKiesVraag();
+        }
+
+        function sluitKiesModal() {
+            document.getElementById('kiesModal').style.display = 'none';
+            kies = null;
+        }
+
+        function toonKiesVraag() {
+            const nr = kies.antwoorden.length;
+            const v = kies.vragen[nr];
+            document.getElementById('kiesInhoud').innerHTML = `
+                <p class="kies-stap">Vraag ${nr + 1} van ${kies.vragen.length}</p>
+                <div class="kies-balk"><span style="width:${(nr / kies.vragen.length) * 100}%"></span></div>
+                <h3 class="kies-vraag" id="kiesTitel">${escapeHtml(v.vraag)}</h3>
+                <div class="kies-antwoorden">
+                    ${v.antwoorden.map((a, i) => `<button class="kies-antwoord" onclick="kiesAntwoord(${i})"><span class="emoji">${a.emoji}</span>${escapeHtml(a.tekst)}</button>`).join('')}
+                </div>`;
+            document.querySelector('#kiesInhoud .kies-antwoord').focus({ preventScroll: true });
+            document.querySelector('#kiesModal .modal-content').scrollTop = 0;
+        }
+
+        function kiesAntwoord(i) {
+            if (!kies) return;
+            kies.antwoorden.push(kies.vragen[kies.antwoorden.length].antwoorden[i]);
+            if (kies.antwoorden.length < kies.vragen.length) { toonKiesVraag(); return; }
+            kies.uitslag = berekenKeuze(kies.antwoorden);
+            kies.index = 0;
+            toonKiesUitkomst();
+        }
+
+        function berekenKeuze(antwoorden) {
+            const gezien = new Set();
+            const kandidaten = menuData.filter(p => {
+                if (!["Actie", 'Frites', 'Snacks', 'Burgers', "Menu's", 'Salades', 'Broodjes'].includes(p.cat)) return false;
+                if (p.price > 20 || KIES_UITGESLOTEN.test(p.name) || gezien.has(p.name)) return false;
+                gezien.add(p.name);
+                return true;
+            });
+            const scoren = metFilter => kandidaten
+                .map(p => ({ p, k: kiesKenmerken(p) }))
+                .filter(({ k }) => !metFilter || antwoorden.every(a => !a.weg || !a.weg(k)))
+                .map(({ p, k }) => {
+                    const delen = antwoorden.map(a => ({ a, punten: a.punten(k, p) }));
+                    // Een beetje toeval, zodat je bij dezelfde antwoorden niet steeds hetzelfde krijgt
+                    const score = delen.reduce((s, d) => s + d.punten, 0) + Math.random() * 2.5;
+                    const redenen = delen.filter(d => d.punten > 0 && d.a.waarom).sort((x, y) => y.punten - x.punten).map(d => d.a.waarom);
+                    return { p, k, score, redenen };
+                })
+                .sort((x, y) => y.score - x.score);
+            const lijst = scoren(true);
+            return lijst.length ? lijst : scoren(false);
+        }
+
+        function kiesErbij(top, k) {
+            const zoek = naam => menuData.find(p => p.name.toLowerCase() === naam.toLowerCase());
+            const erbij = [];
+            if (!kies.antwoorden.some(a => a.klein) && (top.cat === 'Snacks' || top.cat === 'Burgers') && !/broodje/i.test(top.name)) {
+                const frites = zoek('Frites Mayonaise');
+                if (frites) erbij.push({ p: frites, tekst: '🍟 met friet erbij' });
+            }
+            const dranken = k.licht ? ['Chaudfontaine blauw (PET)', "Verse jus d'Orange"]
+                : k.pittig ? ['Coca Cola blik', 'Ice tea sparkling blik']
+                : ['Coca Cola blik', 'Coca Cola Zero blik', 'Fanta blik', 'Ice tea green blik', 'Chocomel blik'];
+            const drank = husselen(dranken).map(zoek).find(Boolean);
+            if (drank) erbij.push({ p: drank, tekst: `🥤 ${drank.name}` });
+            return erbij;
+        }
+
+        function toonKiesUitkomst() {
+            const keuze = kies.uitslag[kies.index % kies.uitslag.length];
+            const p = keuze.p;
+            const redenen = keuze.redenen.slice(0, 2);
+            const waarom = kies.index > 0 ? 'Niet goed? Dan deze misschien.'
+                : redenen.length ? `Omdat ${redenen.join(' en ')}.`
+                : 'Gewoon een goeie keuze.';
+            const erbij = kiesErbij(p, keuze.k);
+            const icoon = `<div class="kies-icoon">${categorieIcoon(p.cat)}</div>`;
+            document.getElementById('kiesInhoud').innerHTML = `
+                <div class="kies-uitkomst">
+                    <p class="kies-stap">${kies.index === 0 ? '✨ Wij denken' : '🎲 Nog een idee'}</p>
+                    ${p.fotoGroot ? `<img class="modal-foto" src="${escapeHtml(p.fotoGroot)}" alt="${escapeHtml(p.name)}" onerror="this.outerHTML='${icoon.replace(/"/g, '&quot;')}'">` : icoon}
+                    <h3 id="kiesTitel">${escapeHtml(p.name)}</h3>
+                    <div class="modal-prijs" style="margin-bottom: 0;">${euro(p.price)}</div>
+                    ${p.desc ? `<p class="kies-waarom">${escapeHtml(p.desc)}</p>` : ''}
+                    <p class="kies-waarom"><strong>${escapeHtml(waarom)}</strong></p>
+                    ${erbij.length ? `<div class="kies-erbij">${erbij.map(e => `<button onclick="kiesVoegToe(${e.p.id}, this)">+ ${escapeHtml(e.tekst)} <small>${euro(e.p.price)}</small></button>`).join('')}</div>` : ''}
+                </div>
+                <div class="modal-buttons kies-knoppen">
+                    <button class="btn-confirm" id="kiesConfirm" onclick="kiesVoegToe(${p.id})">Doe maar! 🛒</button>
+                    ${kies.uitslag.length > 1 ? '<button class="btn-cancel" onclick="kies.index++; toonKiesUitkomst()">🎲 Iets anders</button>' : ''}
+                    <button class="btn-cancel" onclick="openKiesModal()">↺ Opnieuw</button>
+                </div>`;
+            document.querySelector('#kiesModal .modal-content').scrollTop = 0;
+            document.getElementById('kiesConfirm').focus({ preventScroll: true });
+            if (kies.index === 0) feest();
+        }
+
+        // Producten met keuzes (saus, extra's) gaan via het gewone keuzevenster; de rest gaat meteen in het mandje
+        function kiesVoegToe(id, knop) {
+            const product = menuData.find(p => p.id === id);
+            if (!product) return;
+            const heeftKeuzes = product.extraSets.length > 0 || (product.vragenSetID && vragenData.some(v => v.vragenSetID == product.vragenSetID));
+            if (heeftKeuzes || !knop) sluitKiesModal();
+            klikProduct(id, null);
+            if (knop && !heeftKeuzes) {
+                knop.disabled = true;
+                knop.textContent = `✓ ${product.name} erbij`;
+            }
+        }
 
         function feest() {
             if (minderBeweging || typeof confetti !== 'function') return;

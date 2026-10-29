@@ -19,6 +19,18 @@ wanneer het menu voor het laatst is opgehaald.
   gewijzigde meerprijzen van sauzen/opties en nieuwe of verdwenen producten,
   vergeleken met de vorige run.
 
+## "Ik weet het niet"
+
+Naast de zoekbalk staat de knop **🤔 Ik weet het niet**. Die stelt vier vragen: altijd of je zin hebt in
+vlees, kip, vis of vega, en daarna drie willekeurige uit een rijtje (trek, pittig, budget, warm of koud,
+handen of vork, iets nieuws, wat voor vrijdag, superkracht). Daarna stelt de app iets uit het menu voor, met de
+reden erbij, friet en een drankje als tip en de knoppen **Iets anders** en **Opnieuw**.
+
+- Wat vlees, vega, pittig of licht is, raadt de app aan de naam en omschrijving van het product
+  (`kiesKenmerken` in `index.html`). Komt er een nieuw product bij, dan gaat dat meestal vanzelf goed.
+- Kies je **Vega** of **Helemaal niet pittig**, dan valt de rest weg. De andere antwoorden geven alleen voorrang.
+- Grote bestellingen (gezinszakken, bittergarnituur, Family deal) en ijs stelt hij niet voor.
+
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 
 1. Maak een nieuwe Google Sheet aan (bijv. "Family lunch bestellingen").
