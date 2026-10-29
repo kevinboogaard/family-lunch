@@ -257,6 +257,22 @@
     let plan = null;
     let bezig = false;
 
+    // De beheercode blijft alleen in het geheugen van dit venster en wordt bij sluiten gewist
+    let beheercode = '';
+
+    // Het Google-script geeft de bestellingen alleen aan de beheerder, dus we vragen om de code (afgeschermd)
+    function vraagCode(fout) {
+        const veld = el('input', 'width:100%;box-sizing:border-box;padding:11px 14px;margin-top:10px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:' + KLEUR.tekst + ';font:15px system-ui,sans-serif');
+        veld.type = 'password';
+        veld.placeholder = 'Beheercode';
+        veld.autocomplete = 'off';
+        const doorgaan = () => { if (!veld.value) return; beheercode = veld.value; laden(); };
+        veld.onkeydown = e => { if (e.key === 'Enter') doorgaan(); };
+        toon([regel('🔑 De bestellingen zijn alleen zichtbaar voor de beheerder. Vul je beheercode in.'), fout ? regel(fout, KLEUR.rood) : el('div'), veld],
+            [knopMaken('Sluiten', false, sluitPaneel), knopMaken('Doorgaan', true, doorgaan)]);
+        setTimeout(() => veld.focus(), 50);
+    }
+
     async function laden() {
         toon([regel('⏳ Bestellingen en menu ophalen…')], []);
         try {
@@ -265,14 +281,23 @@
                     [knopMaken('Naar de menukaart', true, () => { location.href = 'https://e-food.nl/skin/family/mijdrecht/cafetaria-family-mijdrecht/browse'; })]);
                 return;
             }
-            const [menu, antwoord] = ingebouwd
-                ? [ingebouwd.menu, { ok: true, bestellingen: ingebouwd.bestellingen }]
-                : await Promise.all([
-                    fetch(BASIS + 'menu.json?' + Date.now()).then(r => r.json()),
-                    // (een data:-adres, gebruikt bij testen, laat je ongemoeid)
-                    fetch(/^https?:/.test(BESTELLINGEN_URL) ? BESTELLINGEN_URL + (BESTELLINGEN_URL.includes('?') ? '&' : '?') + 'datum=vandaag' : BESTELLINGEN_URL).then(r => r.json())
-                ]);
-            if (!antwoord.ok) throw new Error(antwoord.error || 'Bestellingen ophalen mislukt');
+            let menu, antwoord;
+            if (ingebouwd) {
+                menu = ingebouwd.menu;
+                antwoord = { ok: true, bestellingen: ingebouwd.bestellingen };
+            } else {
+                // Een testbestand (?orders=...) wordt gewoon gelezen; het echte script alleen met de beheercode
+                const uitScript = /^https:\/\/script\.google\.com\//.test(BESTELLINGEN_URL);
+                if (uitScript && !beheercode) { vraagCode(); return; }
+                const bestelde = uitScript
+                    ? fetch(BESTELLINGEN_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ actie: 'bestellingen', beheercode, datum: 'vandaag' }) }).then(r => r.json())
+                    : fetch(BESTELLINGEN_URL).then(r => r.json());
+                [menu, antwoord] = await Promise.all([fetch(BASIS + 'menu.json?' + Date.now()).then(r => r.json()), bestelde]);
+            }
+            if (!antwoord.ok) {
+                if (antwoord.code === 'CODE') { beheercode = ''; vraagCode(antwoord.error); return; }
+                throw new Error(antwoord.error || 'Bestellingen ophalen mislukt');
+            }
             if (!antwoord.bestellingen.length) {
                 toon([regel('Er zijn vandaag nog geen bestellingen. 🍽️')], [knopMaken('Opnieuw kijken', false, laden)]);
                 return;
@@ -373,6 +398,7 @@
     function sluitPaneel() {
         if (bezig) return;
         ingebouwd = null; // de volgende keer weer verse gegevens gebruiken
+        beheercode = '';
         paneel.style.display = 'none';
     }
     sluit.onclick = sluitPaneel;

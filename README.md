@@ -25,7 +25,7 @@ wanneer het menu voor het laatst is opgehaald.
 2. Ga naar **Extensies > Apps Script**.
 3. Verwijder de voorbeeldcode en plak de inhoud van `google-apps-script.gs`. Klik op **Opslaan**.
 4. Ga naar **Projectinstellingen** (tandwiel) en zet de tijdzone op
-   **(GMT+01:00) Amsterdam**. Zo klopt "Alleen vandaag" in het beheeroverzicht.
+   **(GMT+01:00) Amsterdam**. Zo klopt "vandaag" in het overzicht op `admin.html`.
 5. Klik op **Implementeren > Nieuwe implementatie**:
    - Type: **Web-app**
    - Uitvoeren als: **Ik**
@@ -113,11 +113,11 @@ De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je G
 | 🟡 zegt betaald | de collega heeft in het afrekenscherm op **Ik heb betaald** getikt |
 | ✅ bevestigd | jij hebt in je bank- of Tikkie-app gezien dat het bedrag binnen is |
 
-- **Collega's** tikken in het afrekenscherm op **✅ Ik heb betaald**. Het scherm laat de laatste bestelling
-  van die naam zien (dus maandag ook nog die van vrijdag). Met **Toch nog niet betaald** halen ze de melding weer weg.
+- **Collega's** tikken in het afrekenscherm op **✅ Ik heb betaald**. Het scherm laat hun eigen laatste bestelling
+  van dit apparaat zien (dus maandag ook nog die van vrijdag). Met **Toch nog niet betaald** halen ze de melding weer weg.
 - **Jij** ziet op `admin.html` onder **Wie heeft betaald?** per persoon het bedrag en de stand, met
   **Bevestig betaald** en **Terug naar open**, en een knop **Kopieer herinnering voor de groepsapp** met de namen
-  van wie nog niets gemeld heeft. In het overzicht in de app staan bij **Per persoon** dezelfde stickers.
+  van wie nog niets gemeld heeft. Bij **Per persoon** in het overzicht op `admin.html` staan dezelfde stickers.
 - Een melding van een collega is alleen een melding: bevestigen kan alleen met de beheercode, en een bevestiging
   kan een collega niet meer terugzetten. De melding werkt alleen voor een naam die op die dag echt iets heeft besteld
   (maximaal 31 dagen terug), en met de teamcode als je die hebt ingesteld.
@@ -130,25 +130,39 @@ De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je G
 2. Ga naar **Settings > Pages**, kies bij *Source* de branch `main` en map `/ (root)`.
 3. Na een minuut staat de app op `https://<gebruikersnaam>.github.io/<repo>/`.
 
+## Wie ziet wat?
+
+- **Collega's** zien alleen hun **eigen** bestelling: onder **🧾 Mijn bestelling** in de app staat wat dit
+  apparaat heeft besteld. Er is geen lijst met bestellingen van anderen. De bestellingen van iedereen
+  worden niet aan de website gegeven, ook niet als iemand rechtstreeks naar je Google-script vraagt.
+- **Jij** ziet alles op `admin.html`, na het invullen van je beheercode (zie "Misbruik voorkomen").
+- Bestelde iemand op een ander apparaat of is de browser opgeruimd? Dan staat de bestelling daar niet. Hij kan de
+  QR nog wel gebruiken, maar je zegt hem zelf het bedrag (je ziet het op `admin.html`).
+- Alleen de QR-code is openbaar, want die moet iedereen kunnen zien om te betalen.
+
+**Let op:** zolang je het Google-script niet hebt bijgewerkt, kan iedereen met de web-app URL de oude bestellijst
+nog ophalen. Plak de nieuwe `google-apps-script.gs` en publiceer een nieuwe versie.
+
 ## Bestellen bij Family
 
-Als iedereen heeft besteld, open je in de app **Alle bestellingen**:
+Als iedereen heeft besteld, open je `admin.html` en log je in. Onder **Alle bestellingen** zie je:
 
-- **Per product** telt alles op, in de volgorde van het menu, met afvinkvakjes
-  om bij te houden wat je al hebt ingevuld. **Kopieer lijst** geeft een tekst voor de groepsapp.
-- **Per persoon** laat zien wie wat besteld heeft en wat diegene moet betalen.
+- **Per product**: alles opgeteld, in de volgorde van het menu, met afvinkvakjes om bij te houden wat je al
+  hebt ingevuld. **Kopieer lijst** geeft een tekst voor de groepsapp.
+- **Per persoon**: wie wat besteld heeft, wat diegene moet betalen en of het is betaald.
+- **Alle regels**: de losse regels, en **Exporteer naar Excel**.
+- Standaard de dag die je bovenin kiest (de laatste met bestellingen); vink **Toon alle dagen** aan voor alles.
 
 Daarna kun je de lijst met de hand invullen, of het **e-food hulpje** gebruiken
-(`helper.html`): een bladwijzer die op e-food.nl de producten van vandaag, met alle keuzes
-en extra's, in het mandje zet. Afrekenen doe je zelf. Zie `helper.html` voor de uitleg.
-Het hulpje (`e-food-helper.js`) leest het menu uit `menu.json` en de bestellingen uit de
-Google Sheet; verandert e-food zijn pagina, dan kan het hulpje stuk gaan.
+(`helper.html`): een bladwijzer die op e-food.nl de producten van die dag, met alle keuzes
+en extra's, in het mandje zet. Afrekenen doe je zelf. Het hulpje vraagt in zijn venstertje om je beheercode
+(afgeschermd, alleen in het geheugen) om de bestellingen op te halen. Werkt de bladwijzer niet, gebruik dan
+**📎 Kopieer voor e-food** op `admin.html`: die tekst bevat de bestellingen al, dus er is geen code nodig.
+Verandert e-food zijn pagina, dan kan het hulpje stuk gaan.
 
 ## Goed om te weten
 
-- Iedereen die de web-app URL kent, kan bestellingen plaatsen en het overzicht
-  lezen. Dat is prima voor een lunchlijst, maar zet er geen gevoelige gegevens in.
-- Het beheeroverzicht toont standaard alleen de bestellingen van vandaag. Vink
-  "Alleen vandaag" uit om alles te zien.
+- Iedereen die de web-app URL kent, kan bestellingen plaatsen (binnen de grenzen hierboven), maar niets
+  van anderen lezen. Zet er toch geen gevoelige gegevens in.
 - Is `GOOGLE_SCRIPT_URL` leeg, dan werkt de app nog wel, maar blijven bestellingen
-  alleen in de browser van degene die bestelt.
+  alleen in de browser van degene die bestelt, en is er geen beheeroverzicht.

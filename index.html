@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -138,6 +137,12 @@
         .betaal-bedrag small { display: block; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
         .betaal-qr { display: block; width: min(300px, 80%); aspect-ratio: 1; object-fit: contain; margin: 14px auto; padding: 12px; background: #fff; border-radius: 20px; box-shadow: 0 16px 40px -14px rgba(0, 0, 0, 0.7); animation: draaiIn 0.6s cubic-bezier(.34, 1.56, .64, 1); }
         .betaal-tekst { margin: 0 0 14px; font-weight: 600; }
+        .betaal-keuze { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border); background: rgba(0, 0, 0, 0.3); color: var(--text); font: 14px 'Inter', sans-serif; }
+        .betaal-keuze option { background: var(--panel-solid); }
+        .mijn-kaart { padding: 14px 2px; border-bottom: 1px dashed var(--border); text-align: left; }
+        .mijn-kaart h4 { margin: 0 0 6px; font-family: 'Fredoka', sans-serif; font-size: 17px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .mijn-kaart h4 .bedrag { color: var(--sun); margin-left: auto; }
+        .mijn-kaart ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
         .betaal-status { margin: 0 0 16px; }
         .betaal-status-tekst { margin: 0 0 6px; font-weight: 600; }
         .betaal-status-tekst.ok { color: var(--mint); }
@@ -766,61 +771,6 @@
         .btn-confirm { background: var(--vibe); color: #1c0d00; box-shadow: 0 10px 24px -8px rgba(255, 61, 129, 0.8); }
         #modalConfirm { flex: 1; font-family: 'Fredoka', sans-serif; font-size: 17px; }
 
-        /* ---------- Beheer ---------- */
-        .beheer-balk { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 6px 0 16px; font-size: 14px; }
-        .beheer-balk label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-        .beheer-balk input { accent-color: var(--orange); width: 17px; height: 17px; }
-        #adminOrderList { max-height: 52vh; overflow: auto; margin-bottom: 10px; }
-        .beheer-tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .beheer-tabel th { text-align: left; padding: 10px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel-solid); }
-        .beheer-tabel td { padding: 10px; border-bottom: 1px dashed var(--border); }
-        .beheer-tabel tr:not(.totaal-rij):hover td { background: rgba(255, 255, 255, 0.04); }
-        .beheer-tabel .totaal-rij td { font-weight: 700; font-family: 'Fredoka', sans-serif; font-size: 17px; color: var(--sun); border-bottom: none; }
-        .bron { color: var(--muted); font-size: 13px; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-        .tab {
-            padding: 9px 16px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text);
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s;
-        }
-        .tab:hover { transform: translateY(-2px); }
-        .tab.actief { background: var(--vibe); color: #1c0d00; border-color: transparent; }
-        .samenvatting { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-        .samenvatting .chip strong { color: var(--sun); }
-        .groep-kop {
-            margin: 18px 0 6px;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 17px;
-            color: var(--sun);
-        }
-        .regel {
-            display: grid;
-            grid-template-columns: auto 52px 1fr;
-            gap: 8px 12px;
-            align-items: start;
-            padding: 10px 6px;
-            border-bottom: 1px dashed var(--border);
-            cursor: pointer;
-            border-radius: 10px;
-            transition: background 0.2s;
-        }
-        .regel:hover { background: rgba(255, 255, 255, 0.04); }
-        .regel input { accent-color: var(--mint); width: 20px; height: 20px; margin-top: 3px; }
-        .regel .stuks { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: var(--sun); }
-        .regel .wie { grid-column: 3; color: var(--muted); font-size: 13px; margin-top: -4px; }
-        .regel.klaar .naam { text-decoration: line-through; opacity: 0.5; }
-        .regel.klaar .stuks { opacity: 0.5; }
-        .persoon-blok { padding: 12px 4px; border-bottom: 1px dashed var(--border); }
-        .persoon-blok h4 { margin: 0 0 6px; font-family: 'Fredoka', sans-serif; font-size: 18px; display: flex; justify-content: space-between; }
-        .persoon-blok h4 .bedrag { color: var(--sun); }
-        .persoon-blok ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
-
         /* ---------- Mobiel ---------- */
         @media (max-width: 960px) {
             /* minmax(0, 1fr): anders duwt de lange rij categorieknoppen de pagina breder dan het scherm */
@@ -898,7 +848,7 @@
         <div class="logo"><span class="logo-icoon">🍟</span><span class="logo-tekst">Family Vrijdag</span></div>
         <div class="acties">
             <button class="glas-knop verborgen" id="betaalKnop" onclick="openBetaalModal()">💶 Afrekenen</button>
-            <button class="glas-knop" onclick="openAdminOverzicht()">📋 Alle bestellingen</button>
+            <button class="glas-knop verborgen" id="mijnKnop" onclick="openMijnModal()">🧾 Mijn bestelling</button>
         </div>
     </div>
 
@@ -975,8 +925,23 @@
             <a id="betaalLink" class="knop-link verborgen" target="_blank" rel="noopener noreferrer">📱 Open betaallink</a>
             <p class="bron" style="margin: 10px 0 14px;">Op je telefoon? Gebruik de betaallink, of open een screenshot van de QR-code in je bank-app.</p>
             <div id="betaalStatus" class="betaal-status"></div>
-            <label class="betaal-label" for="betaalNaam">Je naam</label>
-            <input type="text" id="betaalNaam" autocomplete="name" placeholder="Zie hier je bedrag" oninput="bedragUitgesteld()" style="margin-bottom: 0;">
+            <div id="betaalKeuzeBlok" class="verborgen">
+                <label class="betaal-label" for="betaalKeuze">Welke bestelling?</label>
+                <select id="betaalKeuze" class="betaal-keuze" onchange="toonBedrag()"></select>
+            </div>
+        </div>
+    </div>
+
+    <!-- POP-UP MIJN BESTELLING: alleen wat dit apparaat zelf heeft besteld -->
+    <div id="mijnModal" class="modal" onclick="if (event.target === this) sluitMijnModal()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="mijnTitel" style="width: min(480px, 100%);">
+            <button class="modal-sluit" onclick="sluitMijnModal()" aria-label="Sluiten">✕</button>
+            <h3 id="mijnTitel">🧾 Mijn bestelling</h3>
+            <div id="mijnLijst"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="sluitMijnModal()">Sluiten</button>
+                <button class="btn-confirm verborgen" id="mijnAfrekenen" onclick="openBetaalModal()">💶 Afrekenen</button>
+            </div>
         </div>
     </div>
 
@@ -994,31 +959,6 @@
         </div>
     </div>
 
-    <!-- POP-UP BEHEER -->
-    <div id="adminModal" class="modal" onclick="if (event.target === this) sluitAdminModal()">
-        <div class="modal-content breed" role="dialog" aria-modal="true" aria-labelledby="beheerTitel">
-            <button class="modal-sluit" onclick="sluitAdminModal()" aria-label="Sluiten">✕</button>
-            <h3 id="beheerTitel">📋 Alle bestellingen</h3>
-            <div class="beheer-balk">
-                <label><input type="checkbox" id="alleenVandaag" checked onchange="laadAdminOverzicht()"> Alleen vandaag</label>
-                <button class="glas-knop" onclick="laadAdminOverzicht()">🔄 Vernieuwen</button>
-            </div>
-            <div class="tabs" role="tablist">
-                <button class="tab actief" data-tab="product" role="tab" onclick="kiesBeheerTab('product')">🧮 Per product</button>
-                <button class="tab" data-tab="persoon" role="tab" onclick="kiesBeheerTab('persoon')">👤 Per persoon</button>
-                <button class="tab" data-tab="regels" role="tab" onclick="kiesBeheerTab('regels')">📄 Alle regels</button>
-            </div>
-            <div id="adminOrderList"><p>Gegevens worden geladen…</p></div>
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="sluitAdminModal()">Sluiten</button>
-                <button class="btn-cancel" onclick="kopieerGroepsbestelling()">📋 Kopieer lijst</button>
-                <button class="btn-cancel" onclick="window.open('helper.html', '_blank')">🤖 E-food hulpje</button>
-                <button class="btn-cancel" onclick="kopieerVoorEfood()" title="Plan B als de bladwijzer niet werkt">📎 Kopieer voor e-food</button>
-                <button class="btn-confirm" onclick="downloadExcelOverzicht()">⬇️ Exporteer naar Excel</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Plak hier de web-app URL van het Google Apps Script (zie README.md),
         // bijv. 'https://script.google.com/macros/s/AKfy.../exec'.
@@ -1030,7 +970,6 @@
         let extrasData = {};
         let cart = [];
         let currentProductForModal = null;
-        let geladenBestellingen = [];
         let activeCat = null;
         let laatsteKaart = null;
         let getoondTotaal = 0;
@@ -1113,6 +1052,7 @@
             updateAftellen();
             setInterval(updateAftellen, 1000);
             renderCart();
+            toonMijnKnop();
             laadBetaling();
 
             // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
@@ -1512,9 +1452,9 @@
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
             sluitBetaalModal();
+            sluitMijnModal();
             annuleerCode();
             sluitModal();
-            sluitAdminModal();
             toggleMandje(false);
         });
 
@@ -1526,15 +1466,101 @@
             setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors: kleuren }), 400);
         }
 
+        // ---------- Mijn bestelling: alleen wat dit apparaat zelf heeft besteld ----------
+        // De bestellingen van anderen komen nooit in deze pagina: het Google-script geeft ze alleen aan de beheerder.
+        function leesMijn() { try { return JSON.parse(localStorage.getItem('familyMijnBestellingen') || '[]'); } catch (e) { return []; } }
+
+        function bewaarMijn(naam, regels) {
+            const lijst = leesMijn();
+            lijst.push({ naam, datum: vandaagISO(), tijd: new Date().toLocaleTimeString('nl-NL'), regels: regels.map(r => ({ product: r.Product, aantal: r.Aantal, totaal: r.Totaal })) });
+            try { localStorage.setItem('familyMijnBestellingen', JSON.stringify(lijst.slice(-30))); } catch (e) { /* zonder opslag zie je je bestelling hier niet terug */ }
+            toonMijnKnop();
+        }
+
+        // Per dag en naam samengevoegd, nieuwste eerst
+        function mijnDagen() {
+            const groepen = new Map();
+            leesMijn().forEach(b => {
+                const sleutel = b.datum + '|' + b.naam.toLowerCase();
+                const g = groepen.get(sleutel) || { datum: b.datum, naam: b.naam, regels: new Map(), totaal: 0, stuks: 0 };
+                b.regels.forEach(r => {
+                    const x = g.regels.get(r.product) || { product: r.product, aantal: 0 };
+                    x.aantal += Number(r.aantal) || 0;
+                    g.regels.set(r.product, x);
+                    g.totaal += Number(r.totaal) || 0;
+                    g.stuks += Number(r.aantal) || 0;
+                });
+                groepen.set(sleutel, g);
+            });
+            return [...groepen.values()].sort((a, b) => b.datum.localeCompare(a.datum) || a.naam.localeCompare(b.naam, 'nl'));
+        }
+
+        function toonMijnKnop() {
+            document.getElementById('mijnKnop').classList.toggle('verborgen', mijnDagen().length === 0);
+        }
+
+        const dagTekst = datum => datum === vandaagISO() ? 'vandaag' : new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+        const STATUS_TEKST = { open: '⏳ open', zegt: '🟡 zegt betaald', bevestigd: '✅ bevestigd' };
+
+        // De stand van alleen je eigen betaling (nooit een lijst van anderen). null als het script dat niet kent.
+        async function haalStatus(naam, datum) {
+            if (!GOOGLE_SCRIPT_URL) return null;
+            try {
+                const r = await (await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ actie: 'betaalStatus', naam, datum })
+                })).json();
+                return r.ok ? r.status : null;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function openMijnModal() {
+            const vak = document.getElementById('mijnLijst');
+            const groepen = mijnDagen().slice(0, 5);
+            vak.replaceChildren();
+            if (!groepen.length) vak.textContent = 'Je hebt vanaf dit apparaat nog niets besteld.';
+            const badges = [];
+            groepen.forEach(g => {
+                const kaart = document.createElement('div');
+                kaart.className = 'mijn-kaart';
+                const kop = document.createElement('h4');
+                const titel = document.createElement('span');
+                titel.textContent = dagTekst(g.datum) + ' · ' + g.naam;
+                const badge = document.createElement('span');
+                badges.push([g, badge]);
+                const totaal = document.createElement('span');
+                totaal.className = 'bedrag';
+                totaal.textContent = euro(g.totaal);
+                kop.append(titel, badge, totaal);
+                const lijst = document.createElement('ul');
+                [...g.regels.values()].forEach(r => { const li = document.createElement('li'); li.textContent = (r.aantal > 1 ? r.aantal + '× ' : '') + r.product; lijst.appendChild(li); });
+                kaart.append(kop, lijst);
+                vak.appendChild(kaart);
+            });
+            document.getElementById('mijnAfrekenen').classList.toggle('verborgen', !betaling || !groepen.length);
+            document.getElementById('mijnModal').style.display = 'flex';
+            // De stand per bestelling komt er daarna bij
+            for (const [g, badge] of badges) {
+                const status = await haalStatus(g.naam, g.datum);
+                if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
+            }
+        }
+
+        function sluitMijnModal() {
+            document.getElementById('mijnModal').style.display = 'none';
+        }
+
         // ---------- Afrekenen: de QR-code die de beheerder in admin.html heeft gezet ----------
         let betaling = null;
-        let bedragTimer = null;
 
         async function laadBetaling() {
             if (!GOOGLE_SCRIPT_URL) return;
             try {
                 const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=qr')).json();
-                // Een ouder script kent "actie=qr" niet en geeft dan de bestellijst terug: geen qr, dus geen knop
+                // Een ouder script kent "actie=qr" niet: dan is er geen qr en dus geen knop
                 if (r.ok && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(r.qr || '')) {
                     betaling = r;
                     document.getElementById('betaalKnop').classList.remove('verborgen');
@@ -1544,10 +1570,8 @@
             }
         }
 
-        function bewaarNaam(naam) { try { localStorage.setItem('familyNaam', naam); } catch (e) { /* alleen een gemak */ } }
-        function leesNaam() { try { return localStorage.getItem('familyNaam') || ''; } catch (e) { return ''; } }
-
-        function openBetaalModal(naam) {
+        // Opent het afrekenscherm voor een van je eigen bestellingen (standaard de nieuwste, of die van {naam, datum})
+        function openBetaalModal(keuze) {
             if (!betaling) return;
             document.getElementById('betaalQr').src = betaling.qr;
             document.getElementById('betaalTekst').textContent = betaling.tekst || '';
@@ -1559,8 +1583,13 @@
             } else {
                 link.classList.add('verborgen');
             }
-            const veld = document.getElementById('betaalNaam');
-            veld.value = (typeof naam === 'string' && naam) || veld.value || leesNaam() || document.getElementById('naamInput').value.trim();
+            sluitMijnModal();
+            const groepen = mijnDagen();
+            const keuzeVeld = document.getElementById('betaalKeuze');
+            keuzeVeld.replaceChildren(...groepen.map((g, i) => { const o = document.createElement('option'); o.value = i; o.textContent = dagTekst(g.datum) + ' · ' + g.naam + ' · ' + euro(g.totaal); return o; }));
+            const gewenst = keuze && keuze.naam ? groepen.findIndex(g => g.datum === keuze.datum && g.naam.toLowerCase() === keuze.naam.toLowerCase()) : 0;
+            keuzeVeld.value = String(Math.max(0, gewenst));
+            document.getElementById('betaalKeuzeBlok').classList.toggle('verborgen', groepen.length < 2);
             document.getElementById('betaalModal').style.display = 'flex';
             toonBedrag();
         }
@@ -1569,47 +1598,26 @@
             document.getElementById('betaalModal').style.display = 'none';
         }
 
-        function bedragUitgesteld() {
-            clearTimeout(bedragTimer);
-            bedragTimer = setTimeout(toonBedrag, 400);
-        }
-
-        // Gegevens van de laatste bestelling voor de ingevulde naam: { naam, datum, status, kanMelden }
+        // Gegevens van de gekozen bestelling: { naam, datum, status, kanMelden }
         let betaalContext = null;
 
-        // Telt de laatste bestelling van de ingevulde naam op en laat zien of die al betaald is.
-        // Dat is de laatste dag waarop iemand besteld heeft, dus ook maandag nog de vrijdagbestelling.
+        // Het bedrag komt uit je eigen bestelling op dit apparaat; alleen de betaalstatus wordt bij het script opgevraagd.
         async function toonBedrag() {
             const vak = document.getElementById('betaalBedrag');
-            const naam = document.getElementById('betaalNaam').value.trim();
+            const groepen = mijnDagen();
             betaalContext = null;
             toonBetaalStatus();
-            if (!naam) { vak.textContent = ''; return; }
-            vak.innerHTML = '<small>Even rekenen…</small>';
-            try {
-                const [r, b] = await Promise.all([
-                    fetch(GOOGLE_SCRIPT_URL).then(x => x.json()),
-                    // een script van vóór de betaalstatus geeft hier de bestellijst terug; dan is er geen knop
-                    fetch(GOOGLE_SCRIPT_URL + '?actie=betaald').then(x => x.json()).catch(() => null)
-                ]);
-                if (!r.ok) throw new Error(r.error || 'Onbekende fout');
-                if (naam !== document.getElementById('betaalNaam').value.trim()) return; // intussen verder getypt
-                const van = r.bestellingen.filter(x => String(x.Naam).toLowerCase() === naam.toLowerCase());
-                if (!van.length) { vak.innerHTML = '<small>Geen bestelling gevonden voor deze naam.</small>'; return; }
-                const datum = van.map(x => x.Datum).sort().pop();
-                const opDag = van.filter(x => x.Datum === datum);
-                const totaal = opDag.reduce((s, x) => s + (Number(x.Totaal) || 0), 0);
-                const stuks = opDag.reduce((s, x) => s + (Number(x.Aantal) || 0), 0);
-                const dag = datum === vandaagISO() ? 'vandaag' : new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
-                vak.innerHTML = `${euro(totaal)}<small>${stuks} ${stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dag)} · ${escapeHtml(opDag[0].Naam)}</small>`;
-
-                const bekend = !!(b && b.ok && Array.isArray(b.betalingen));
-                const huidig = bekend ? b.betalingen.find(x => x.Datum === datum && String(x.Naam).toLowerCase() === opDag[0].Naam.toLowerCase()) : null;
-                betaalContext = { naam: opDag[0].Naam, datum, kanMelden: bekend, status: huidig ? huidig.Status : 'open' };
-                toonBetaalStatus();
-            } catch (err) {
-                vak.innerHTML = '<small>Je bedrag kon niet worden opgehaald. Kijk in je bestelling hoeveel je moet betalen.</small>';
+            if (!groepen.length) {
+                vak.innerHTML = '<small>Geen bestelling gevonden op dit apparaat. Bestelde je op een ander apparaat? Vraag de beheerder naar je bedrag.</small>';
+                return;
             }
+            const gekozen = String(Number(document.getElementById('betaalKeuze').value) || 0);
+            const g = groepen[Number(gekozen)];
+            vak.innerHTML = `${euro(g.totaal)}<small>${g.stuks} ${g.stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dagTekst(g.datum))} · ${escapeHtml(g.naam)}</small>`;
+            const status = await haalStatus(g.naam, g.datum);
+            if (String(Number(document.getElementById('betaalKeuze').value) || 0) !== gekozen) return; // intussen een andere gekozen
+            betaalContext = { naam: g.naam, datum: g.datum, kanMelden: status !== null, status: status || 'open' };
+            toonBetaalStatus();
         }
 
         // De knop "Ik heb betaald", of de stand van zaken als dat al gemeld of bevestigd is
@@ -1763,9 +1771,9 @@
 
             feest();
             toast(`🎉 Bedankt ${naam}! Je bestelling is geplaatst.`, 'succes');
-            bewaarNaam(naam);
+            bewaarMijn(naam, nieuweBestellingen);
             // Is er een QR-code ingesteld, dan na het feestje meteen de gelegenheid om af te rekenen
-            if (betaling) setTimeout(() => openBetaalModal(naam), 1800);
+            if (betaling) setTimeout(() => openBetaalModal({ naam, datum: vandaagISO() }), 1800);
             cart = [];
             naamVeld.value = "";
             toggleMandje(false);
@@ -1773,266 +1781,6 @@
             renderProducts(null, false);
         }
 
-        function openAdminOverzicht() {
-            document.getElementById("adminModal").style.display = "flex";
-            beheerTab = 'product';
-            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('actief', t.dataset.tab === 'product'));
-            laadAdminOverzicht();
-        }
-
-        async function laadAdminOverzicht() {
-            const container = document.getElementById("adminOrderList");
-            const alleenVandaag = document.getElementById("alleenVandaag").checked;
-            container.innerHTML = "<p>Gegevens worden geladen… ⏳</p>";
-
-            try {
-                if (GOOGLE_SCRIPT_URL) {
-                    const url = GOOGLE_SCRIPT_URL + (alleenVandaag ? '?datum=vandaag' : '');
-                    const response = await fetch(url);
-                    const result = await response.json();
-                    if (!result.ok) throw new Error(result.error || 'Onbekende fout');
-                    geladenBestellingen = result.bestellingen;
-                } else {
-                    const vandaag = vandaagISO();
-                    geladenBestellingen = leesLokaleBestellingen()
-                        .filter(b => !alleenVandaag || b.Datum === vandaag);
-                }
-            } catch (err) {
-                console.error(err);
-                geladenBestellingen = [];
-                container.innerHTML = `<p style="color:var(--danger);">Bestellingen ophalen mislukt: ${escapeHtml(err.message)}</p>`;
-                return;
-            }
-
-            // Wie heeft er vandaag al betaald? Alleen voor de dagweergave en alleen als het script dat kent
-            betalingStatus = null;
-            if (GOOGLE_SCRIPT_URL && alleenVandaag) {
-                try {
-                    const b = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=betaald&datum=vandaag')).json();
-                    if (b.ok && Array.isArray(b.betalingen)) betalingStatus = new Map(b.betalingen.map(x => [String(x.Naam).toLowerCase(), x.Status]));
-                } catch (err) { /* zonder status laat het overzicht gewoon geen betaalstatus zien */ }
-            }
-
-            renderBeheer();
-        }
-
-        // ---------- Beheer: groepsoverzicht ----------
-        let beheerTab = 'product';
-        let betalingStatus = null; // Map van naam (kleine letters) naar open / zegt / bevestigd, of null als onbekend
-
-        const STATUS_TEKST = { open: '⏳ open', zegt: '🟡 zegt betaald', bevestigd: '✅ bevestigd' };
-
-        function kiesBeheerTab(tab) {
-            beheerTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('actief', t.dataset.tab === tab));
-            renderBeheer();
-        }
-
-        // "Frites Mayonaise (Zonder zout)" -> product "Frites Mayonaise" uit het menu (langste naam wint,
-        // zodat "Chaudfontaine blauw (PET)" niet als "Chaudfontaine blauw" met opties wordt gezien)
-        function menuProductBijRegel(regel) {
-            let beste = null;
-            menuData.forEach(p => {
-                if ((regel === p.name || regel.startsWith(p.name + ' (')) && (!beste || p.name.length > beste.name.length)) beste = p;
-            });
-            return beste;
-        }
-
-        function categorieVolgorde() {
-            return [...new Set(menuData.map(p => p.cat))];
-        }
-
-        function afgevinktKey() { return 'familyAfgevinkt:' + vandaagISO(); }
-        function leesAfgevinkt() {
-            try { return new Set(JSON.parse(localStorage.getItem(afgevinktKey()) || '[]')); } catch (e) { return new Set(); }
-        }
-        function zetAfgevinkt(regel, aan) {
-            const set = leesAfgevinkt();
-            aan ? set.add(regel) : set.delete(regel);
-            try { localStorage.setItem(afgevinktKey(), JSON.stringify([...set])); } catch (e) { /* zonder opslag werkt afvinken gewoon voor deze sessie niet na herladen */ }
-        }
-
-        // Alle regels met dezelfde product + opties samengevoegd, in de volgorde van het menu
-        function groepeerPerProduct() {
-            const groepen = new Map();
-            geladenBestellingen.forEach(b => {
-                const g = groepen.get(b.Product) || { product: b.Product, aantal: 0, totaal: 0, wie: new Map() };
-                const n = Number(b.Aantal) || 0;
-                g.aantal += n;
-                g.totaal += Number(b.Totaal) || 0;
-                g.wie.set(b.Naam, (g.wie.get(b.Naam) || 0) + n);
-                groepen.set(b.Product, g);
-            });
-            const volgorde = categorieVolgorde();
-            const lijst = [...groepen.values()].map(g => {
-                const mp = menuProductBijRegel(g.product);
-                return { ...g, cat: mp ? mp.cat : 'Overig' };
-            });
-            lijst.sort((a, b) => {
-                const ia = volgorde.indexOf(a.cat), ib = volgorde.indexOf(b.cat);
-                return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.product.localeCompare(b.product, 'nl');
-            });
-            return lijst;
-        }
-
-        function wieTekst(wie) {
-            return [...wie].map(([naam, n]) => n > 1 ? `${naam} (${n}×)` : naam).join(', ');
-        }
-
-        function renderBeheer() {
-            const container = document.getElementById("adminOrderList");
-            const alleenVandaag = document.getElementById("alleenVandaag").checked;
-            const bron = GOOGLE_SCRIPT_URL ? 'Google Sheet' : 'alleen deze browser';
-            if (geladenBestellingen.length === 0) {
-                container.innerHTML = `<p>Er zijn ${alleenVandaag ? 'vandaag ' : ''}nog geen bestellingen geplaatst. 🍽️ <span class="bron">(bron: ${bron})</span></p>`;
-                return;
-            }
-
-            const totaal = geladenBestellingen.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
-            const stuks = geladenBestellingen.reduce((s, b) => s + (Number(b.Aantal) || 0), 0);
-            const mensen = new Set(geladenBestellingen.map(b => b.Naam)).size;
-            let html = `<div class="samenvatting"><span class="chip">👥 <strong>${mensen}</strong> ${mensen === 1 ? 'persoon' : 'mensen'}</span><span class="chip">🍽️ <strong>${stuks}</strong> stuks</span><span class="chip">💶 <strong>${euro(totaal)}</strong></span><span class="chip bron">bron: ${bron}</span>`;
-            if (betalingStatus) {
-                const nogOpen = geladenBestellingen
-                    .filter(b => betalingStatus.get(String(b.Naam).toLowerCase()) !== 'bevestigd')
-                    .reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
-                html += `<span class="chip">⏳ nog niet bevestigd <strong>${euro(nogOpen)}</strong></span><a class="chip" href="admin.html" style="text-decoration:none;color:inherit;">💰 Betalingen beheren →</a>`;
-            }
-            html += '</div>';
-
-            if (beheerTab === 'product') {
-                const afgevinkt = leesAfgevinkt();
-                let huidigeCat = null;
-                groepeerPerProduct().forEach(g => {
-                    if (g.cat !== huidigeCat) {
-                        huidigeCat = g.cat;
-                        html += `<div class="groep-kop">${categorieIcoon(g.cat)} ${escapeHtml(g.cat)}</div>`;
-                    }
-                    const klaar = afgevinkt.has(g.product);
-                    html += `<label class="regel${klaar ? ' klaar' : ''}"><input type="checkbox" data-regel="${escapeHtml(g.product)}"${klaar ? ' checked' : ''} onchange="vinkAf(this)">` +
-                        `<span class="stuks">${g.aantal}×</span><span class="naam">${escapeHtml(g.product)}</span>` +
-                        `<span class="wie">${escapeHtml(wieTekst(g.wie))}</span></label>`;
-                });
-            } else if (beheerTab === 'persoon') {
-                const perPersoon = new Map();
-                geladenBestellingen.forEach(b => {
-                    const p = perPersoon.get(b.Naam) || { regels: [], totaal: 0 };
-                    p.regels.push(`${Number(b.Aantal) > 1 ? b.Aantal + '× ' : ''}${b.Product}`);
-                    p.totaal += Number(b.Totaal) || 0;
-                    perPersoon.set(b.Naam, p);
-                });
-                [...perPersoon].sort((a, b) => a[0].localeCompare(b[0], 'nl')).forEach(([naam, p]) => {
-                    const status = betalingStatus ? (betalingStatus.get(naam.toLowerCase()) || 'open') : null;
-                    const badge = status ? `<span class="status-badge ${status}">${STATUS_TEKST[status]}</span>` : '';
-                    html += `<div class="persoon-blok"><h4><span>${escapeHtml(naam)}${badge}</span><span class="bedrag">${euro(p.totaal)}</span></h4><ul>${p.regels.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>`;
-                });
-            } else {
-                html += `<table class="beheer-tabel"><thead><tr><th>Naam</th><th>Product</th><th>Aantal</th><th>Totaal</th><th>Tijd</th></tr></thead><tbody>`;
-                geladenBestellingen.forEach(b => {
-                    const tijd = (alleenVandaag ? '' : (b.Datum || '') + ' ') + (b.Tijd || '');
-                    html += `<tr><td>${escapeHtml(b.Naam)}</td><td>${escapeHtml(b.Product)}</td><td>${escapeHtml(b.Aantal)}</td><td>${euro(b.Totaal)}</td><td>${escapeHtml(tijd)}</td></tr>`;
-                });
-                html += `<tr class="totaal-rij"><td colspan="3">Totaal</td><td>${euro(totaal)}</td><td></td></tr></tbody></table>`;
-            }
-            container.innerHTML = html;
-        }
-
-        function vinkAf(checkbox) {
-            zetAfgevinkt(checkbox.dataset.regel, checkbox.checked);
-            checkbox.closest('.regel').classList.toggle('klaar', checkbox.checked);
-        }
-
-        // Plan B voor het e-food hulpje: code + de bestellingen van nu in één stuk tekst, om op e-food in de
-        // console te plakken. Zo hoeft e-food zelf niets bij GitHub of Google op te halen.
-        async function maakEfoodPakket() {
-            const regels = [...new Set(geladenBestellingen.map(b => b.Product))];
-            const gekozen = new Map();
-            regels.forEach(r => { const p = menuProductBijRegel(r); if (p) gekozen.set(p.id, p); });
-            const sets = new Set([...gekozen.values()].map(p => String(p.vragenSetID)).filter(s => s !== 'null'));
-            const extraIds = new Set([...gekozen.values()].flatMap(p => p.extraSets));
-            const gegevens = {
-                menu: {
-                    producten: [...gekozen.values()].map(p => ({ id: p.id, name: p.name, vragenSetID: p.vragenSetID, extraSets: p.extraSets })),
-                    vragen: vragenData.filter(v => sets.has(String(v.vragenSetID))).map(v => ({ vragenSetID: v.vragenSetID, vraagID: v.vraagID, antwoordTekst: v.antwoordTekst })),
-                    extras: Object.fromEntries(Object.entries(extrasData).filter(([id]) => extraIds.has(id) || extraIds.has(Number(id))))
-                },
-                bestellingen: geladenBestellingen.map(b => ({ Naam: b.Naam, Product: b.Product, Aantal: b.Aantal }))
-            };
-            // Zelfde plek als deze pagina; staat de app niet op een echte website (bijv. als bestand geopend), dan GitHub Pages
-            const bron = /^https?:\/\//.test(location.href) ? 'e-food-helper.js' : 'https://kevinboogaard.github.io/family-lunch/e-food-helper.js';
-            const code = await (await fetch(bron + '?' + Date.now())).text();
-            return { tekst: `window.__familyHelperData=${JSON.stringify(gegevens)};\n${code}`, gegevens };
-        }
-
-        async function kopieerVoorEfood() {
-            if (geladenBestellingen.length === 0) {
-                toast("Er zijn nog geen bestellingen om mee te nemen!", 'fout');
-                return;
-            }
-            let pakket;
-            try {
-                pakket = await maakEfoodPakket();
-            } catch (err) {
-                toast('Voorbereiden mislukt: ' + err.message, 'fout');
-                return;
-            }
-            const klaar = () => toast('📎 Gekopieerd! Open e-food, druk op F12, kies "Console" en plak de tekst (Ctrl+V).', 'succes');
-            const noodgeval = () => {
-                const ta = document.createElement('textarea');
-                ta.value = pakket.tekst;
-                document.body.appendChild(ta);
-                ta.select();
-                try { document.execCommand('copy') ? klaar() : toast('Kopiëren is niet gelukt', 'fout'); } catch (e) { toast('Kopiëren is niet gelukt', 'fout'); }
-                ta.remove();
-            };
-            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(pakket.tekst).then(klaar, noodgeval);
-            else noodgeval();
-        }
-
-        // Tekstlijst om in een groepsapp of mail te plakken, in de volgorde van het menu
-        function kopieerGroepsbestelling() {
-            if (geladenBestellingen.length === 0) {
-                toast("Er is nog niets om te kopiëren!", 'fout');
-                return;
-            }
-            const totaal = geladenBestellingen.reduce((s, b) => s + (Number(b.Totaal) || 0), 0);
-            const datum = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
-            let tekst = `Family bestelling ${datum}\n`;
-            let huidigeCat = null;
-            groepeerPerProduct().forEach(g => {
-                if (g.cat !== huidigeCat) { huidigeCat = g.cat; tekst += `\n${g.cat}\n`; }
-                tekst += `${g.aantal}× ${g.product}\n`;
-            });
-            tekst += `\nTotaal: ${euro(totaal)}`;
-
-            const klaar = () => toast('📋 Lijst gekopieerd!', 'succes');
-            const noodgeval = () => {
-                const ta = document.createElement('textarea');
-                ta.value = tekst;
-                document.body.appendChild(ta);
-                ta.select();
-                try { document.execCommand('copy') ? klaar() : toast('Kopiëren is niet gelukt', 'fout'); } catch (e) { toast('Kopiëren is niet gelukt', 'fout'); }
-                ta.remove();
-            };
-            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tekst).then(klaar, noodgeval);
-            else noodgeval();
-        }
-
-        function sluitAdminModal() {
-            document.getElementById("adminModal").style.display = "none";
-        }
-
-        function downloadExcelOverzicht() {
-            if (geladenBestellingen.length === 0) {
-                toast("Geen bestellingen om te exporteren!", 'fout');
-                return;
-            }
-
-            const worksheet = XLSX.utils.json_to_sheet(geladenBestellingen);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Bestellingen");
-            XLSX.writeFile(workbook, "Totaaloverzicht_Lunchbestellingen.xlsx");
-        }
     </script>
 </body>
 </html>

@@ -143,7 +143,7 @@
         <div class="nummer">3</div>
         <div>
             <h3>Klik op de bladwijzer</h3>
-            <p>Er verschijnt een venstertje met alles wat vandaag besteld is, opgeteld per product. Klopt het? Klik dan op <b>Zet in mandje</b>.</p>
+            <p>Er verschijnt een venstertje. Vul daarin je <b>beheercode</b> in (de bestellingen zijn alleen voor jou zichtbaar). Daarna zie je alles wat vandaag besteld is, opgeteld per product. Klopt het? Klik dan op <b>Zet in mandje</b>.</p>
         </div>
     </div>
 
@@ -162,7 +162,7 @@
             <h3>Plakken in de console (werkt ook als e-food geen verbinding mag maken)</h3>
             <p>Sommige browsers of bedrijfsnetwerken blokkeren dat e-food iets ophaalt bij GitHub, en dan meldt de bladwijzer “Failed to fetch”. Bij Plan B zit alles al in de tekst die je plakt.</p>
             <ol>
-                <li>Open in de bestel-app <b>Alle bestellingen</b> en klik op <b>📎 Kopieer voor e-food</b>.</li>
+                <li>Open <b>admin.html</b>, log in met je beheercode en klik onder <b>Naar e-food</b> op <b>📎 Kopieer voor e-food</b>.</li>
                 <li>Open de menukaart van Family op e-food.nl, druk op <b>F12</b> en kies het tabblad <b>Console</b>.</li>
                 <li>Plak met <b>Ctrl + V</b> en druk op Enter. Vraagt de browser om toestemming? Typ dan <code>allow pasting</code>, druk op Enter en plak opnieuw.</li>
             </ol>
@@ -174,7 +174,7 @@
     <div class="kaart ja">
         <b>Het hulpje doet:</b>
         <ul>
-            <li>de bestellingen van <b>vandaag</b> uit de Google Sheet ophalen</li>
+            <li>de bestellingen van <b>vandaag</b> uit de Google Sheet ophalen, met jouw beheercode</li>
             <li>gelijke producten met dezelfde keuzes optellen</li>
             <li>keuzes, extra's (zoals “Zonder zout”) en aantallen invullen in e-food</li>
             <li>achteraf controleren of het mandje klopt</li>
@@ -184,10 +184,10 @@
         <b>Het hulpje doet niet:</b>
         <ul>
             <li>inloggen, een tijd kiezen of afrekenen: dat doe jij</li>
-            <li>je eigen gegevens ergens naartoe sturen</li>
+            <li>je beheercode bewaren of ergens naartoe sturen (die blijft alleen in het venstertje, tot je het sluit)</li>
         </ul>
     </div>
-    <p>Verandert e-food zijn website, dan kan het hulpje ineens niet meer werken. Het zegt dat dan, en je kunt de lijst nog gewoon met de hand invullen vanuit het overzicht in de bestel-app (“Per product”).</p>
+    <p>Verandert e-food zijn website, dan kan het hulpje ineens niet meer werken. Het zegt dat dan, en je kunt de lijst nog gewoon met de hand invullen vanuit het overzicht op admin.html (“Per product”).</p>
 </main>
 
 <script>

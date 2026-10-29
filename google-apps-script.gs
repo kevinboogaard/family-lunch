@@ -380,6 +380,10 @@ function beheerActie_(body) {
 
   if (body.actie === 'controleer') return { ok: true };
 
+  // Alles wat meer laat zien dan iemands eigen gegevens: alleen met de beheercode
+  if (body.actie === 'bestellingen') return { ok: true, bestellingen: leesBestellingen_(body.datum) };
+  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_() };
+
   if (body.actie === 'zetBetaling') {
     const datum = String(body.datum || '');
     if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
@@ -428,6 +432,7 @@ function doPost(e) {
       return json_(fout_('ONGELDIG', 'De bestelling kon niet gelezen worden.'));
     }
 
+    if (body && body.actie === 'betaalStatus') return json_(betaalStatus_(body));
     if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
     if (body && body.actie) return json_(beheerActie_(body));
 
@@ -460,23 +465,17 @@ function doPost(e) {
   }
 }
 
-/** Bestellingen ophalen. Optioneel ?datum=vandaag of ?datum=2026-10-30 */
-function doGet(e) {
-  try {
-    if (e && e.parameter && e.parameter.actie === 'qr') return json_(leesQr_());
-    if (e && e.parameter && e.parameter.actie === 'betaald') {
-      let dag = e.parameter.datum || '';
-      if (dag === 'vandaag') dag = vandaag_();
-      return json_({ ok: true, betalingen: leesBetalingen_().filter(function (b) { return !dag || b.Datum === dag; }) });
-    }
-
-    const sheet = getSheet_();
-    const values = sheet.getDataRange().getValues();
-    let filterDatum = (e && e.parameter && e.parameter.datum) || '';
-    if (filterDatum === 'vandaag') filterDatum = vandaag_();
-
-    const bestellingen = values.slice(1)
-      .map(row => ({
+/**
+ * Bestellingen van één dag, of alle dagen. Alleen voor de beheerder (zie beheerActie_):
+ * een gewone bezoeker krijgt de lijst van anderen nooit te zien.
+ */
+function leesBestellingen_(datum) {
+  let filterDatum = String(datum || '');
+  if (filterDatum === 'vandaag') filterDatum = vandaag_();
+  const values = getSheet_().getDataRange().getValues();
+  return values.slice(1)
+    .map(function (row) {
+      return {
         BestelID: String(row[0]),
         Datum: celNaarTekst_(row[1], 'yyyy-MM-dd'),
         Tijd: celNaarTekst_(row[2], 'HH:mm:ss'),
@@ -485,10 +484,26 @@ function doGet(e) {
         Aantal: Number(row[5]) || 0,
         Stuksprijs: Number(row[6]) || 0,
         Totaal: Number(row[7]) || 0
-      }))
-      .filter(b => !filterDatum || b.Datum === filterDatum);
+      };
+    })
+    .filter(function (b) { return !filterDatum || b.Datum === filterDatum; });
+}
 
-    return json_({ ok: true, bestellingen: bestellingen });
+/** Een collega vraagt de stand van zijn eigen betaling op: alleen die ene naam en dag, nooit een lijst. */
+function betaalStatus_(body) {
+  const naam = schoneTekst_(body.naam, LIMIETEN.MAX_NAAM);
+  if (naam.length < LIMIETEN.MIN_NAAM) return fout_('ONGELDIG', 'Vul je naam in.');
+  const datum = body.datum ? String(body.datum) : vandaag_();
+  if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
+  const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
+  return { ok: true, status: huidig ? huidig.Status : 'open' };
+}
+
+/** Alleen de QR-code is openbaar (die moet iedereen kunnen zien om te betalen). De rest gaat via POST met beheercode. */
+function doGet(e) {
+  try {
+    if (e && e.parameter && e.parameter.actie === 'qr') return json_(leesQr_());
+    return json_(fout_('BEHEER', 'Bestellingen zijn alleen zichtbaar voor de beheerder, via admin.html.'));
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
