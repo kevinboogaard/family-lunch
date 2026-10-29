@@ -15,6 +15,9 @@
             --panel: rgba(255, 255, 255, 0.07);
             --panel-solid: #22173f;
             --panel-hover: rgba(255, 255, 255, 0.11);
+            /* Kaarten zonder glas-vervaging: iets dekkender, zodat ze er hetzelfde uitzien */
+            --kaart: rgba(40, 28, 72, 0.72);
+            --kaart-hover: rgba(52, 38, 90, 0.8);
             --border: rgba(255, 255, 255, 0.13);
             --text: #fff8ef;
             --muted: #c3b8de;
@@ -54,17 +57,19 @@
             width: 55vmax;
             height: 55vmax;
             border-radius: 50%;
-            filter: blur(90px);
-            opacity: 0.38;
+            /* Zachte rand met een verloop: een blur-filter op zo'n groot vlak kost elk frame veel rekenwerk */
+            background: radial-gradient(closest-side, var(--kleur) 0%, transparent 100%);
+            opacity: 0.5;
+            will-change: transform;
             animation: dwalen 26s ease-in-out infinite alternate;
         }
-        .blob.b1 { background: var(--hot); top: -20vmax; left: -15vmax; }
-        .blob.b2 { background: var(--orange); bottom: -25vmax; right: -10vmax; animation-duration: 32s; animation-delay: -8s; }
-        .blob.b3 { background: #6d3bff; top: 30%; left: 40%; width: 40vmax; height: 40vmax; animation-duration: 38s; animation-delay: -16s; opacity: 0.3; }
+        .blob.b1 { --kleur: var(--hot); top: -20vmax; left: -15vmax; }
+        .blob.b2 { --kleur: var(--orange); bottom: -25vmax; right: -10vmax; animation-duration: 32s; animation-delay: -8s; }
+        .blob.b3 { --kleur: #6d3bff; top: 30%; left: 40%; width: 40vmax; height: 40vmax; animation-duration: 38s; animation-delay: -16s; opacity: 0.3; }
         @keyframes dwalen {
-            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-            50% { transform: translate(12vw, 8vh) scale(1.15) rotate(40deg); }
-            100% { transform: translate(-8vw, 14vh) scale(0.9) rotate(-30deg); }
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(12vw, 8vh) scale(1.15); }
+            100% { transform: translate(-8vw, 14vh) scale(0.9); }
         }
         .zwevers { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
         .zwever {
@@ -72,6 +77,7 @@
             bottom: -80px;
             font-size: var(--size, 32px);
             opacity: 0.16;
+            will-change: transform;
             animation: zweven var(--duur, 22s) linear infinite;
             animation-delay: var(--vertraging, 0s);
         }
@@ -125,7 +131,6 @@
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
-            backdrop-filter: blur(12px);
             transition: background 0.2s, transform 0.2s;
         }
         .glas-knop:hover { background: var(--panel-hover); transform: translateY(-2px); }
@@ -209,7 +214,6 @@
             background: var(--panel);
             border: 1px solid var(--border);
             font-size: 14px;
-            backdrop-filter: blur(12px);
         }
         .chip.aftellen { font-weight: 600; }
         .chip.aftellen strong { color: var(--sun); font-variant-numeric: tabular-nums; }
@@ -336,7 +340,6 @@
             color: var(--text);
             font-size: 15px;
             font-family: inherit;
-            backdrop-filter: blur(12px);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .zoek input::placeholder { color: var(--muted); }
@@ -408,15 +411,13 @@
             flex-direction: column;
             padding: 12px 12px 14px;
             border-radius: var(--radius);
-            background: var(--panel);
+            background: var(--kaart);
             border: 1px solid var(--border);
-            backdrop-filter: blur(14px);
             cursor: pointer;
             opacity: 0;
             animation: binnenkomen 0.55s cubic-bezier(.2, .8, .2, 1.2) forwards;
             animation-delay: calc(var(--i, 0) * 45ms);
             transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.35s, border-color 0.35s, background 0.35s;
-            transform-style: preserve-3d;
         }
         @keyframes binnenkomen {
             from { opacity: 0; transform: translateY(26px) scale(0.92) rotate(-1.5deg); }
@@ -425,7 +426,7 @@
         .product-card:hover {
             transform: translateY(-8px) rotate(-0.6deg) scale(1.02);
             border-color: rgba(255, 194, 26, 0.55);
-            background: var(--panel-hover);
+            background: var(--kaart-hover);
             box-shadow: 0 24px 50px -18px rgba(255, 61, 129, 0.55), 0 0 0 1px rgba(255, 194, 26, 0.25);
         }
         .product-card:active { transform: scale(0.97); }
@@ -540,9 +541,8 @@
             top: 20px;
             padding: 22px;
             border-radius: var(--radius);
-            background: var(--panel);
+            background: rgba(34, 23, 63, 0.88);
             border: 1px solid var(--border);
-            backdrop-filter: blur(18px);
             box-shadow: var(--shadow);
         }
         .cart-kop {
@@ -730,8 +730,7 @@
             z-index: 1000;
             inset: 0;
             padding: 16px;
-            background: rgba(8, 4, 20, 0.65);
-            backdrop-filter: blur(8px);
+            background: rgba(8, 4, 20, 0.78);
             justify-content: center;
             align-items: center;
             animation: vervagen 0.25s;
@@ -938,7 +937,7 @@
             <div class="menu-kop">
                 <div class="zoek-rij">
                     <div class="zoek">
-                        <input type="search" id="zoekInput" placeholder="Zoek in het hele menu… (bijv. kroket, mayo, cola)" aria-label="Zoek een product" oninput="zoekProducten()">
+                        <input type="search" id="zoekInput" placeholder="Zoek in het hele menu… (bijv. kroket, mayo, cola)" aria-label="Zoek een product" oninput="zoekVertraagd()">
                     </div>
                     <button class="weetniet-knop" id="weetNietKnop" onclick="openKiesModal()" disabled>🤔 <span class="lang">Ik weet het niet</span><span class="kort">Weet niet</span></button>
                 </div>
@@ -1219,6 +1218,13 @@
             });
         }
 
+        // Pas zoeken als je even stopt met typen, anders wordt bij elke letter het hele raster opnieuw opgebouwd
+        let zoekTimer = null;
+        function zoekVertraagd() {
+            clearTimeout(zoekTimer);
+            zoekTimer = setTimeout(zoekProducten, 150);
+        }
+
         function zoekProducten() {
             const term = document.getElementById('zoekInput').value.trim();
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', !term && b.dataset.cat === activeCat));
@@ -1256,6 +1262,7 @@
                 card.tabIndex = 0;
                 card.setAttribute('role', 'button');
                 card.setAttribute('aria-label', `${item.name}, ${euro(item.price)}`);
+                card.dataset.naam = item.name;
                 card.style.setProperty('--i', animeer ? Math.min(index, 14) : 0);
                 if (!animeer) card.style.animation = 'none', card.style.opacity = 1;
                 card.onclick = () => klikProduct(item.id, card);
@@ -1266,7 +1273,7 @@
                 // Producten zonder foto (bijv. sauzen) krijgen een groot icoon van hun categorie
                 const icoon = `<span class="icoon-groot">${categorieIcoon(item.cat)}</span>`;
                 const fotoHtml = item.foto
-                    ? `<img src="${escapeHtml(item.foto)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('zonder'); this.outerHTML='${icoon.replace(/"/g, '&quot;')}'">`
+                    ? `<img src="${escapeHtml(item.foto)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('zonder'); this.outerHTML='${icoon.replace(/"/g, '&quot;')}'">`
                     : icoon;
 
                 card.innerHTML = `
@@ -1280,6 +1287,23 @@
                     </div>
                 `;
                 grid.appendChild(card);
+            });
+        }
+
+        // Alleen de "2×"-stickers op de kaarten bijwerken; het hele raster opnieuw opbouwen laat de pagina haperen
+        function werkMandjeBadgesBij() {
+            const perNaam = {};
+            cart.forEach(c => { perNaam[c.baseName] = (perNaam[c.baseName] || 0) + c.qty; });
+            document.querySelectorAll('#productGrid .product-card').forEach(kaart => {
+                const aantal = perNaam[kaart.dataset.naam] || 0;
+                let badge = kaart.querySelector('.in-mandje-badge');
+                if (!aantal) { if (badge) badge.remove(); return; }
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'in-mandje-badge';
+                    kaart.prepend(badge);
+                }
+                if (badge.textContent !== aantal + '×') badge.textContent = aantal + '×';
             });
         }
 
@@ -1429,7 +1453,7 @@
                 cart.push({ name: uniekeNaam, baseName: product.name, price: stuksprijs, qty: 1 });
             }
             renderCart(true);
-            renderProducts(null, false);
+            werkMandjeBadgesBij();
             toast(`${categorieIcoon(product.cat)} ${product.name} zit in je mandje!`);
         }
 
@@ -1515,13 +1539,13 @@
             cart[index].qty += delta;
             if (cart[index].qty <= 0) cart.splice(index, 1);
             renderCart(delta > 0);
-            renderProducts(null, false);
+            werkMandjeBadgesBij();
         }
 
         function removeItem(index) {
             cart.splice(index, 1);
             renderCart();
-            renderProducts(null, false);
+            werkMandjeBadgesBij();
         }
 
         function toggleMandje(open) {
@@ -2103,7 +2127,7 @@
             naamVeld.value = "";
             toggleMandje(false);
             renderCart();
-            renderProducts(null, false);
+            werkMandjeBadgesBij();
         }
 
     </script>
