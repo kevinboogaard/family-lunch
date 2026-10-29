@@ -264,23 +264,76 @@
         });
     }
 
-    // Verkleint naar maximaal 640 pixels: scherp genoeg voor een scan en klein genoeg om op te slaan
+    const DOEL_TEKENS = 100000; // ruim onder de 150.000 die het script toestaat
+
+    // Tekent een stuk van de afbeelding (sx, sy, sw, sh) op een wit canvas van maximaal `max` pixels
+    function canvasVan(bron, bw, bh, sx, sy, sw, sh, max) {
+        const schaal = Math.min(1, max / Math.max(sw, sh));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(sw * schaal));
+        c.height = Math.max(1, Math.round(sh * schaal));
+        const x = c.getContext('2d', { willReadFrequently: true });
+        x.fillStyle = '#fff';
+        x.fillRect(0, 0, c.width, c.height); // wit, ook waar de uitsnede buiten de afbeelding valt
+        x.drawImage(bron, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        return c;
+    }
+
+    function leesQr(canvas) {
+        if (typeof jsQR !== 'function') return null;
+        const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+        return jsQR(d.data, d.width, d.height);
+    }
+
+    /**
+     * Maakt van een (soms enorme of ruisige) screenshot of foto een kleine afbeelding voor opslag:
+     * 1. zoekt de QR en snijdt alleen die uit, met een witte rand erom
+     * 2. verkleint en comprimeert stap voor stap tot hij klein genoeg is
+     * 3. controleert na elke stap dat de QR nog te lezen is
+     */
     async function maakKlein(file) {
         const url = URL.createObjectURL(file);
         try {
             const img = await laadAfbeelding(url);
-            const schaal = Math.min(1, 640 / Math.max(img.naturalWidth, img.naturalHeight));
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.max(1, Math.round(img.naturalWidth * schaal));
-            canvas.height = Math.max(1, Math.round(img.naturalHeight * schaal));
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            let data = canvas.toDataURL('image/png');
-            if (data.length > 120000) data = canvas.toDataURL('image/jpeg', 0.92);
-            if (data.length > 150000) throw new Error('De afbeelding is te groot, ook na verkleinen. Probeer een kleinere of eenvoudigere screenshot.');
-            return { data, canvas, ctx };
+            const w = img.naturalWidth, h = img.naturalHeight;
+
+            // 1. QR zoeken, van groot naar klein: bij een ruisige foto lukt het vaak pas op lage resolutie,
+            //    omdat de ruis dan wegmiddelt
+            let gevonden = null, zoek = null;
+            for (const maat of [1600, 800, 480, 320]) {
+                zoek = canvasVan(img, w, h, 0, 0, w, h, maat);
+                gevonden = leesQr(zoek);
+                if (gevonden) break;
+            }
+            let uitsnede = { sx: 0, sy: 0, sw: w, sh: h };
+            if (gevonden) {
+                const f = w / zoek.width;
+                const l = gevonden.location;
+                const punten = [l.topLeftCorner, l.topRightCorner, l.bottomLeftCorner, l.bottomRightCorner];
+                const xs = punten.map(p => p.x), ys = punten.map(p => p.y);
+                const midX = (Math.min(...xs) + Math.max(...xs)) / 2, midY = (Math.min(...ys) + Math.max(...ys)) / 2;
+                const zijde = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+                const half = zijde / 2 * 1.3; // 30% extra: de witte rand die scanners nodig hebben
+                uitsnede = { sx: (midX - half) * f, sy: (midY - half) * f, sw: 2 * half * f, sh: 2 * half * f };
+            }
+
+            // 2 + 3. Van groot en scherp naar klein en lossy; de eerste die klein genoeg is en nog scant wint
+            for (const max of [640, 480, 360, 280]) {
+                const canvas = canvasVan(img, w, h, uitsnede.sx, uitsnede.sy, uitsnede.sw, uitsnede.sh, max);
+                // png is scherper maar bij grote of ruisige beelden enorm en traag; daar begint hij meteen met jpeg
+                const kwaliteiten = canvas.width * canvas.height <= 250000 ? ['png', 0.92, 0.8, 0.65] : [0.92, 0.8, 0.65];
+                for (const kwaliteit of kwaliteiten) {
+                    const data = kwaliteit === 'png' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', kwaliteit);
+                    if (data.length > DOEL_TEKENS) continue;
+                    if (gevonden) {
+                        const terug = await laadAfbeelding(data);
+                        const controle = canvasVan(terug, terug.naturalWidth, terug.naturalHeight, 0, 0, terug.naturalWidth, terug.naturalHeight, 4000);
+                        if (!leesQr(controle)) continue;
+                    }
+                    return { data, herkend: gevonden ? (gevonden.data || '') : null, uitgesneden: !!gevonden, zijde: canvas.width };
+                }
+            }
+            throw new Error('Deze afbeelding is te groot of te onduidelijk om klein op te slaan. Probeer een screenshot van alleen de QR-code.');
         } finally {
             URL.revokeObjectURL(url);
         }
@@ -295,6 +348,9 @@
             return;
         }
         try {
+            $('voorbeeldBlok').classList.remove('verborgen');
+            $('opslaanKnop').disabled = true;
+            melding($('controle'), 'ok', '⏳ Bezig met zoeken, uitsnijden en verkleinen…');
             const klein = await maakKlein(file);
             voorbereid = klein.data;
             $('voorbeeld').src = klein.data;
@@ -308,8 +364,8 @@
         }
     }
 
-    // Probeert de QR in de verkleinde afbeelding te lezen: zo weet je zeker dat hij ook scant na het verkleinen
-    function controleerQr({ canvas, ctx, data }) {
+    // Laat zien wat er van de afbeelding is gemaakt en of de QR daarin nog te lezen is
+    function controleerQr({ data, herkend, uitgesneden, zijde }) {
         const vak = $('controle');
         $('opslaanKnop').disabled = false;
         const kb = Math.round(data.length * 0.75 / 1024);
@@ -317,14 +373,12 @@
             melding(vak, 'waarschuwing', 'De QR-controle is niet beschikbaar (geen internet naar de bibliotheek). Test de code na het opslaan zelf met je telefoon. (' + kb + ' KB)');
             return;
         }
-        const beeld = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const gevonden = jsQR(beeld.data, beeld.width, beeld.height);
-        if (!gevonden) {
-            melding(vak, 'waarschuwing', 'Ik kan hier geen QR-code in lezen. Staat de hele QR scherp in beeld, met wat witte rand? Je kunt hem wel opslaan, maar test hem dan eerst zelf met je telefoon.');
+        if (herkend === null) {
+            melding(vak, 'waarschuwing', 'Ik kan hier geen QR-code in lezen, dus ik kon hem niet uitsnijden en niet controleren. Staat de hele QR scherp in beeld, met wat witte rand? Je kunt hem wel opslaan (' + kb + ' KB, ' + zijde + ' px), maar test hem dan eerst zelf met je telefoon.');
             return;
         }
-        const inhoud = gevonden.data || '';
-        melding(vak, 'ok', '✅ QR-code herkend (' + kb + ' KB). Hij bevat: ' + (inhoud.length > 90 ? inhoud.slice(0, 90) + '…' : inhoud));
+        const inhoud = herkend;
+        melding(vak, 'ok', '✅ QR-code herkend' + (uitgesneden ? ', uitgesneden en verkleind' : '') + ' (' + kb + ' KB, ' + zijde + ' px). Hij bevat: ' + (inhoud.length > 90 ? inhoud.slice(0, 90) + '…' : inhoud));
         // Veel Tikkie-codes bevatten gewoon de betaallink: dan hoef je die niet zelf te zoeken
         if (/^https:\/\/\S+$/.test(inhoud) && !$('link').value) $('link').value = inhoud;
     }
