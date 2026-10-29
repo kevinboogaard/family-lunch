@@ -637,6 +637,24 @@
         #cartItems { max-height: 42vh; overflow-y: auto; overflow-x: hidden; margin: 0 -6px; padding: 0 6px; }
         .leeg-mandje { text-align: center; color: var(--muted); padding: 22px 0 8px; }
         .leeg-mandje span { display: block; font-size: 46px; margin-bottom: 6px; animation: wiebel 3s infinite; }
+        .vorige-mandje {
+            display: block;
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px dashed rgba(255, 194, 26, 0.6);
+            background: rgba(255, 194, 26, 0.08);
+            color: var(--text);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .vorige-mandje:hover { background: rgba(255, 194, 26, 0.18); }
+        .vorige-mandje small { display: block; margin-top: 4px; font-weight: 400; color: var(--muted); font-size: 12px; line-height: 1.4; }
+        .chip-knop { color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-color: rgba(255, 194, 26, 0.55); transition: background 0.2s, transform 0.2s; }
+        .chip-knop:hover { background: rgba(255, 194, 26, 0.18); transform: translateY(-2px); }
         .cart-item {
             display: grid;
             grid-template-columns: 1fr auto;
@@ -1002,6 +1020,7 @@
         <div class="hero-chips">
             <span class="chip aftellen" id="aftellen">⏳ Even rekenen…</span>
             <span class="chip" id="statusBanner">🔄 Menukaart laden…</span>
+            <button class="chip chip-knop verborgen" id="vorigeKnop" onclick="bestelVorigeKeer()">🔁 Hetzelfde als vorige keer</button>
         </div>
     </header>
 
@@ -1619,7 +1638,10 @@
             animeerTotaal(total);
 
             if (cart.length === 0) {
-                cartContainer.innerHTML = '<div class="leeg-mandje"><span>🛒</span>Je mandje is nog leeg.<br>Tijd om te kiezen!</div>';
+                const vorige = vorigeBestelling();
+                cartContainer.innerHTML = '<div class="leeg-mandje"><span>🛒</span>Je mandje is nog leeg.<br>Tijd om te kiezen!' +
+                    (vorige ? `<button class="vorige-mandje" onclick="bestelVorigeKeer()">🔁 Hetzelfde als vorige keer<small>${escapeHtml(vorigeSamenvatting(vorige))}</small></button>` : '') +
+                    '</div>';
                 return;
             }
 
@@ -2036,6 +2058,80 @@
 
         function toonMijnKnop() {
             document.getElementById('mijnKnop').classList.toggle('verborgen', mijnDagen().length === 0);
+            const vorige = vorigeBestelling();
+            const knop = document.getElementById('vorigeKnop');
+            knop.classList.toggle('verborgen', !vorige);
+            if (vorige) knop.title = vorigeSamenvatting(vorige);
+        }
+
+        // ---------- Hetzelfde als vorige keer ----------
+        // De laatste bestelling van dit apparaat (zie bewaarMijn). Alleen hier opgeslagen, dus niet op een ander apparaat.
+        // Vandaag al besteld? Dan niet aanbieden, anders bestel je per ongeluk dubbel.
+        function vorigeBestelling() {
+            const dagen = mijnDagen();
+            if (!dagen.length || dagen[0].datum === vandaagISO()) return null;
+            return dagen[0];
+        }
+
+        function vorigeSamenvatting(vorige) {
+            const datum = new Date(vorige.datum + 'T12:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+            const regels = [...vorige.regels.values()].map(r => (r.aantal > 1 ? r.aantal + '× ' : '') + r.product);
+            return `${datum}: ${regels.join(', ')}`;
+        }
+
+        // Zoekt bij "Frites Mayonaise (Zonder zout)" het menuproduct en de keuzes met hun huidige meerprijs.
+        // Geeft null als het product of een keuze niet meer op het menu staat, of als er een verplichte keuze ontbreekt.
+        function regelUitMenu(tekst) {
+            const product = menuData
+                .filter(p => tekst === p.name || tekst.startsWith(p.name + ' ('))
+                .sort((a, b) => b.name.length - a.name.length)[0];
+            if (!product) return null;
+            const optiesTekst = tekst.length > product.name.length ? tekst.slice(product.name.length + 2, -1) : '';
+            const opties = optiesTekst ? optiesTekst.split(', ') : [];
+            const vragen = product.vragenSetID ? vragenData.filter(v => v.vragenSetID == product.vragenSetID) : [];
+            const extras = [...extraGroepen(product).values()].flatMap(groep => [...groep.values()]);
+            let extraKosten = 0;
+            const beantwoord = new Set();
+            for (const optie of opties) {
+                const antwoord = vragen.find(v => v.antwoordTekst === optie && !beantwoord.has(v.vraagID));
+                const extra = extras.find(e => e.naam === optie);
+                if (antwoord) { extraKosten += antwoord.meerprijs; beantwoord.add(antwoord.vraagID); }
+                else if (extra) extraKosten += Number(extra.prijs) || 0;
+                else return null;
+            }
+            if (new Set(vragen.map(v => v.vraagID)).size !== beantwoord.size) return null;
+            return { product, extraKosten, optiesTekst };
+        }
+
+        function bestelVorigeKeer() {
+            const vorige = vorigeBestelling();
+            if (!vorige) return;
+            if (!menuData.length) { toast('⏳ Even wachten tot het menu is geladen.', 'fout'); return; }
+            const missend = [];
+            let toegevoegd = 0, teVeel = null;
+            vorige.regels.forEach(regel => {
+                const gevonden = regelUitMenu(regel.product);
+                if (!gevonden) { missend.push(regel.product); return; }
+                const { product, extraKosten, optiesTekst } = gevonden;
+                const uniekeNaam = product.name + (optiesTekst ? ` (${optiesTekst})` : '');
+                for (let i = 0; i < regel.aantal; i++) {
+                    const melding = mandjeLimiet(uniekeNaam);
+                    if (melding) { teVeel = melding; break; }
+                    const bestaand = cart.find(item => item.name === uniekeNaam);
+                    if (bestaand) bestaand.qty++;
+                    else cart.push({ name: uniekeNaam, baseName: product.name, price: product.price + (product.statiegeld || 0) + extraKosten, qty: 1 });
+                    toegevoegd++;
+                }
+            });
+            const naamVeld = document.getElementById('naamInput');
+            if (!naamVeld.value.trim()) naamVeld.value = vorige.naam;
+            renderCart(toegevoegd > 0);
+            werkMandjeBadgesBij();
+            if (toegevoegd) toast(`🔁 Je bestelling van vorige keer zit in je mandje!`);
+            if (missend.length) toast(`⚠️ Niet meer (zo) op het menu: ${missend.join(', ')}. Kies die even opnieuw.`, 'fout');
+            if (teVeel) toast('✋ ' + teVeel, 'fout');
+            // Na de klik openen, anders sluit de klik-buiten-het-mandje-regel hem meteen weer
+            if (toegevoegd) setTimeout(() => toggleMandje(true), 0);
         }
 
         const dagTekst = datum => datum === vandaagISO() ? 'vandaag' : new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });

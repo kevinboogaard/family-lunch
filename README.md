@@ -36,6 +36,17 @@ Bij beide krijg je friet (bij een snack of burger) en een drankje als tip, die j
 - Kies je **Vega** of **Helemaal niet pittig**, dan valt de rest weg. De andere antwoorden geven alleen voorrang.
 - Grote bestellingen (gezinszakken, bittergarnituur, Family deal) en ijs stelt hij niet voor.
 
+## Hetzelfde als vorige keer
+
+Heeft iemand op dit apparaat al eens besteld, dan staat bovenin (en in het lege mandje) de knop
+**🔁 Hetzelfde als vorige keer**. Die zet de laatste bestelling met dezelfde keuzes en extra's in het mandje,
+tegen de prijzen van deze week, en vult de naam in.
+
+- De app onthoudt dit in de browser van het apparaat (dezelfde lijst als **🧾 Mijn bestelling**). Op een ander
+  apparaat of na het opruimen van de browser is de knop er niet. Bestellingen van anderen haalt hij nooit op.
+- Staat een product of een gekozen extra niet meer op het menu, dan slaat hij die over en meldt hij welke.
+- Wie vandaag al heeft besteld, ziet de knop niet, zodat je niet per ongeluk dubbel bestelt.
+
 ## Herinnering voor de deadline
 
 Op vrijdag verschijnt in het laatste half uur voor **10:30** bovenin een balk: "⏰ Nog 14:59 om te bestellen".
