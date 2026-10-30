@@ -434,6 +434,49 @@
             scrollbar-width: none;
         }
         .categories::-webkit-scrollbar { display: none; }
+        /* Pijltjes voor wie niet opzij kan scrollen (muis zonder kantelwiel); alleen zichtbaar als er meer is */
+        .cat-balk { position: relative; }
+        .cat-pijl {
+            position: absolute;
+            top: 50%;
+            z-index: 2;
+            width: 38px;
+            height: 38px;
+            margin-top: -21px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--panel-solid);
+            color: var(--text);
+            font-size: 26px;
+            line-height: 1;
+            padding-bottom: 3px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s, background 0.2s;
+        }
+        .cat-pijl.links { left: -6px; }
+        .cat-pijl.rechts { right: -6px; }
+        .cat-pijl.zichtbaar { opacity: 1; pointer-events: auto; }
+        .cat-pijl:hover { background: var(--hot); transform: scale(1.08); }
+        /* Zachte rand zodat knoppen onder het pijltje wegvallen in plaats van er half onder te steken */
+        .cat-balk::before, .cat-balk::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 46px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .cat-balk::before { left: 0; background: linear-gradient(90deg, rgba(24, 14, 48, 0.95), transparent); }
+        .cat-balk::after { right: 0; background: linear-gradient(270deg, rgba(24, 14, 48, 0.95), transparent); }
+        .cat-balk.meer-links::before, .cat-balk.meer-rechts::after { opacity: 1; }
         .cat-btn {
             display: inline-flex;
             align-items: center;
@@ -1069,7 +1112,11 @@
                     </div>
                     <button class="weetniet-knop" id="weetNietKnop" onclick="openKiesModal()" disabled>🤔 <span class="lang">Ik weet het niet</span><span class="kort">Weet niet</span></button>
                 </div>
-                <div id="categoryContainer" class="categories" role="tablist"></div>
+                <div class="cat-balk">
+                    <button class="cat-pijl links" id="catPijlLinks" onclick="schuifCategorieen(-1)" aria-label="Vorige soorten" tabindex="-1">‹</button>
+                    <div id="categoryContainer" class="categories" role="tablist" onscroll="werkCatPijlenBij()"></div>
+                    <button class="cat-pijl rechts" id="catPijlRechts" onclick="schuifCategorieen(1)" aria-label="Meer soorten" tabindex="-1">›</button>
+                </div>
             </div>
             <h2 class="cat-titel" id="catTitel"></h2>
             <div id="productGrid" class="product-grid">
@@ -1398,7 +1445,25 @@
                 };
                 container.appendChild(btn);
             });
+            werkCatPijlenBij();
         }
+
+        function schuifCategorieen(richting) {
+            const balk = document.getElementById('categoryContainer');
+            balk.scrollBy({ left: richting * balk.clientWidth * 0.7, behavior: minderBeweging ? 'auto' : 'smooth' });
+        }
+
+        // Pijltje links/rechts alleen tonen als er die kant op nog soorten verstopt zitten
+        function werkCatPijlenBij() {
+            const balk = document.getElementById('categoryContainer');
+            const links = balk.scrollLeft > 4;
+            const rechts = balk.scrollLeft + balk.clientWidth < balk.scrollWidth - 4;
+            document.getElementById('catPijlLinks').classList.toggle('zichtbaar', links);
+            document.getElementById('catPijlRechts').classList.toggle('zichtbaar', rechts);
+            balk.parentElement.classList.toggle('meer-links', links);
+            balk.parentElement.classList.toggle('meer-rechts', rechts);
+        }
+        window.addEventListener('resize', werkCatPijlenBij);
 
         // Pas zoeken als je even stopt met typen, anders wordt bij elke letter het hele raster opnieuw opgebouwd
         let zoekTimer = null;
