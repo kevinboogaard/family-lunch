@@ -290,6 +290,20 @@
 
         /* ---------- Wachtspelletje ---------- */
         .spel-uitleg { margin: -8px 0 14px; color: var(--muted); font-size: 14px; }
+        .spel-opslaan { margin-top: 14px; padding: 14px; border-radius: 16px; background: rgba(255, 194, 26, 0.08); border: 1px dashed rgba(255, 194, 26, 0.55); font-size: 14px; }
+        .spel-opslaan-rij { display: flex; gap: 8px; margin-top: 10px; }
+        .spel-opslaan-rij input { flex: 1; min-width: 0; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0, 0, 0, 0.25); color: var(--text); font: inherit; }
+        .spel-opslaan-rij input:focus { outline: none; border-color: var(--orange); }
+        .spel-opslaan-rij button { flex: none; padding: 11px 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .spel-opslaan-rij button:disabled { opacity: 0.6; cursor: wait; }
+        .spel-highscores { margin-top: 16px; }
+        .spel-highscores h4 { margin: 0 0 8px; font-family: 'Fredoka', sans-serif; font-size: 18px; }
+        .spel-highscores ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+        .spel-highscores li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); font-size: 14px; }
+        .spel-highscores li .plek { font-weight: 700; color: var(--muted); text-align: center; }
+        .spel-highscores li .punten { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--sun); font-variant-numeric: tabular-nums; }
+        .spel-highscores li.ik { background: rgba(255, 194, 26, 0.16); outline: 1px solid rgba(255, 194, 26, 0.5); }
+        .spel-highscores .leeg { color: var(--muted); font-size: 14px; }
         .spel-veld {
             display: block;
             width: 100%;
@@ -1109,6 +1123,17 @@
             <h3 class="kies-vraag" id="spelTitel">🍟 Friet op de vlucht</h3>
             <p class="spel-uitleg">Spring over zout, saus en tomaten en ontwijk de meeuwen. <b>Spatie</b> of <b>tikken</b> = springen, langer vasthouden = hoger.</p>
             <canvas id="spelVeld" class="spel-veld" width="600" height="200" aria-label="Spelletje Friet op de vlucht"></canvas>
+            <div id="spelOpslaan" class="spel-opslaan verborgen">
+                <span id="spelOpslaanTekst"></span>
+                <div class="spel-opslaan-rij">
+                    <input type="text" id="spelNaam" maxlength="20" placeholder="Je naam" autocomplete="nickname" onkeydown="if (event.key === 'Enter') bewaarSpelScore()">
+                    <button class="btn-confirm" id="spelOpslaanKnop" onclick="bewaarSpelScore()">🏆 Opslaan</button>
+                </div>
+            </div>
+            <div id="spelHighscores" class="spel-highscores verborgen">
+                <h4>🏆 Highscores</h4>
+                <ol id="spelLijst"></ol>
+            </div>
         </div>
     </div>
 
@@ -1774,8 +1799,10 @@
             ctx.scale(dpr, dpr);
             spel = { ctx, breedte, tempo: smal ? 0.8 : 1, status: 'klaar', record: leesSpelRecord(), frame: null, vorige: 0 };
             nieuwSpel();
+            document.getElementById('spelOpslaan').classList.add('verborgen');
             document.getElementById('spelModal').style.display = 'flex';
             spel.frame = requestAnimationFrame(spelLus);
+            laadHighscores();
         }
 
         function sluitSpel() {
@@ -1800,6 +1827,7 @@
                 // Na een botsing heel even wachten, anders begin je per ongeluk meteen opnieuw
                 if (spel.status === 'over' && performance.now() - spel.overOp < 500) return;
                 nieuwSpel();
+                document.getElementById('spelOpslaan').classList.add('verborgen');
                 spel.status = 'spelen';
             }
             spel.vast = true;
@@ -1858,6 +1886,8 @@
                 spel.status = 'over';
                 spel.uitleg = d.uitleg;
                 spel.overOp = performance.now();
+                spel.eindScore = spelScore();
+                setTimeout(toonSpelOpslaan, 0);
                 if (spelScore() > spel.record) { spel.record = spelScore(); spel.nieuwRecord = true; bewaarSpelRecord(spel.record); } else spel.nieuwRecord = false;
                 return true;
             });
@@ -1919,13 +1949,79 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (!spel || !['Space', 'ArrowUp', 'KeyW'].includes(e.code)) return;
+            if (!spel || !['Space', 'ArrowUp', 'KeyW'].includes(e.code) || e.target.matches('input, textarea')) return;
             e.preventDefault(); // anders scrollt de pagina of klikt de spatie op een knop
             if (!e.repeat) spelDruk();
         });
         document.addEventListener('keyup', e => { if (spel && ['Space', 'ArrowUp', 'KeyW'].includes(e.code)) spelLos(); });
         document.getElementById('spelVeld').addEventListener('pointerdown', e => { e.preventDefault(); spelDruk(); });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.getElementById('spelVeld').addEventListener(t, spelLos));
+
+        // ---------- Highscores: gedeeld via het Google-script, per naam de beste score ----------
+        let spelHighscores = null; // null = het script kent highscores (nog) niet
+
+        function leesSpelNaam() { try { return localStorage.getItem('familySpelNaam') || ''; } catch (e) { return ''; } }
+
+        async function laadHighscores() {
+            if (!GOOGLE_SCRIPT_URL) return;
+            try {
+                const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=highscores')).json();
+                if (r.ok && Array.isArray(r.scores)) { spelHighscores = r.scores; toonHighscores(leesSpelNaam()); }
+            } catch (err) {
+                console.warn('Highscores ophalen mislukt:', err);
+            }
+        }
+
+        function toonHighscores(mijnNaam) {
+            const blok = document.getElementById('spelHighscores');
+            const lijst = document.getElementById('spelLijst');
+            if (spelHighscores === null) { blok.classList.add('verborgen'); return; }
+            blok.classList.remove('verborgen');
+            if (!spelHighscores.length) { lijst.innerHTML = '<li class="leeg">Nog geen scores. Wordt jij de eerste?</li>'; return; }
+            const medaille = ['🥇', '🥈', '🥉'];
+            lijst.innerHTML = spelHighscores.map((h, i) => `
+                <li class="${mijnNaam && h.naam.toLowerCase() === mijnNaam.toLowerCase() ? 'ik' : ''}">
+                    <span class="plek">${medaille[i] || i + 1}</span>
+                    <span>${escapeHtml(h.naam)}</span>
+                    <span class="punten">${h.score}</span>
+                </li>`).join('');
+        }
+
+        function toonSpelOpslaan() {
+            if (!spel || spel.status !== 'over' || !spel.eindScore || spelHighscores === null) return;
+            const ik = (document.getElementById('spelNaam').value || leesSpelNaam()).trim().toLowerCase();
+            const plek = spelHighscores.filter(h => h.score >= spel.eindScore && h.naam.toLowerCase() !== ik).length + 1;
+            document.getElementById('spelOpslaanTekst').innerHTML = plek <= 10
+                ? `<b>${spel.eindScore} punten</b>: goed voor plek ${plek} in de top 10! Zet je naam erbij.`
+                : `<b>${spel.eindScore} punten</b>. Sla je score op met je naam.`;
+            const naamVeld = document.getElementById('spelNaam');
+            if (!naamVeld.value) naamVeld.value = leesSpelNaam() || document.getElementById('naamInput').value.trim();
+            const knop = document.getElementById('spelOpslaanKnop');
+            knop.disabled = false;
+            knop.textContent = '🏆 Opslaan';
+            document.getElementById('spelOpslaan').classList.remove('verborgen');
+        }
+
+        async function bewaarSpelScore() {
+            if (!spel || !spel.eindScore) return;
+            const naam = document.getElementById('spelNaam').value.trim();
+            if (naam.length < 2) { toast('✍️ Vul eerst je naam in.', 'fout'); return; }
+            const knop = document.getElementById('spelOpslaanKnop');
+            knop.disabled = true;
+            knop.textContent = 'Opslaan…';
+            try {
+                const r = await postMetCode({ actie: 'highscore', naam, score: spel.eindScore });
+                try { localStorage.setItem('familySpelNaam', naam); } catch (e) { /* dan de volgende keer opnieuw invullen */ }
+                spelHighscores = r.scores;
+                toonHighscores(naam);
+                document.getElementById('spelOpslaan').classList.add('verborgen');
+                toast(r.verbeterd ? `🏆 Opgeslagen! Je staat op plek ${r.plek}.` : `👍 Je beste score blijft ${r.beste} (plek ${r.plek}).`, 'succes');
+            } catch (err) {
+                knop.disabled = false;
+                knop.textContent = '🏆 Opslaan';
+                toast(err.afgewezen ? '🚫 ' + err.message : '😬 Opslaan mislukt, probeer het nog eens. (' + err.message + ')', 'fout');
+            }
+        }
 
         // ---------- Keuzehulp "Ik weet het niet": een paar vragen en dan een voorstel uit het menu ----------
         // De kenmerken worden geraden uit de naam en omschrijving, want menu.json zegt niet wat pittig of vega is.

@@ -53,6 +53,17 @@ const BETAAL = { MAX_DAGEN_TERUG: 31 };
 // Een eigen tabblad, want het opslaan van de QR maakt het tabblad Instellingen helemaal opnieuw.
 const AFGESLOTEN_SHEET = 'Afgesloten';
 
+// Highscores van het wachtspelletje: per naam alleen de beste score. Openbaar te lezen (top 10), dus alleen een naam en een getal.
+const HIGHSCORES_SHEET = 'Highscores';
+const HIGHSCORE = {
+  MAX_SCORE: 100000,           // hoger is niet te halen; alles daarboven is geknoei
+  MAX_NAAM: 20,
+  TOP: 10,
+  MAX_NAMEN: 300,              // daarna vallen de laagste eraf
+  MAX_PER_NAAM_PER_UUR: 30,
+  MAX_PER_UUR: 400
+};
+
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -390,6 +401,77 @@ function zetAfgesloten_(datum, dicht) {
   return meegesloten.sort();
 }
 
+// ---------- Highscores van het wachtspelletje ----------
+
+function highscoresSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(HIGHSCORES_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(HIGHSCORES_SHEET);
+    sheet.getRange('A:C').setNumberFormat('@');
+    sheet.appendRow(['Naam', 'Score', 'Datum']);
+  }
+  return sheet;
+}
+
+function leesHighscores_() {
+  const waarden = highscoresSheet_().getDataRange().getValues();
+  const lijst = [];
+  for (let i = 1; i < waarden.length; i++) {
+    const score = Number(waarden[i][1]) || 0;
+    if (score > 0) lijst.push({ naam: String(waarden[i][0]).replace(/^~/, ''), score: score, datum: celNaarTekst_(waarden[i][2], 'yyyy-MM-dd') });
+  }
+  return lijst.sort(function (a, b) { return b.score - a.score || (a.datum < b.datum ? -1 : 1); });
+}
+
+function topHighscores_() {
+  return leesHighscores_().slice(0, HIGHSCORE.TOP);
+}
+
+/** Bewaart een score als het de beste van die naam is. Geeft de top 10 en je plek terug. */
+function bewaarHighscore_(body) {
+  const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
+  if (teamcode && String(body.code || '') !== teamcode) return fout_('CODE', 'De teamcode ontbreekt of klopt niet.');
+
+  const naam = schoneTekst_(body.naam, HIGHSCORE.MAX_NAAM);
+  if (naam.length < LIMIETEN.MIN_NAAM) return fout_('ONGELDIG', 'Vul een naam in van minimaal ' + LIMIETEN.MIN_NAAM + ' tekens.');
+  const score = Number(body.score);
+  if (!isFinite(score) || Math.floor(score) !== score || score < 1 || score > HIGHSCORE.MAX_SCORE) return fout_('ONGELDIG', 'Deze score klopt niet.');
+
+  // Niet eindeloos laten insturen: per naam en in totaal een maximum per uur
+  const cache = CacheService.getScriptCache();
+  const sleutelNaam = 'hs:' + naam.toLowerCase();
+  const perNaam = Number(cache.get(sleutelNaam)) || 0;
+  const totaal = Number(cache.get('hs:totaal')) || 0;
+  if (perNaam >= HIGHSCORE.MAX_PER_NAAM_PER_UUR || totaal >= HIGHSCORE.MAX_PER_UUR) return fout_('LIMIET', 'Even rustig aan met opslaan. Probeer het later nog eens.');
+  cache.put(sleutelNaam, String(perNaam + 1), 3600);
+  cache.put('hs:totaal', String(totaal + 1), 3600);
+
+  const lijst = leesHighscores_();
+  const bestaand = lijst.filter(function (h) { return h.naam.toLowerCase() === naam.toLowerCase(); })[0];
+  let verbeterd = false;
+  if (!bestaand) {
+    lijst.push({ naam: naam, score: score, datum: vandaag_() });
+    verbeterd = true;
+  } else if (score > bestaand.score) {
+    bestaand.score = score;
+    bestaand.datum = vandaag_();
+    verbeterd = true;
+  }
+  if (verbeterd) {
+    lijst.sort(function (a, b) { return b.score - a.score || (a.datum < b.datum ? -1 : 1); });
+    const bewaren = lijst.slice(0, HIGHSCORE.MAX_NAMEN);
+    // "~" voor de naam: zo wordt een naam als "=SOM(…)" nooit een formule
+    const rijen = [['Naam', 'Score', 'Datum']].concat(bewaren.map(function (h) { return ['~' + h.naam, String(h.score), h.datum]; }));
+    const sheet = highscoresSheet_();
+    sheet.clear();
+    sheet.getRange('A:C').setNumberFormat('@');
+    sheet.getRange(1, 1, rijen.length, 3).setValues(rijen);
+  }
+  const plek = leesHighscores_().findIndex(function (h) { return h.naam.toLowerCase() === naam.toLowerCase(); }) + 1;
+  return { ok: true, verbeterd: verbeterd, beste: Math.max(score, bestaand ? bestaand.score : 0), plek: plek, scores: topHighscores_() };
+}
+
 /** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
 function betaaldMelding_(body) {
   const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
@@ -506,6 +588,7 @@ function doPost(e) {
 
     if (body && body.actie === 'betaalStatus') return json_(betaalStatus_(body));
     if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
+    if (body && body.actie === 'highscore') return json_(bewaarHighscore_(body));
     if (body && body.actie) return json_(beheerActie_(body));
 
     if (isAfgesloten_(vandaag_())) return json_(fout_('GESLOTEN', 'De bestellijst van vandaag is gesloten. Volgende keer weer!'));
@@ -579,6 +662,7 @@ function betaalStatus_(body) {
  */
 function doGet(e) {
   try {
+    if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, scores: topHighscores_() });
     if (e && e.parameter && e.parameter.actie === 'qr') {
       const uit = leesQr_();
       uit.vandaagGesloten = isAfgesloten_(vandaag_());

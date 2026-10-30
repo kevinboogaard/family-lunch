@@ -41,7 +41,18 @@ Bij beide krijg je friet (bij een snack of burger) en een drankje als tip, die j
 Bovenin staat **🎮 Spelletje**: *Friet op de vlucht*, een kleine eigen renner. Een bakje friet rent weg en springt
 over zout, saus en tomaten. Over een lage meeuw spring je heen, onder een hoge meeuw blijf je laag. Muntjes geven
 25 punten extra. Springen met **spatie**, **pijltje omhoog** of **tikken**; langer vasthouden = hoger springen.
-Het record wordt per apparaat onthouden. Op een telefoon is de wereld smaller en het tempo iets lager.
+Op een telefoon is de wereld smaller en het tempo iets lager.
+
+**Highscores:** na afloop kun je je naam invullen en je score opslaan. Onder het spel staat de top 10 van iedereen,
+met je eigen naam gemarkeerd. Per naam telt alleen je beste score. De scores staan in een tabblad **Highscores** van
+je Google Sheet; een rij weghalen daar haalt hem ook uit de lijst.
+
+- De top 10 is voor iedereen met de link te zien (alleen naam en score).
+- Het script weigert onmogelijke scores, namen korter dan 2 tekens en te vaak opslaan (30 keer per uur per naam),
+  en vraagt de teamcode als je die hebt ingesteld. Echt valsspelen tegenhouden kan het niet: wie handig is, kan een
+  nep-score insturen. Haal die dan weg in het tabblad.
+- Dit werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
+  Tot dan werkt het spel gewoon, maar zonder naamveld en top 10.
 
 ## Hetzelfde als vorige keer
 
