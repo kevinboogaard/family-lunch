@@ -358,14 +358,36 @@ function isAfgesloten_(datum) {
   return leesAfgesloten_().some(function (a) { return a.Datum === datum; });
 }
 
+/**
+ * Afsluiten neemt ook alle eerdere dagen met bestellingen mee die nog open stonden (bijv. een vergeten testdag).
+ * Heropenen geldt alleen voor die ene dag. Geeft de dagen terug die extra zijn afgesloten.
+ */
 function zetAfgesloten_(datum, dicht) {
-  const rest = leesAfgesloten_().filter(function (a) { return a.Datum !== datum; });
-  if (dicht) rest.push({ Datum: datum, Op: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm') });
+  const huidig = leesAfgesloten_();
+  const rest = huidig.filter(function (a) { return a.Datum !== datum; });
+  const meegesloten = [];
+  if (dicht) {
+    const op = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    const alDicht = {};
+    huidig.forEach(function (a) { alDicht[a.Datum] = true; });
+    const waarden = getSheet_().getDataRange().getValues();
+    for (let i = 1; i < waarden.length; i++) {
+      const dag = celNaarTekst_(waarden[i][1], 'yyyy-MM-dd');
+      if (datumGeldig_(dag) && dag < datum && !alDicht[dag]) {
+        alDicht[dag] = true;
+        meegesloten.push(dag);
+        rest.push({ Datum: dag, Op: op });
+      }
+    }
+    rest.push({ Datum: datum, Op: op });
+    rest.sort(function (a, b) { return a.Datum < b.Datum ? -1 : a.Datum > b.Datum ? 1 : 0; });
+  }
   const rijen = [['Datum', 'Afgesloten op']].concat(rest.map(function (a) { return [a.Datum, a.Op]; }));
   const sheet = afgeslotenSheet_();
   sheet.clear();
   sheet.getRange('A:B').setNumberFormat('@');
   sheet.getRange(1, 1, rijen.length, 2).setValues(rijen);
+  return meegesloten.sort();
 }
 
 /** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
@@ -430,8 +452,8 @@ function beheerActie_(body) {
   if (body.actie === 'afsluiten') {
     const datum = String(body.datum || '');
     if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
-    zetAfgesloten_(datum, body.dicht !== false);
-    return { ok: true, afgesloten: leesAfgesloten_() };
+    const meegesloten = zetAfgesloten_(datum, body.dicht !== false);
+    return { ok: true, afgesloten: leesAfgesloten_(), meegesloten: meegesloten };
   }
 
   if (body.actie === 'zetBetaling') {

@@ -173,7 +173,10 @@ Na het afsluiten:
   "🔒 De bestellijst van vandaag is gesloten";
 - zie jij alles nog wel op `admin.html`, en kun je betalingen nog bevestigen.
 
-Met **🔓 Heropenen** draai je het terug. De afgesloten dagen staan in een tabblad **Afgesloten** van je Google Sheet.
+Afsluiten neemt ook alle **eerdere dagen** met bestellingen mee die nog open stonden, zoals een vergeten testdag.
+Je ziet vooraf welke dagen dat zijn.
+
+Met **🔓 Heropenen** draai je het terug, alleen voor die ene dag. De afgesloten dagen staan in een tabblad **Afgesloten** van je Google Sheet.
 De bestelling blijft wel op het apparaat van de collega bewaard voor **Hetzelfde als vorige keer**, maar wordt niet
 meer getoond.
 

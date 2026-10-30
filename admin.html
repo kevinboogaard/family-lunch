@@ -421,7 +421,7 @@
             knop.textContent = '🔓 Heropenen';
             knop.onclick = () => afsluiten(datum, false);
         } else {
-            tekst.innerHTML = '<strong>🔓 Open.</strong> Klaar met deze dag? Sluit hem af: dan verdwijnt de bestelling bij collega\'s uit "Mijn bestelling" en het afrekenscherm, en kan er niet meer besteld of betaald gemeld worden.';
+            tekst.innerHTML = '<strong>🔓 Open.</strong> Klaar met deze dag? Sluit hem af: dan verdwijnt de bestelling bij collega\'s uit "Mijn bestelling" en het afrekenscherm, en kan er niet meer besteld of betaald gemeld worden. Eerdere dagen die nog open staan, gaan mee.';
             knop.className = 'hoofd';
             knop.textContent = '🔒 Bestelling van ' + dagNaam(datum) + ' afsluiten';
             knop.onclick = () => afsluiten(datum, true);
@@ -430,12 +430,21 @@
         vak.appendChild(blok);
     }
 
+    // Eerdere dagen met bestellingen die nog open staan: die sluit het script mee af
+    function eerdereOpenDagen(datum) {
+        const dicht = new Set((afgesloten || []).map(a => a.Datum));
+        return [...new Set(alleBestellingen.map(b => b.Datum))].filter(d => d < datum && !dicht.has(d)).sort();
+    }
+
     async function afsluiten(datum, dicht) {
         if (dicht) {
             const open = personenVanDag().filter(p => p.status !== 'bevestigd');
-            const waarschuwing = open.length
+            const eerder = eerdereOpenDagen(datum);
+            const waarschuwing = (open.length
                 ? '\n\nNog niet bevestigd: ' + open.map(p => p.naam + ' (' + euro(p.totaal) + ')').join(', ') + '. Zij zien hun bestelling daarna ook niet meer, dus zeg ze zelf wat ze moeten betalen.'
-                : '';
+                : '') + (eerder.length
+                ? '\n\nDeze eerdere dagen staan nog open en worden ook afgesloten: ' + eerder.map(dagNaam).join(', ') + '.'
+                : '');
             if (!confirm('De bestelling van ' + dagNaam(datum) + ' afsluiten?' + waarschuwing)) return;
         }
         melding($('betaalMelding'), '', '');
@@ -444,7 +453,8 @@
             if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Afsluiten mislukt.'); return; }
             afgesloten = r.afgesloten;
             toonAfsluiten();
-            melding($('betaalMelding'), 'ok', dicht ? '🔒 Afgesloten. Collega\'s zien deze bestelling niet meer.' : '🔓 Weer open.');
+            const mee = Array.isArray(r.meegesloten) && r.meegesloten.length ? ' Ook afgesloten: ' + r.meegesloten.map(dagNaam).join(', ') + '.' : '';
+            melding($('betaalMelding'), 'ok', dicht ? '🔒 Afgesloten. Collega\'s zien deze bestelling niet meer.' + mee : '🔓 Weer open.');
         } catch (err) {
             melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
         }
