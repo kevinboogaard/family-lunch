@@ -36,6 +36,13 @@ Bij beide krijg je friet (bij een snack of burger) en een drankje als tip, die j
 - Kies je **Vega** of **Helemaal niet pittig**, dan valt de rest weg. De andere antwoorden geven alleen voorrang.
 - Grote bestellingen (gezinszakken, bittergarnituur, Family deal) en ijs stelt hij niet voor.
 
+## Spelletje voor tijdens het wachten
+
+Bovenin staat **🎮 Spelletje**: *Friet op de vlucht*, een kleine eigen renner. Een bakje friet rent weg en springt
+over zout, saus en tomaten. Over een lage meeuw spring je heen, onder een hoge meeuw blijf je laag. Muntjes geven
+25 punten extra. Springen met **spatie**, **pijltje omhoog** of **tikken**; langer vasthouden = hoger springen.
+Het record wordt per apparaat onthouden. Op een telefoon is de wereld smaller en het tempo iets lager.
+
 ## Hetzelfde als vorige keer
 
 Heeft iemand op dit apparaat al eens besteld, dan staat bovenin (en in het lege mandje) de knop

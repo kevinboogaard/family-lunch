@@ -288,6 +288,26 @@
             .weetniet-knop .kort { display: inline; }
         }
 
+        /* ---------- Wachtspelletje ---------- */
+        .spel-uitleg { margin: -8px 0 14px; color: var(--muted); font-size: 14px; }
+        .spel-veld {
+            display: block;
+            width: 100%;
+            aspect-ratio: 3 / 1;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #2c1a5c 0%, #1a1036 100%);
+            border: 1px solid var(--border);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: pointer;
+        }
+        @media (max-width: 520px) {
+            .knop-tekst-lang { display: none; }
+            #spelModal { padding: 10px; }
+            #spelModal .modal-content { padding: 20px 12px 16px; }
+        }
+
         /* ---------- Keuzehulp "Ik weet het niet" ---------- */
         .kies-stap { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
         .kies-balk { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 0 48px 20px 0; }
@@ -1011,6 +1031,7 @@
         <div class="acties">
             <button class="glas-knop verborgen" id="betaalKnop" onclick="openBetaalModal()">💶 Afrekenen</button>
             <button class="glas-knop verborgen" id="mijnKnop" onclick="openMijnModal()">🧾 Mijn bestelling</button>
+            <button class="glas-knop" id="spelKnop" onclick="openSpel()" aria-label="Spelletje voor tijdens het wachten">🎮 <span class="knop-tekst-lang">Spelletje</span></button>
         </div>
     </div>
 
@@ -1082,6 +1103,15 @@
     </div>
 
     <!-- POP-UP AFREKENEN -->
+    <div id="spelModal" class="modal" onclick="if (event.target === this) sluitSpel()">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="spelTitel" style="width: min(660px, 100%);">
+            <button class="modal-sluit" onclick="sluitSpel()" aria-label="Sluiten">✕</button>
+            <h3 class="kies-vraag" id="spelTitel">🍟 Friet op de vlucht</h3>
+            <p class="spel-uitleg">Spring over zout, saus en tomaten en ontwijk de meeuwen. <b>Spatie</b> of <b>tikken</b> = springen, langer vasthouden = hoger.</p>
+            <canvas id="spelVeld" class="spel-veld" width="600" height="200" aria-label="Spelletje Friet op de vlucht"></canvas>
+        </div>
+    </div>
+
     <div id="kiesModal" class="modal" onclick="if (event.target === this) sluitKiesModal()">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="kiesTitel" style="width: min(460px, 100%);">
             <button class="modal-sluit" onclick="sluitKiesModal()" aria-label="Sluiten">✕</button>
@@ -1688,6 +1718,7 @@
         });
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
+            sluitSpel();
             sluitKiesModal();
             sluitBetaalModal();
             sluitMijnModal();
@@ -1695,6 +1726,206 @@
             sluitModal();
             toggleMandje(false);
         });
+
+        // ---------- Wachtspelletje "Friet op de vlucht": een eigen renner voor tijdens het wachten ----------
+        const SPEL = {
+            breedte: 600, hoogte: 200, grond: 168,
+            zwaarte: 2300, sprong: 640, vasthouden: 0.22,  // langer vasthouden = minder zwaartekracht = hoger
+            startSnelheid: 330, versnelling: 9, maxSnelheid: 820
+        };
+        const SPEL_HINDERNIS = [
+            { emoji: '🧂', maat: 30, uitleg: 'Uitgegleden over het zout!' },
+            { emoji: '🥫', maat: 32, uitleg: 'Tegen een blik saus gerend!' },
+            { emoji: '🍅', maat: 28, uitleg: 'Over een tomaat gestruikeld!' }
+        ];
+        let spel = null;
+
+        // Emoji één keer op een los canvas tekenen: elk frame opnieuw tekst tekenen is traag
+        const spelPlaatjes = {};
+        function spelPlaatje(emoji, maat) {
+            const sleutel = emoji + maat;
+            if (spelPlaatjes[sleutel]) return spelPlaatjes[sleutel];
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            const zijde = Math.ceil(maat * 1.25);
+            const c = document.createElement('canvas');
+            c.width = c.height = Math.ceil(zijde * dpr);
+            const x = c.getContext('2d');
+            x.scale(dpr, dpr);
+            x.font = `${maat}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+            x.textAlign = 'center';
+            x.textBaseline = 'middle';
+            x.fillText(emoji, zijde / 2, zijde / 2 + maat * 0.05);
+            return (spelPlaatjes[sleutel] = { c, zijde });
+        }
+
+        function leesSpelRecord() { try { return Number(localStorage.getItem('familySpelRecord')) || 0; } catch (e) { return 0; } }
+        function bewaarSpelRecord(score) { try { localStorage.setItem('familySpelRecord', String(score)); } catch (e) { /* dan alleen voor nu */ } }
+
+        function openSpel() {
+            const veld = document.getElementById('spelVeld');
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            // Op een telefoon een smallere wereld (alles groter in beeld) en wat lager tempo (evenveel reactietijd)
+            const smal = window.innerWidth < 560;
+            const breedte = smal ? 400 : SPEL.breedte;
+            veld.width = breedte * dpr;
+            veld.height = SPEL.hoogte * dpr;
+            veld.style.aspectRatio = `${breedte} / ${SPEL.hoogte}`;
+            const ctx = veld.getContext('2d');
+            ctx.scale(dpr, dpr);
+            spel = { ctx, breedte, tempo: smal ? 0.8 : 1, status: 'klaar', record: leesSpelRecord(), frame: null, vorige: 0 };
+            nieuwSpel();
+            document.getElementById('spelModal').style.display = 'flex';
+            spel.frame = requestAnimationFrame(spelLus);
+        }
+
+        function sluitSpel() {
+            document.getElementById('spelModal').style.display = 'none';
+            if (spel) cancelAnimationFrame(spel.frame);
+            spel = null;
+        }
+
+        function nieuwSpel() {
+            Object.assign(spel, {
+                y: SPEL.grond, vy: 0, opGrond: true, vast: false, vastTijd: 0,
+                snelheid: SPEL.startSnelheid * spel.tempo, afstand: 0, munten: 0, tijd: 0,
+                dingen: [], volgende: 260, streepjes: 0, uitleg: ''
+            });
+        }
+
+        function spelScore() { return Math.floor(spel.afstand / 10) + spel.munten * 25; }
+
+        function spelDruk() {
+            if (!spel) return;
+            if (spel.status === 'klaar' || spel.status === 'over') {
+                // Na een botsing heel even wachten, anders begin je per ongeluk meteen opnieuw
+                if (spel.status === 'over' && performance.now() - spel.overOp < 500) return;
+                nieuwSpel();
+                spel.status = 'spelen';
+            }
+            spel.vast = true;
+            if (spel.opGrond) {
+                spel.vy = -SPEL.sprong;
+                spel.opGrond = false;
+                spel.vastTijd = 0;
+            }
+        }
+        function spelLos() { if (spel) spel.vast = false; }
+
+        function spelNieuwDing() {
+            const kans = Math.random();
+            const x = spel.breedte + 20;
+            if (kans < 0.22 && spel.tijd > 6) {
+                // Meeuw: laag (overheen springen) of hoog (eronderdoor blijven)
+                const hoog = Math.random() < 0.45;
+                spel.dingen.push({ soort: 'meeuw', emoji: '🐦', maat: 32, x, y: hoog ? SPEL.grond - 70 : SPEL.grond - 12, uitleg: 'Gepikt door een meeuw!' });
+            } else {
+                const h = SPEL_HINDERNIS[Math.floor(Math.random() * SPEL_HINDERNIS.length)];
+                spel.dingen.push({ soort: 'hindernis', ...h, x, y: SPEL.grond });
+                // Soms een muntje boven de hindernis: pak hem mee met een hoge sprong
+                if (Math.random() < 0.35) spel.dingen.push({ soort: 'munt', emoji: '🪙', maat: 22, x: x + 4, y: SPEL.grond - 78 - Math.random() * 20 });
+            }
+            // Ruimte tot het volgende ding groeit mee met de snelheid, zodat het te doen blijft
+            const min = spel.snelheid * 0.62, max = spel.snelheid * 1.35;
+            spel.volgende = min + Math.random() * (max - min);
+        }
+
+        function spelBijwerken(dt) {
+            spel.tijd += dt;
+            spel.snelheid = Math.min(SPEL.maxSnelheid * spel.tempo, spel.snelheid + SPEL.versnelling * spel.tempo * dt);
+            const stap = spel.snelheid * dt;
+            spel.afstand += stap;
+            spel.streepjes = (spel.streepjes + stap) % 40;
+
+            // Springen: zolang je vasthoudt en omhoog gaat, minder zwaartekracht
+            let zwaarte = SPEL.zwaarte;
+            if (spel.vast && spel.vy < 0 && spel.vastTijd < SPEL.vasthouden) { zwaarte *= 0.4; spel.vastTijd += dt; }
+            spel.vy += zwaarte * dt;
+            spel.y += spel.vy * dt;
+            if (spel.y >= SPEL.grond) { spel.y = SPEL.grond; spel.vy = 0; spel.opGrond = true; }
+
+            spel.volgende -= stap;
+            if (spel.volgende <= 0) spelNieuwDing();
+
+            // Botsingen met een kleiner vak dan het plaatje, zodat het eerlijk voelt
+            const speler = { x: 64, y: spel.y - 30, b: 26, h: 28 };
+            spel.dingen = spel.dingen.filter(d => {
+                d.x -= stap * (d.soort === 'meeuw' ? 1.12 : 1);
+                if (d.x < -50) return false;
+                const vak = { x: d.x - d.maat * 0.32, y: d.y - d.maat * 0.8, b: d.maat * 0.64, h: d.maat * 0.66 };
+                const raak = speler.x < vak.x + vak.b && speler.x + speler.b > vak.x && speler.y < vak.y + vak.h && speler.y + speler.h > vak.y;
+                if (!raak) return true;
+                if (d.soort === 'munt') { spel.munten++; return false; }
+                spel.status = 'over';
+                spel.uitleg = d.uitleg;
+                spel.overOp = performance.now();
+                if (spelScore() > spel.record) { spel.record = spelScore(); spel.nieuwRecord = true; bewaarSpelRecord(spel.record); } else spel.nieuwRecord = false;
+                return true;
+            });
+        }
+
+        function spelTekenen() {
+            const c = spel.ctx, B = spel.breedte, H = SPEL.hoogte;
+            c.clearRect(0, 0, B, H);
+            // Grond
+            c.strokeStyle = 'rgba(255, 194, 26, 0.7)';
+            c.lineWidth = 2;
+            c.beginPath(); c.moveTo(0, SPEL.grond + 1); c.lineTo(B, SPEL.grond + 1); c.stroke();
+            c.fillStyle = 'rgba(255, 255, 255, 0.18)';
+            for (let x = -spel.streepjes; x < B; x += 40) c.fillRect(x, SPEL.grond + 10, 14, 2);
+
+            const teken = (emoji, maat, x, onder) => {
+                const p = spelPlaatje(emoji, maat);
+                c.drawImage(p.c, x - p.zijde / 2, onder - p.zijde * 0.92, p.zijde, p.zijde);
+            };
+            spel.dingen.forEach(d => {
+                const fladder = d.soort === 'meeuw' ? Math.sin(spel.tijd * 14 + d.x * 0.05) * 3 : d.soort === 'munt' ? Math.sin(spel.tijd * 6 + d.x) * 2 : 0;
+                teken(d.emoji, d.maat, d.x, d.y + fladder);
+            });
+            // Speler: hupt een beetje tijdens het rennen
+            const hup = spel.opGrond && spel.status === 'spelen' ? -Math.abs(Math.sin(spel.tijd * 16)) * 3 : 0;
+            teken(spel.status === 'over' ? '😵' : '🍟', 36, 78, spel.y + hup);
+
+            // Score
+            c.textAlign = 'right';
+            c.textBaseline = 'top';
+            c.fillStyle = '#fff8ef';
+            c.font = '600 15px Fredoka, "Segoe UI", sans-serif';
+            c.fillText(`${spelScore()} punten`, B - 14, 12);
+            c.fillStyle = '#c3b8de';
+            c.font = '500 12px Inter, "Segoe UI", sans-serif';
+            c.fillText(`🪙 ${spel.munten} · record ${spel.record}`, B - 14, 32);
+
+            if (spel.status !== 'spelen') {
+                c.fillStyle = 'rgba(18, 11, 36, 0.55)';
+                c.fillRect(0, 0, B, H);
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillStyle = '#ffc21a';
+                c.font = '700 24px Fredoka, "Segoe UI", sans-serif';
+                c.fillText(spel.status === 'klaar' ? (B < 500 ? 'Tik om te beginnen' : 'Tik of druk op spatie om te beginnen') : spel.uitleg, B / 2, H / 2 - 22);
+                c.fillStyle = '#fff8ef';
+                c.font = '500 15px Inter, "Segoe UI", sans-serif';
+                if (spel.status === 'over') c.fillText((spel.nieuwRecord ? '🏆 Nieuw record! ' : '') + `${spelScore()} punten · tik om opnieuw te spelen`, B / 2, H / 2 + 12);
+            }
+        }
+
+        function spelLus(nu) {
+            if (!spel) return;
+            const dt = Math.min(0.05, spel.vorige ? (nu - spel.vorige) / 1000 : 0);
+            spel.vorige = nu;
+            if (spel.status === 'spelen') spelBijwerken(dt);
+            spelTekenen();
+            spel.frame = requestAnimationFrame(spelLus);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (!spel || !['Space', 'ArrowUp', 'KeyW'].includes(e.code)) return;
+            e.preventDefault(); // anders scrollt de pagina of klikt de spatie op een knop
+            if (!e.repeat) spelDruk();
+        });
+        document.addEventListener('keyup', e => { if (spel && ['Space', 'ArrowUp', 'KeyW'].includes(e.code)) spelLos(); });
+        document.getElementById('spelVeld').addEventListener('pointerdown', e => { e.preventDefault(); spelDruk(); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.getElementById('spelVeld').addEventListener(t, spelLos));
 
         // ---------- Keuzehulp "Ik weet het niet": een paar vragen en dan een voorstel uit het menu ----------
         // De kenmerken worden geraden uit de naam en omschrijving, want menu.json zegt niet wat pittig of vega is.
