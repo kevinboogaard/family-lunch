@@ -38,12 +38,12 @@ Bij beide krijg je friet (bij een snack of burger) en een drankje als tip, die j
 
 ## Herinnering voor de deadline
 
-Op vrijdag verschijnt in het laatste half uur voor **11:30** bovenin een balk: "⏰ Nog 14:59 om te bestellen".
+Op vrijdag verschijnt in het laatste half uur voor **10:30** bovenin een balk: "⏰ Nog 14:59 om te bestellen".
 Heeft iemand iets in zijn mandje dat nog niet is verstuurd, dan staat dat erbij. In de laatste 5 minuten wordt de
 balk rood. Wegklikken kan; in de laatste 5 minuten komt hij één keer terug.
 
 De tijd staat bovenin het script van `index.html` in `BESTELLEN_TOT` (en `HERINNER_MINUTEN` voor hoe lang van
-tevoren). Het is alleen een herinnering: na 11:30 kun je nog steeds bestellen.
+tevoren). Het is alleen een herinnering: na 10:30 kun je nog steeds bestellen.
 
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 
