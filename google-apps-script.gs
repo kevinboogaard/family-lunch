@@ -49,6 +49,10 @@ const BEHEER = {
 const BETALINGEN_SHEET = 'Betalingen';
 const BETAAL = { MAX_DAGEN_TERUG: 31 };
 
+// Afgesloten dagen: geen bestellingen en geen "ik heb betaald" meer, en collega's zien die bestelling niet meer.
+// Een eigen tabblad, want het opslaan van de QR maakt het tabblad Instellingen helemaal opnieuw.
+const AFGESLOTEN_SHEET = 'Afgesloten';
+
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -327,6 +331,43 @@ function datumGeldig_(datum) {
   return /^\d{4}-\d{2}-\d{2}$/.test(datum) && !isNaN(new Date(datum).getTime());
 }
 
+// ---------- Afgesloten dagen ----------
+
+function afgeslotenSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(AFGESLOTEN_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(AFGESLOTEN_SHEET);
+    sheet.getRange('A:B').setNumberFormat('@');
+    sheet.appendRow(['Datum', 'Afgesloten op']);
+  }
+  return sheet;
+}
+
+function leesAfgesloten_() {
+  const waarden = afgeslotenSheet_().getDataRange().getValues();
+  const lijst = [];
+  for (let i = 1; i < waarden.length; i++) {
+    const datum = celNaarTekst_(waarden[i][0], 'yyyy-MM-dd');
+    if (datumGeldig_(datum)) lijst.push({ Datum: datum, Op: String(waarden[i][1]) });
+  }
+  return lijst;
+}
+
+function isAfgesloten_(datum) {
+  return leesAfgesloten_().some(function (a) { return a.Datum === datum; });
+}
+
+function zetAfgesloten_(datum, dicht) {
+  const rest = leesAfgesloten_().filter(function (a) { return a.Datum !== datum; });
+  if (dicht) rest.push({ Datum: datum, Op: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm') });
+  const rijen = [['Datum', 'Afgesloten op']].concat(rest.map(function (a) { return [a.Datum, a.Op]; }));
+  const sheet = afgeslotenSheet_();
+  sheet.clear();
+  sheet.getRange('A:B').setNumberFormat('@');
+  sheet.getRange(1, 1, rijen.length, 2).setValues(rijen);
+}
+
 /** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
 function betaaldMelding_(body) {
   const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
@@ -339,6 +380,8 @@ function betaaldMelding_(body) {
   if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
   const grens = Utilities.formatDate(new Date(Date.now() - BETAAL.MAX_DAGEN_TERUG * 86400000), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   if (datum < grens || datum > vandaag_()) return fout_('ONGELDIG', 'Alleen bestellingen van de afgelopen ' + BETAAL.MAX_DAGEN_TERUG + ' dagen.');
+
+  if (isAfgesloten_(datum)) return fout_('GESLOTEN', 'Deze bestelling is afgesloten.');
 
   const echteNaam = vindBestelNaam_(naam, datum);
   if (!echteNaam) return fout_('ONGELDIG', 'Geen bestelling gevonden voor "' + naam + '" op deze dag.');
@@ -382,7 +425,14 @@ function beheerActie_(body) {
 
   // Alles wat meer laat zien dan iemands eigen gegevens: alleen met de beheercode
   if (body.actie === 'bestellingen') return { ok: true, bestellingen: leesBestellingen_(body.datum) };
-  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_() };
+  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_() };
+
+  if (body.actie === 'afsluiten') {
+    const datum = String(body.datum || '');
+    if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
+    zetAfgesloten_(datum, body.dicht !== false);
+    return { ok: true, afgesloten: leesAfgesloten_() };
+  }
 
   if (body.actie === 'zetBetaling') {
     const datum = String(body.datum || '');
@@ -435,6 +485,8 @@ function doPost(e) {
     if (body && body.actie === 'betaalStatus') return json_(betaalStatus_(body));
     if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
     if (body && body.actie) return json_(beheerActie_(body));
+
+    if (isAfgesloten_(vandaag_())) return json_(fout_('GESLOTEN', 'De bestellijst van vandaag is gesloten. Volgende keer weer!'));
 
     const sheet = getSheet_();
     const resultaat = valideerBestelling_(body, {
@@ -496,13 +548,20 @@ function betaalStatus_(body) {
   const datum = body.datum ? String(body.datum) : vandaag_();
   if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
   const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
-  return { ok: true, status: huidig ? huidig.Status : 'open' };
+  return { ok: true, status: huidig ? huidig.Status : 'open', afgesloten: isAfgesloten_(datum) };
 }
 
-/** Alleen de QR-code is openbaar (die moet iedereen kunnen zien om te betalen). De rest gaat via POST met beheercode. */
+/**
+ * Alleen de QR-code is openbaar (die moet iedereen kunnen zien om te betalen), plus of de bestellijst van vandaag dicht is.
+ * De rest gaat via POST met beheercode.
+ */
 function doGet(e) {
   try {
-    if (e && e.parameter && e.parameter.actie === 'qr') return json_(leesQr_());
+    if (e && e.parameter && e.parameter.actie === 'qr') {
+      const uit = leesQr_();
+      uit.vandaagGesloten = isAfgesloten_(vandaag_());
+      return json_(uit);
+    }
     return json_(fout_('BEHEER', 'Bestellingen zijn alleen zichtbaar voor de beheerder, via admin.html.'));
   } catch (err) {
     return json_({ ok: false, error: String(err) });

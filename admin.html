@@ -131,6 +131,10 @@
         .badge.zegt { background: rgba(255, 194, 26, 0.18); color: #ffe7a3; }
         .badge.bevestigd { background: rgba(47, 227, 163, 0.18); color: #b9f7e0; }
         .klein { font-size: 13px; }
+        .afsluit-blok { display: flex; gap: 12px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 12px 14px; margin-bottom: 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px dashed var(--border); }
+        .afsluit-blok p { margin: 0; flex: 1 1 260px; font-size: 14px; color: var(--muted); }
+        .afsluit-blok strong { color: var(--text); }
+        .afsluit-blok.dicht { background: rgba(255, 90, 110, 0.08); border-color: rgba(255, 90, 110, 0.4); }
     </style>
 </head>
 <body>
@@ -164,6 +168,7 @@
                 <input type="date" id="betaalDatum" onchange="toonBetalingen(); renderOverzicht()" aria-label="Dag">
                 <button onclick="laadAlles()">🔄 Vernieuwen</button>
             </div>
+            <div id="afsluitBlok"></div>
             <div id="betaalSamenvatting"></div>
             <div id="betaalLijst">Even laden…</div>
             <div class="rij">
@@ -336,6 +341,7 @@
 
     // ---------- Betalingen ----------
     let alleBestellingen = [], alleBetalingen = [], betalingenBekend = true, eersteKeer = true;
+    let afgesloten = null; // [{ Datum, Op }], of null als het script afsluiten nog niet kent
     const euro = n => '€ ' + Number(n).toFixed(2).replace('.', ',');
     const vandaagISO = () => new Date().toLocaleDateString('sv-SE');
     const dagNaam = datum => new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -355,6 +361,7 @@
             betalingenBekend = !!bet.ok;
             alleBestellingen = bestel.bestellingen;
             alleBetalingen = betalingenBekend ? bet.betalingen : [];
+            afgesloten = betalingenBekend && Array.isArray(bet.afgesloten) ? bet.afgesloten : null;
             if (eersteKeer) {
                 eersteKeer = false;
                 // Standaard de laatste dag met bestellingen: bijvoorbeeld vrijdag, ook als je er maandag naar kijkt
@@ -388,10 +395,66 @@
         return [...perNaam.values()].sort((a, b) => volgorde[a.status] - volgorde[b.status] || a.naam.localeCompare(b.naam, 'nl'));
     }
 
+    // ---------- Afsluiten: de dag is klaar, collega's zien de bestelling niet meer ----------
+    function toonAfsluiten() {
+        const vak = $('afsluitBlok');
+        const datum = $('betaalDatum').value;
+        vak.replaceChildren();
+        if (!datum || !betalingenBekend) return;
+        const blok = document.createElement('div');
+        blok.className = 'afsluit-blok';
+        const tekst = document.createElement('p');
+        const knop = document.createElement('button');
+        if (afgesloten === null) {
+            tekst.textContent = 'Afsluiten kan pas als je de nieuwe google-apps-script.gs hebt geplakt en een nieuwe versie hebt gepubliceerd (zie de README).';
+            blok.append(tekst);
+            vak.appendChild(blok);
+            return;
+        }
+        const dicht = afgesloten.find(a => a.Datum === datum);
+        if (dicht) {
+            blok.classList.add('dicht');
+            const kop = document.createElement('strong');
+            kop.textContent = '🔒 Afgesloten';
+            const op = String(dicht.Op).replace(/^(\d{4})-(\d{2})-(\d{2})/, (m, j, mnd, d) => d + '-' + mnd + '-' + j);
+            tekst.append(kop, ' op ' + op + '. Collega\'s zien deze bestelling niet meer en kunnen niet meer bestellen of "Ik heb betaald" melden. Jij kunt hieronder nog wel betalingen bevestigen.');
+            knop.textContent = '🔓 Heropenen';
+            knop.onclick = () => afsluiten(datum, false);
+        } else {
+            tekst.innerHTML = '<strong>🔓 Open.</strong> Klaar met deze dag? Sluit hem af: dan verdwijnt de bestelling bij collega\'s uit "Mijn bestelling" en het afrekenscherm, en kan er niet meer besteld of betaald gemeld worden.';
+            knop.className = 'hoofd';
+            knop.textContent = '🔒 Bestelling van ' + dagNaam(datum) + ' afsluiten';
+            knop.onclick = () => afsluiten(datum, true);
+        }
+        blok.append(tekst, knop);
+        vak.appendChild(blok);
+    }
+
+    async function afsluiten(datum, dicht) {
+        if (dicht) {
+            const open = personenVanDag().filter(p => p.status !== 'bevestigd');
+            const waarschuwing = open.length
+                ? '\n\nNog niet bevestigd: ' + open.map(p => p.naam + ' (' + euro(p.totaal) + ')').join(', ') + '. Zij zien hun bestelling daarna ook niet meer, dus zeg ze zelf wat ze moeten betalen.'
+                : '';
+            if (!confirm('De bestelling van ' + dagNaam(datum) + ' afsluiten?' + waarschuwing)) return;
+        }
+        melding($('betaalMelding'), '', '');
+        try {
+            const r = await postActie('afsluiten', { datum, dicht });
+            if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Afsluiten mislukt.'); return; }
+            afgesloten = r.afgesloten;
+            toonAfsluiten();
+            melding($('betaalMelding'), 'ok', dicht ? '🔒 Afgesloten. Collega\'s zien deze bestelling niet meer.' : '🔓 Weer open.');
+        } catch (err) {
+            melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
+        }
+    }
+
     function toonBetalingen() {
         const datum = $('betaalDatum').value;
         const lijst = $('betaalLijst'), samen = $('betaalSamenvatting');
         samen.replaceChildren();
+        toonAfsluiten();
         if (!betalingenBekend) {
             lijst.textContent = 'Je Google-script kent betalingen nog niet. Plak de nieuwe google-apps-script.gs in Apps Script en publiceer een nieuwe versie (zie de README).';
             return;

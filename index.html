@@ -1020,6 +1020,7 @@
         <div class="hero-chips">
             <span class="chip aftellen" id="aftellen">⏳ Even rekenen…</span>
             <span class="chip" id="statusBanner">🔄 Menukaart laden…</span>
+            <span class="chip fout verborgen" id="geslotenBanner">🔒 De bestellijst van vandaag is gesloten</span>
             <button class="chip chip-knop verborgen" id="vorigeKnop" onclick="bestelVorigeKeer()">🔁 Hetzelfde als vorige keer</button>
         </div>
     </header>
@@ -1216,6 +1217,7 @@
 
         function updateDeadline(nu) {
             const balk = document.getElementById('deadlineBalk');
+            if (bestellenGesloten) { balk.classList.add('verborgen'); return; }
             const deadline = new Date(nu);
             deadline.setHours(BESTELLEN_TOT.uur, BESTELLEN_TOT.minuut, 0, 0);
             const s = Math.ceil((deadline - nu) / 1000);
@@ -1259,6 +1261,7 @@
             renderCart();
             toonMijnKnop();
             laadBetaling();
+            controleerAfgesloten();
 
             // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
             fetch('menu.json', { cache: 'no-cache' })
@@ -2039,9 +2042,28 @@
         }
 
         // Per dag en naam samengevoegd, nieuwste eerst
-        function mijnDagen() {
+        // Dagen die de beheerder heeft afgesloten (zie admin.html). Die bestellingen tonen we niet meer, maar ze blijven
+        // bewaard voor "Hetzelfde als vorige keer".
+        function leesAfgeslotenDagen() { try { return new Set(JSON.parse(localStorage.getItem('familyAfgesloten') || '[]')); } catch (e) { return new Set(); } }
+        function markeerAfgesloten(datum) {
+            const dagen = leesAfgeslotenDagen();
+            if (dagen.has(datum)) return;
+            dagen.add(datum);
+            try { localStorage.setItem('familyAfgesloten', JSON.stringify([...dagen].sort().slice(-60))); } catch (e) { /* dan vraagt hij het de volgende keer opnieuw */ }
+        }
+
+        // Kijkt bij het openen van de app welke van je eigen bestellingen inmiddels zijn afgesloten
+        async function controleerAfgesloten() {
+            const open = mijnDagen().slice(0, 5);
+            if (!GOOGLE_SCRIPT_URL || !open.length) return;
+            await Promise.all(open.map(g => haalStatus(g.naam, g.datum)));
+            toonMijnKnop();
+        }
+
+        function mijnDagen(ookAfgesloten = false) {
+            const afgesloten = ookAfgesloten ? new Set() : leesAfgeslotenDagen();
             const groepen = new Map();
-            leesMijn().forEach(b => {
+            leesMijn().filter(b => !afgesloten.has(b.datum)).forEach(b => {
                 const sleutel = b.datum + '|' + b.naam.toLowerCase();
                 const g = groepen.get(sleutel) || { datum: b.datum, naam: b.naam, regels: new Map(), totaal: 0, stuks: 0 };
                 b.regels.forEach(r => {
@@ -2068,7 +2090,7 @@
         // De laatste bestelling van dit apparaat (zie bewaarMijn). Alleen hier opgeslagen, dus niet op een ander apparaat.
         // Vandaag al besteld? Dan niet aanbieden, anders bestel je per ongeluk dubbel.
         function vorigeBestelling() {
-            const dagen = mijnDagen();
+            const dagen = mijnDagen(true);
             if (!dagen.length || dagen[0].datum === vandaagISO()) return null;
             return dagen[0];
         }
@@ -2146,6 +2168,7 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ actie: 'betaalStatus', naam, datum })
                 })).json();
+                if (r.ok && r.afgesloten) { markeerAfgesloten(datum); return 'afgesloten'; }
                 return r.ok ? r.status : null;
             } catch (err) {
                 return null;
@@ -2160,6 +2183,7 @@
             const badges = [];
             groepen.forEach(g => {
                 const kaart = document.createElement('div');
+                g.kaart = kaart;
                 kaart.className = 'mijn-kaart';
                 const kop = document.createElement('h4');
                 const titel = document.createElement('span');
@@ -2180,8 +2204,11 @@
             // De stand per bestelling komt er daarna bij
             for (const [g, badge] of badges) {
                 const status = await haalStatus(g.naam, g.datum);
-                if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
+                if (status === 'afgesloten') g.kaart.remove();
+                else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
             }
+            if (!vak.children.length) vak.textContent = 'Je hebt geen openstaande bestelling. 🎉';
+            toonMijnKnop();
         }
 
         function sluitMijnModal() {
@@ -2190,11 +2217,24 @@
 
         // ---------- Afrekenen: de QR-code die de beheerder in admin.html heeft gezet ----------
         let betaling = null;
+        let bestellenGesloten = false;
+
+        // De beheerder heeft vandaag afgesloten: bestellen kan niet meer
+        function zetBestellenGesloten() {
+            bestellenGesloten = true;
+            const knop = document.querySelector('.checkout-btn');
+            knop.disabled = true;
+            knop.innerText = '🔒 Bestellen is gesloten';
+            const banner = document.getElementById('geslotenBanner');
+            banner.classList.remove('verborgen');
+            document.getElementById('deadlineBalk').classList.add('verborgen');
+        }
 
         async function laadBetaling() {
             if (!GOOGLE_SCRIPT_URL) return;
             try {
                 const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=qr')).json();
+                if (r.vandaagGesloten) zetBestellenGesloten();
                 // Een ouder script kent "actie=qr" niet: dan is er geen qr en dus geen knop
                 if (r.ok && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(r.qr || '')) {
                     betaling = r;
@@ -2243,7 +2283,9 @@
             betaalContext = null;
             toonBetaalStatus();
             if (!groepen.length) {
-                vak.innerHTML = '<small>Geen bestelling gevonden op dit apparaat. Bestelde je op een ander apparaat? Vraag de beheerder naar je bedrag.</small>';
+                vak.innerHTML = mijnDagen(true).length
+                    ? '<small>Je hebt geen openstaande bestelling. 🎉</small>'
+                    : '<small>Geen bestelling gevonden op dit apparaat. Bestelde je op een ander apparaat? Vraag de beheerder naar je bedrag.</small>';
                 return;
             }
             const gekozen = String(Number(document.getElementById('betaalKeuze').value) || 0);
@@ -2251,6 +2293,11 @@
             vak.innerHTML = `${euro(g.totaal)}<small>${g.stuks} ${g.stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dagTekst(g.datum))} · ${escapeHtml(g.naam)}</small>`;
             const status = await haalStatus(g.naam, g.datum);
             if (String(Number(document.getElementById('betaalKeuze').value) || 0) !== gekozen) return; // intussen een andere gekozen
+            if (status === 'afgesloten') {
+                vak.innerHTML = '<small>🔒 Deze bestelling is afgesloten.</small>';
+                toonMijnKnop();
+                return;
+            }
             betaalContext = { naam: g.naam, datum: g.datum, kanMelden: status !== null, status: status || 'open' };
             toonBetaalStatus();
         }
@@ -2345,7 +2392,8 @@
                 // De code zelf was dan wel goed, want die wordt als eerste gecontroleerd.
                 if (code) bewaarTeamcode(code);
                 const e = new Error(result.error || 'Onbekende fout');
-                e.afgewezen = result.code === 'LIMIET' || result.code === 'ONGELDIG';
+                e.afgewezen = result.code === 'LIMIET' || result.code === 'ONGELDIG' || result.code === 'GESLOTEN';
+                if (result.code === 'GESLOTEN' && extra.data) bestellenGesloten = true;
                 throw e;
             }
             const e = new Error('De teamcode klopt niet.');
@@ -2366,6 +2414,10 @@
             }
             if (cart.length === 0) {
                 toast("🛒 Je mandje is nog leeg!", 'fout');
+                return;
+            }
+            if (bestellenGesloten) {
+                toast('🔒 De bestellijst van vandaag is gesloten. Volgende keer weer!', 'fout');
                 return;
             }
 
@@ -2396,6 +2448,7 @@
                 } finally {
                     knop.disabled = false;
                     knop.innerText = 'Bestelling plaatsen 🚀';
+                    if (bestellenGesloten) zetBestellenGesloten();
                 }
             } else {
                 // Geen centrale opslag ingesteld: opslaan in browsergeheugen

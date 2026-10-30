@@ -161,6 +161,25 @@ De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je G
 - Een oud script kent dit nog niet. Dan zie je in de app geen **Ik heb betaald** en op `admin.html` een melding
   dat je een nieuwe versie moet publiceren.
 
+## Een dag afsluiten
+
+Klaar met een vrijdag (iedereen heeft betaald, of je wilt er een streep onder zetten)? Kies op `admin.html` bij
+**Wie heeft betaald?** de dag en klik op **🔒 Bestelling afsluiten**. Je krijgt eerst te zien wie nog niet bevestigd is.
+
+Na het afsluiten:
+- zien collega's die bestelling niet meer onder **🧾 Mijn bestelling** en in het afrekenscherm;
+- kan niemand meer **Ik heb betaald** melden voor die dag (het script weigert het, ook buiten de app om);
+- kan er die dag niet meer besteld worden, als je de dag van vandaag afsluit. De app toont dan
+  "🔒 De bestellijst van vandaag is gesloten";
+- zie jij alles nog wel op `admin.html`, en kun je betalingen nog bevestigen.
+
+Met **🔓 Heropenen** draai je het terug. De afgesloten dagen staan in een tabblad **Afgesloten** van je Google Sheet.
+De bestelling blijft wel op het apparaat van de collega bewaard voor **Hetzelfde als vorige keer**, maar wordt niet
+meer getoond.
+
+> Dit werkt pas als je de nieuwe `google-apps-script.gs` hebt geplakt en een **nieuwe versie** hebt gepubliceerd.
+> Tot dan zegt `admin.html` dat afsluiten nog niet kan.
+
 ## Publiceren via GitHub Pages
 
 1. Push deze repository naar GitHub.
