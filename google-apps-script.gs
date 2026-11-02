@@ -54,6 +54,11 @@ const BETAAL = { MAX_DAGEN_TERUG: 31 };
 const AFGESLOTEN_SHEET = 'Afgesloten';
 
 // Highscores van het wachtspelletje: per naam alleen de beste score. Openbaar te lezen (top 10), dus alleen een naam en een getal.
+// E-mailadressen die collega's bij een bestelling invullen (optioneel), voor de mail als jij hun betaling bevestigt.
+// Een eigen tabblad, alleen voor de beheerder: de website geeft deze adressen nooit terug aan collega's.
+const EMAIL_SHEET = 'E-mailadressen';
+const EMAIL = { MAX_LENGTE: 120, APP_LINK: 'https://kevinboogaard.github.io/family-lunch/' };
+
 const HIGHSCORES_SHEET = 'Highscores';
 const HIGHSCORE = {
   MAX_SCORE: 100000,           // hoger is niet te halen; alles daarboven is geknoei
@@ -472,6 +477,99 @@ function bewaarHighscore_(body) {
   return { ok: true, verbeterd: verbeterd, beste: Math.max(score, bestaand ? bestaand.score : 0), plek: plek, scores: topHighscores_() };
 }
 
+// ---------- E-mailadressen en de bevestigingsmail ----------
+
+/** Alleen een gewoon adres; het eerste teken een letter of cijfer, zodat Sheets er nooit een formule van maakt. */
+function geldigEmail_(waarde) {
+  const email = String(waarde == null ? '' : waarde).trim();
+  if (!email || email.length > EMAIL.MAX_LENGTE) return '';
+  return /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z]{2,}$/.test(email) ? email : '';
+}
+
+function emailSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(EMAIL_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(EMAIL_SHEET);
+    sheet.getRange('A:C').setNumberFormat('@');
+    sheet.appendRow(['Datum', 'Naam', 'E-mail']);
+  }
+  return sheet;
+}
+
+function leesEmails_() {
+  const waarden = emailSheet_().getDataRange().getValues();
+  const lijst = [];
+  for (let i = 1; i < waarden.length; i++) {
+    lijst.push({ Datum: celNaarTekst_(waarden[i][0], 'yyyy-MM-dd'), Naam: String(waarden[i][1]).replace(/^~/, ''), Email: String(waarden[i][2]) });
+  }
+  return lijst;
+}
+
+/** Bewaart (of vervangt) het adres voor een naam op een dag. Adressen ouder dan 62 dagen vallen eraf. */
+function bewaarEmail_(datum, naam, email) {
+  const grens = Utilities.formatDate(new Date(Date.now() - 62 * 86400000), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const rest = leesEmails_().filter(function (e) { return e.Datum >= grens && !(e.Datum === datum && e.Naam.toLowerCase() === naam.toLowerCase()); });
+  rest.push({ Datum: datum, Naam: naam, Email: email });
+  const rijen = [['Datum', 'Naam', 'E-mail']].concat(rest.map(function (e) { return [e.Datum, '~' + e.Naam, e.Email]; }));
+  const sheet = emailSheet_();
+  sheet.clear();
+  sheet.getRange('A:C').setNumberFormat('@');
+  sheet.getRange(1, 1, rijen.length, 3).setValues(rijen);
+}
+
+function zoekEmail_(datum, naam) {
+  const gevonden = leesEmails_().filter(function (e) { return e.Datum === datum && e.Naam.toLowerCase() === naam.toLowerCase(); })[0];
+  return gevonden ? gevonden.Email : '';
+}
+
+function htmlTekst_(tekst) {
+  return String(tekst).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+}
+
+function nlDatum_(datum) {
+  const d = new Date(datum + 'T12:00:00');
+  const dagen = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+  const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+  return dagen[d.getDay()] + ' ' + d.getDate() + ' ' + maanden[d.getMonth()];
+}
+
+function euroTekst_(bedrag) {
+  return '€ ' + afronden_(bedrag).toFixed(2).replace('.', ',');
+}
+
+/** Stuurt de bevestigingsmail. Geeft terug wat er gebeurde: verstuurd, geen adres, of waarom het mislukte. */
+function stuurBevestiging_(datum, naam) {
+  const email = zoekEmail_(datum, naam);
+  if (!email) return { mail: 'geen_adres' };
+  try {
+    if (MailApp.getRemainingDailyQuota() < 1) return { mail: 'mislukt', mailFout: 'Het maximum aantal mails voor vandaag is bereikt.' };
+    const regels = leesBestellingen_(datum).filter(function (b) { return b.Naam.toLowerCase() === naam.toLowerCase(); });
+    const perProduct = {};
+    let totaal = 0;
+    regels.forEach(function (b) {
+      perProduct[b.Product] = (perProduct[b.Product] || 0) + b.Aantal;
+      totaal += b.Totaal;
+    });
+    const producten = Object.keys(perProduct).map(function (p) { return (perProduct[p] > 1 ? perProduct[p] + '× ' : '') + p.replace(/^'/, ''); });
+    const dag = nlDatum_(datum);
+    const onderwerp = '✅ Betaling ontvangen: Family lunch van ' + dag;
+    const tekst = 'Hoi ' + naam + ',\n\n' +
+      'Je betaling van ' + euroTekst_(totaal) + ' voor de Family lunch van ' + dag + ' is ontvangen. Bedankt!\n\n' +
+      'Je bestelling:\n' + producten.map(function (p) { return '- ' + p; }).join('\n') + '\n\n' +
+      'Tot de volgende vrijdag! 🍟\n' + EMAIL.APP_LINK;
+    const html = '<div style="font-family:Segoe UI,Arial,sans-serif;font-size:15px;color:#222;max-width:520px">' +
+      '<p>Hoi ' + htmlTekst_(naam) + ',</p>' +
+      '<p>Je betaling van <b>' + euroTekst_(totaal) + '</b> voor de Family lunch van <b>' + htmlTekst_(dag) + '</b> is ontvangen. Bedankt! ✅</p>' +
+      '<p style="margin-bottom:4px">Je bestelling:</p><ul style="margin-top:0">' + producten.map(function (p) { return '<li>' + htmlTekst_(p) + '</li>'; }).join('') + '</ul>' +
+      '<p>Tot de volgende vrijdag! 🍟<br><a href="' + EMAIL.APP_LINK + '">' + EMAIL.APP_LINK + '</a></p></div>';
+    MailApp.sendEmail({ to: email, subject: onderwerp, body: tekst, htmlBody: html, name: 'Family Vrijdag' });
+    return { mail: 'verstuurd', mailNaar: email };
+  } catch (err) {
+    return { mail: 'mislukt', mailFout: String(err && err.message || err) };
+  }
+}
+
 /** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
 function betaaldMelding_(body) {
   const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
@@ -529,7 +627,7 @@ function beheerActie_(body) {
 
   // Alles wat meer laat zien dan iemands eigen gegevens: alleen met de beheercode
   if (body.actie === 'bestellingen') return { ok: true, bestellingen: leesBestellingen_(body.datum) };
-  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_() };
+  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_(), emails: leesEmails_() };
 
   if (body.actie === 'afsluiten') {
     const datum = String(body.datum || '');
@@ -544,7 +642,14 @@ function beheerActie_(body) {
     if (body.status !== 'bevestigd' && body.status !== 'open') return fout_('ONGELDIG', 'Onbekende status.');
     const naam = vindBestelNaam_(schoneTekst_(body.naam, LIMIETEN.MAX_NAAM), datum);
     if (!naam) return fout_('ONGELDIG', 'Geen bestelling gevonden voor deze naam op deze dag.');
+    const was = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
     zetBetaling_(datum, naam, body.status);
+    // Alleen een mail bij de overgang naar "bevestigd", niet als hij al bevestigd was
+    if (body.status === 'bevestigd' && !(was && was.Status === 'bevestigd')) {
+      const uit = stuurBevestiging_(datum, naam);
+      uit.ok = true;
+      return uit;
+    }
     return { ok: true };
   }
 
@@ -614,6 +719,10 @@ function doPost(e) {
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
 
+    // Optioneel e-mailadres voor de bevestigingsmail; een ongeldig adres wordt genegeerd, de bestelling gaat gewoon door
+    const email = geldigEmail_(body.email);
+    if (email) bewaarEmail_(datum, resultaat.naam, email);
+
     return json_({ ok: true, bestelID: bestelID });
   } catch (err) {
     return json_(fout_('FOUT', String(err)));
@@ -681,4 +790,6 @@ function doGet(e) {
 function toestemmingTesten() {
   const prijzen = haalMenuPrijzen_();
   Logger.log(prijzen ? 'Menu opgehaald: ' + Object.keys(prijzen).length + ' producten' : 'Menu NIET opgehaald (controleer toestemming en MENU_URL)');
+  // Vraagt ook toestemming om mail te versturen (voor de bevestigingsmail)
+  Logger.log('Mails die vandaag nog verstuurd kunnen worden: ' + MailApp.getRemainingDailyQuota());
 }

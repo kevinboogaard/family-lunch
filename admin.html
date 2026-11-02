@@ -342,6 +342,7 @@
     // ---------- Betalingen ----------
     let alleBestellingen = [], alleBetalingen = [], betalingenBekend = true, eersteKeer = true;
     let afgesloten = null; // [{ Datum, Op }], of null als het script afsluiten nog niet kent
+    let alleEmails = [];   // [{ Datum, Naam, Email }]: wie bij het bestellen een adres voor de bevestigingsmail gaf
     const euro = n => '€ ' + Number(n).toFixed(2).replace('.', ',');
     const vandaagISO = () => new Date().toLocaleDateString('sv-SE');
     const dagNaam = datum => new Date(datum + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -362,6 +363,7 @@
             alleBestellingen = bestel.bestellingen;
             alleBetalingen = betalingenBekend ? bet.betalingen : [];
             afgesloten = betalingenBekend && Array.isArray(bet.afgesloten) ? bet.afgesloten : null;
+            alleEmails = betalingenBekend && Array.isArray(bet.emails) ? bet.emails : [];
             if (eersteKeer) {
                 eersteKeer = false;
                 // Standaard de laatste dag met bestellingen: bijvoorbeeld vrijdag, ook als je er maandag naar kijkt
@@ -390,6 +392,10 @@
         alleBetalingen.filter(b => b.Datum === datum).forEach(b => {
             const p = perNaam.get(String(b.Naam).toLowerCase());
             if (p) p.status = b.Status;
+        });
+        alleEmails.filter(e => e.Datum === datum).forEach(e => {
+            const p = perNaam.get(String(e.Naam).toLowerCase());
+            if (p) p.email = e.Email;
         });
         const volgorde = { open: 0, zegt: 1, bevestigd: 2 };
         return [...perNaam.values()].sort((a, b) => volgorde[a.status] - volgorde[b.status] || a.naam.localeCompare(b.naam, 'nl'));
@@ -487,7 +493,9 @@
             rij.className = 'betaalrij';
             const links = document.createElement('div');
             const naam = document.createElement('div'); naam.className = 'naam'; naam.textContent = p.naam;
-            const bedrag = document.createElement('div'); bedrag.className = 'bedrag'; bedrag.textContent = euro(p.totaal) + ' · ' + p.stuks + (p.stuks === 1 ? ' product' : ' producten');
+            const bedrag = document.createElement('div'); bedrag.className = 'bedrag'; bedrag.textContent = euro(p.totaal) + ' · ' + p.stuks + (p.stuks === 1 ? ' product' : ' producten') +
+                (p.email ? ' · 📧 krijgt een mail bij bevestigen' : '');
+            if (p.email) bedrag.title = p.email;
             links.append(naam, bedrag);
             const badge = document.createElement('span');
             badge.className = 'badge ' + p.status;
@@ -514,6 +522,10 @@
             const r = await postActie('zetBetaling', { datum: $('betaalDatum').value, naam, status });
             if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Opslaan mislukt.'); return; }
             await laadAlles();
+            // Wat er met de bevestigingsmail gebeurde (een ouder script stuurt geen "mail" mee)
+            if (r.mail === 'verstuurd') melding($('betaalMelding'), 'ok', '✅ ' + naam + ' bevestigd. 📧 Bevestigingsmail verstuurd naar ' + r.mailNaar + '.');
+            else if (r.mail === 'geen_adres') melding($('betaalMelding'), 'ok', '✅ ' + naam + ' bevestigd. Geen mail: er is geen e-mailadres ingevuld bij de bestelling.');
+            else if (r.mail === 'mislukt') melding($('betaalMelding'), 'waarschuwing', '✅ ' + naam + ' bevestigd, maar de mail is niet verstuurd: ' + (r.mailFout || 'onbekende fout') + '. Heb je toestemmingTesten uitgevoerd (zie de README)?');
         } catch (err) {
             melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
         }

@@ -692,6 +692,7 @@
         }
         .aantal-badge:empty, .aantal-badge[data-aantal="0"] { display: none; }
         .veld-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+        .veld-label small { font-weight: 400; opacity: 0.8; }
         input[type="text"] {
             width: 100%;
             padding: 13px 16px;
@@ -1132,6 +1133,8 @@
             </div>
             <label class="veld-label" for="naamInput">Jouw naam</label>
             <input type="text" id="naamInput" placeholder="Bijv. Jan de Vries" autocomplete="name">
+            <label class="veld-label" for="emailInput">E-mail voor je betaalbevestiging <small>(optioneel)</small></label>
+            <input type="text" id="emailInput" inputmode="email" placeholder="Bijv. jan@bedrijf.nl" autocomplete="email" maxlength="120" spellcheck="false" autocapitalize="off">
 
             <div id="cartItems"></div>
 
@@ -1362,6 +1365,7 @@
             setInterval(updateAftellen, 1000);
             renderCart();
             toonMijnKnop();
+            document.getElementById('emailInput').value = leesEmail();
             laadBetaling();
             controleerAfgesloten();
 
@@ -2756,9 +2760,14 @@
         function bevestigCode() { sluitCodeModal(document.getElementById('codeInput').value.trim() || null); }
         function annuleerCode() { sluitCodeModal(null); }
 
-        async function verstuurBestelling(regels) {
-            await postMetCode({ data: regels });
+        async function verstuurBestelling(regels, email) {
+            await postMetCode(email ? { data: regels, email } : { data: regels });
         }
+
+        // Het e-mailadres onthoudt de browser, zodat je het maar één keer hoeft in te vullen
+        const EMAIL_PATROON = /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z]{2,}$/;
+        function leesEmail() { try { return localStorage.getItem('familyEmail') || ''; } catch (e) { return ''; } }
+        function bewaarEmail(email) { try { if (email) localStorage.setItem('familyEmail', email); else localStorage.removeItem('familyEmail'); } catch (e) { /* dan de volgende keer opnieuw */ } }
 
         // Stuurt iets naar het Google-script, met de teamcode erbij als die nodig is
         async function postMetCode(extra) {
@@ -2812,6 +2821,16 @@
                 toast('🔒 De bestellijst van vandaag is gesloten. Volgende keer weer!', 'fout');
                 return;
             }
+            const emailVeld = document.getElementById('emailInput');
+            const email = emailVeld.value.trim();
+            if (email && !EMAIL_PATROON.test(email)) {
+                emailVeld.classList.remove('schud');
+                void emailVeld.offsetWidth;
+                emailVeld.classList.add('schud');
+                emailVeld.focus();
+                toast('📧 Dit e-mailadres klopt niet. Verbeter het of laat het veld leeg.', 'fout');
+                return;
+            }
 
             let nieuweBestellingen = [];
             cart.forEach(item => {
@@ -2831,7 +2850,7 @@
                 knop.disabled = true;
                 knop.innerText = 'Bezig met versturen… 🛵';
                 try {
-                    await verstuurBestelling(nieuweBestellingen);
+                    await verstuurBestelling(nieuweBestellingen, email);
                 } catch (err) {
                     console.error("Versturen mislukt:", err);
                     if (err.afgewezen) toast('🚫 ' + err.message, 'fout');
@@ -2856,6 +2875,7 @@
             if (betaling) setTimeout(() => openBetaalModal({ naam, datum: vandaagISO() }), 1800);
             cart = [];
             naamVeld.value = "";
+            bewaarEmail(email);
             toggleMandje(false);
             renderCart();
             werkMandjeBadgesBij();

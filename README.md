@@ -179,6 +179,24 @@ De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je G
 - Een oud script kent dit nog niet. Dan zie je in de app geen **Ik heb betaald** en op `admin.html` een melding
   dat je een nieuwe versie moet publiceren.
 
+## Bevestigingsmail bij betalen
+
+In het mandje staat een optioneel veld **E-mail voor je betaalbevestiging**. De browser onthoudt het adres. Klik jij
+op `admin.html` op **✅ Bevestig betaald**, dan krijgt die collega meteen een mail: *"✅ Betaling ontvangen: Family
+lunch van vrijdag 30 oktober"*, met het bedrag en wat hij besteld heeft. De mail komt van je eigen Google-account,
+met als afzendernaam "Family Vrijdag".
+
+- Op `admin.html` staat bij wie een adres heeft ingevuld "📧 krijgt een mail bij bevestigen". Na het bevestigen zie je
+  of de mail is verstuurd, of waarom niet.
+- Alleen bij de overgang naar bevestigd gaat er een mail. Nog een keer bevestigen stuurt geen tweede mail.
+- Lukt de mail niet, dan blijft de betaling gewoon bevestigd.
+- De adressen staan in een tabblad **E-mailadressen** (alleen jij ziet ze, via de beheercode) en vallen na 62 dagen
+  vanzelf weg. Een ongeldig adres wordt niet bewaard; de bestelling gaat dan gewoon door.
+- Een gewoon Google-account mag ongeveer 100 mails per dag versturen.
+
+**Eenmalig na het bijwerken van het script:** kies in Apps Script bovenin de functie `toestemmingTesten` en klik op
+**Uitvoeren**. Geef toestemming om e-mail te versturen namens jou. Publiceer daarna een **nieuwe versie**.
+
 ## Een dag afsluiten
 
 Klaar met een vrijdag (iedereen heeft betaald, of je wilt er een streep onder zetten)? Kies op `admin.html` bij
