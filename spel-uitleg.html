@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friet op de vlucht: uitleg</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #120b24;
+            --panel: #22173f;
+            --panel-licht: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.13);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --orange: #ff7a2f;
+            --hot: #ff3d81;
+            --mint: #2fe3a3;
+            --paars: #6d3bff;
+            --danger: #ff5a6e;
+            --vibe: linear-gradient(120deg, var(--sun), var(--orange) 45%, var(--hot));
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            background:
+                radial-gradient(900px 600px at 10% -10%, rgba(255, 61, 129, 0.25), transparent 60%),
+                radial-gradient(900px 600px at 100% 30%, rgba(109, 59, 255, 0.25), transparent 60%),
+                radial-gradient(900px 600px at 30% 110%, rgba(255, 122, 47, 0.2), transparent 60%),
+                var(--bg);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        h1, h2, h3 { font-family: 'Fredoka', 'Segoe UI', sans-serif; line-height: 1.2; }
+        .pagina { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
+
+        /* ---------- Bovenkant ---------- */
+        .terug {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 999px;
+            border: 1px solid var(--border); background: var(--panel-licht);
+            color: var(--text); text-decoration: none; font-weight: 600; font-size: 14px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .terug:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.12); }
+        .kop { text-align: center; padding: 34px 0 10px; }
+        .kop .groot { font-size: 84px; line-height: 1; display: inline-block; animation: hup 1.4s cubic-bezier(.28, .84, .42, 1) infinite; }
+        @keyframes hup { 0%, 100% { transform: translateY(0) rotate(-4deg); } 45% { transform: translateY(-22px) rotate(6deg); } }
+        .kop h1 {
+            margin: 14px 0 6px; font-size: clamp(34px, 7vw, 56px);
+            background: var(--vibe); -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .kop p { margin: 0 auto; max-width: 520px; color: var(--muted); font-size: 17px; }
+
+        /* Inhoudsopgave als stickers */
+        .inhoud { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 26px 0 8px; }
+        .inhoud a {
+            padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600;
+            background: var(--panel); border: 1px solid var(--border); color: var(--text); text-decoration: none;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .inhoud a:hover { transform: translateY(-2px) rotate(-1deg); border-color: var(--sun); }
+
+        /* ---------- Kaarten ---------- */
+        .kaart {
+            position: relative;
+            margin-top: 22px; padding: 26px 24px;
+            border-radius: 26px; background: var(--panel); border: 1px solid var(--border);
+            box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.8);
+            scroll-margin-top: 16px;
+        }
+        .kaart h2 { margin: 0 0 12px; font-size: 28px; display: flex; align-items: center; gap: 12px; }
+        .kaart h2 .bol {
+            flex: none; display: grid; place-items: center;
+            width: 48px; height: 48px; border-radius: 16px; font-size: 26px;
+            background: var(--vibe); box-shadow: 0 8px 20px -8px rgba(255, 61, 129, 0.9);
+        }
+        .kaart p { margin: 0 0 12px; }
+        .kaart p:last-child { margin-bottom: 0; }
+        .sticker {
+            position: absolute; top: -14px; right: 18px;
+            padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+            background: var(--sun); color: #2a1600; transform: rotate(4deg);
+        }
+
+        /* Verhaal */
+        .verhaal { font-size: 17px; }
+        .uitroep {
+            display: inline-block; margin: 4px 0 12px; padding: 10px 16px;
+            border-radius: 18px 18px 18px 4px; background: rgba(255, 255, 255, 0.08);
+            font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 600;
+        }
+
+        /* Knoppen-uitleg */
+        .knoppen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 14px 0; }
+        .knop-uitleg {
+            padding: 16px; border-radius: 18px; background: var(--panel-licht); border: 1px solid var(--border);
+            text-align: center;
+        }
+        .knop-uitleg .emoji { font-size: 34px; display: block; }
+        .toets {
+            display: inline-block; margin: 8px 4px 0; padding: 6px 14px;
+            border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.3); border-bottom-width: 4px;
+            background: rgba(255, 255, 255, 0.1); font-weight: 700; font-size: 14px;
+        }
+        .geheim {
+            margin-top: 14px; padding: 16px 18px; border-radius: 18px;
+            background: rgba(109, 59, 255, 0.18); border: 1px dashed rgba(164, 132, 255, 0.6);
+        }
+        .geheim strong { color: #d6c8ff; }
+        .sprongen { display: flex; gap: 18px; justify-content: center; align-items: flex-end; margin-top: 10px; flex-wrap: wrap; }
+        .sprong { text-align: center; font-size: 14px; color: var(--muted); }
+        .sprong .baan { position: relative; width: 120px; height: 90px; border-bottom: 2px solid var(--sun); }
+        .sprong .baan span { position: absolute; left: 50%; font-size: 28px; transform: translateX(-50%); }
+        .sprong.klein .baan span { bottom: 14px; }
+        .sprong.hoog .baan span { bottom: 54px; }
+
+        /* Hindernissen */
+        .hindernissen { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 8px; }
+        .hindernis {
+            padding: 18px 14px; border-radius: 20px; text-align: center;
+            background: var(--panel-licht); border: 1px solid var(--border);
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .hindernis:hover { transform: translateY(-6px) rotate(-2deg); }
+        .hindernis .emoji { font-size: 52px; display: block; line-height: 1.1; }
+        .hindernis h3 { margin: 8px 0 4px; font-size: 19px; }
+        .hindernis .oei { display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 10px; font-size: 13px; background: rgba(255, 90, 110, 0.16); color: #ffd0d6; }
+
+        /* Meeuwen */
+        .meeuwen { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0; }
+        .meeuw { padding: 18px; border-radius: 20px; border: 2px solid; }
+        .meeuw.springen { background: rgba(47, 227, 163, 0.1); border-color: rgba(47, 227, 163, 0.5); }
+        .meeuw.blijven { background: rgba(255, 90, 110, 0.1); border-color: rgba(255, 90, 110, 0.5); }
+        .meeuw h3 { margin: 0 0 6px; font-size: 20px; }
+        .meeuw .tekening { position: relative; height: 96px; border-bottom: 2px solid var(--sun); margin-bottom: 12px; }
+        .meeuw .tekening span { position: absolute; font-size: 30px; }
+        .meeuw .opdracht { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 700; }
+        .meeuw.springen .opdracht { color: var(--mint); }
+        .meeuw.blijven .opdracht { color: var(--danger); }
+
+        /* Punten */
+        .snelheid { display: grid; gap: 10px; margin: 16px 0; }
+        .snelheid-rij { display: grid; grid-template-columns: 120px 1fr 120px; align-items: center; gap: 12px; font-size: 14px; }
+        .snelheid-rij .wanneer { color: var(--muted); }
+        .snelheid-rij .balk { height: 16px; border-radius: 99px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+        .snelheid-rij .balk span { display: block; height: 100%; border-radius: inherit; background: var(--vibe); }
+        .snelheid-rij .getal { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--sun); text-align: right; }
+        .munt-blok { display: flex; gap: 18px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+        .munt-blok > div { flex: 1 1 260px; }
+        .munt-blok .munt { font-size: 64px; animation: draai 2.4s ease-in-out infinite; display: inline-block; }
+        @keyframes draai { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.2); } }
+        .munt-blok .waarde {
+            font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700;
+            background: var(--vibe); -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        .som {
+            margin: 18px 0 6px; padding: 20px; border-radius: 22px;
+            background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+            font-family: 'Fredoka', sans-serif; font-size: 20px;
+        }
+        .som-rij { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; }
+        .som-rij.totaal { margin-top: 8px; padding-top: 12px; border-top: 3px dashed var(--sun); font-size: 26px; color: var(--sun); }
+        .voorbeeld { margin-top: 14px; padding: 16px 18px; border-radius: 18px; background: rgba(255, 194, 26, 0.08); border: 1px dashed rgba(255, 194, 26, 0.55); }
+        .voorbeeld .uitkomst { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--sun); }
+
+        /* Highscores */
+        .stappen { counter-reset: stap; list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+        .stappen li { counter-increment: stap; display: flex; gap: 12px; align-items: center; }
+        .stappen li::before {
+            content: counter(stap); flex: none; display: grid; place-items: center;
+            width: 34px; height: 34px; border-radius: 50%; background: var(--vibe); color: #2a1600;
+            font-family: 'Fredoka', sans-serif; font-weight: 700;
+        }
+        .podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 22px 0 10px; }
+        .podium div { width: 92px; text-align: center; border-radius: 16px 16px 0 0; padding-top: 10px; font-family: 'Fredoka', sans-serif; font-weight: 700; }
+        .podium .emoji { font-size: 34px; display: block; }
+        .podium .p1 { height: 150px; background: linear-gradient(180deg, #ffd34d, #ffb000); color: #2a1600; }
+        .podium .p2 { height: 115px; background: linear-gradient(180deg, #e7e7f0, #b8b8c8); color: #22223a; }
+        .podium .p3 { height: 90px; background: linear-gradient(180deg, #ffb37a, #d97a3a); color: #2a1300; }
+        .lijstje { margin: 10px 0 0; padding-left: 22px; }
+        .lijstje li { margin-bottom: 6px; }
+
+        /* Tips */
+        .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 8px; }
+        .tip { padding: 16px; border-radius: 18px; background: var(--panel-licht); border: 1px solid var(--border); }
+        .tip .nr {
+            display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 10px;
+            background: rgba(255, 194, 26, 0.18); color: var(--sun); font-family: 'Fredoka', sans-serif; font-weight: 700; margin-bottom: 6px;
+        }
+        .tip h3 { margin: 4px 0; font-size: 18px; }
+        .tip p { margin: 0; color: var(--muted); font-size: 15px; }
+
+        /* Einde */
+        .einde { text-align: center; }
+        .einde .groot { font-size: 60px; }
+        .speel-knop {
+            display: inline-block; margin-top: 14px; padding: 16px 28px; border-radius: 18px;
+            background: var(--vibe); color: #1c0d00; text-decoration: none;
+            font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px;
+            box-shadow: 0 14px 30px -10px rgba(255, 61, 129, 0.9);
+            transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .speel-knop:hover { transform: translateY(-3px) scale(1.03); }
+        .klein { color: var(--muted); font-size: 14px; }
+
+        @media (max-width: 520px) {
+            .kaart { padding: 22px 16px; border-radius: 22px; }
+            .kaart h2 { font-size: 23px; }
+            .kaart h2 .bol { width: 40px; height: 40px; font-size: 22px; border-radius: 13px; }
+            .snelheid-rij { grid-template-columns: 82px 1fr 80px; gap: 8px; font-size: 13px; }
+            .som { font-size: 17px; padding: 16px; }
+            .som-rij.totaal { font-size: 21px; }
+            .podium div { width: 78px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="pagina">
+
+    <a class="terug" href="./">← Terug naar de bestel-app</a>
+
+    <header class="kop">
+        <span class="groot" aria-hidden="true">🍟</span>
+        <h1>Friet op de vlucht</h1>
+        <p>Het grote uitlegboek voor kleine (en grote) frietfans. Lees het, speel het, word de Frietkampioen! 🏆</p>
+        <nav class="inhoud" aria-label="Inhoud">
+            <a href="#verhaal">📖 Het verhaal</a>
+            <a href="#spelen">🎮 Hoe speel je?</a>
+            <a href="#hindernissen">🚧 In de weg</a>
+            <a href="#meeuwen">🐦 Meeuwen</a>
+            <a href="#punten">⭐ Punten</a>
+            <a href="#highscores">🏆 Highscores</a>
+            <a href="#tips">💡 Tips</a>
+        </nav>
+    </header>
+
+    <!-- Verhaal -->
+    <section class="kaart verhaal" id="verhaal">
+        <h2><span class="bol">📖</span>Het verhaal</h2>
+        <p>Er was eens een klein, knapperig <strong>bakje friet</strong>. 🍟 Hij lag lekker warm op de toonbank van Cafetaria Family… tot hij hoorde dat iemand hem ging <strong>opeten</strong>! 😱</p>
+        <div class="uitroep">"Nee, nee, nee! Ik ga er vandoor!"</div>
+        <p>En zo begon de grote ontsnapping. Het frietje rent en rent en rent, en stopt nooit meer. Maar onderweg ligt van alles in de weg, en in de lucht vliegen hongerige <strong>meeuwen</strong> die héél graag een frietje pikken. 🐦</p>
+        <p><strong>Jij</strong> moet het frietje helpen om zo ver mogelijk weg te komen!</p>
+    </section>
+
+    <!-- Spelen -->
+    <section class="kaart" id="spelen">
+        <h2><span class="bol">🎮</span>Hoe speel je het?</h2>
+        <p>Je hoeft maar <strong>één ding</strong> te doen: <strong>springen!</strong> 🦘 Het frietje rent helemaal zelf, jij springt alleen op het goede moment.</p>
+        <div class="knoppen">
+            <div class="knop-uitleg">
+                <span class="emoji">💻</span>
+                <strong>Op de computer</strong><br>
+                <span class="toets">spatie</span><span class="toets">⬆️</span>
+            </div>
+            <div class="knop-uitleg">
+                <span class="emoji">📱</span>
+                <strong>Op de telefoon</strong><br>
+                <span class="toets">👆 tik op het speelveld</span>
+            </div>
+        </div>
+        <div class="geheim">
+            <p><strong>🤫 Het geheime trucje:</strong> hoe langer je vasthoudt, hoe hoger je springt!</p>
+            <div class="sprongen" aria-hidden="true">
+                <div class="sprong klein"><div class="baan"><span>🍟</span></div>kort tikken<br>= klein hupje 🐰</div>
+                <div class="sprong hoog"><div class="baan"><span>🍟</span></div>lang vasthouden<br>= superhoog 🚀</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hindernissen -->
+    <section class="kaart" id="hindernissen">
+        <h2><span class="bol">🚧</span>Wat ligt er in de weg?</h2>
+        <p>Op de grond liggen drie stoute dingen. Daar moet je <strong>overheen springen</strong>:</p>
+        <div class="hindernissen">
+            <div class="hindernis">
+                <span class="emoji">🧂</span>
+                <h3>Het zoutvaatje</h3>
+                Supergladjes!
+                <span class="oei">"Uitgegleden over het zout!"</span>
+            </div>
+            <div class="hindernis">
+                <span class="emoji">🥫</span>
+                <h3>Het blik saus</h3>
+                Dik en zwaar!
+                <span class="oei">"Tegen een blik saus gerend!"</span>
+            </div>
+            <div class="hindernis">
+                <span class="emoji">🍅</span>
+                <h3>De tomaat</h3>
+                Rolt overal heen!
+                <span class="oei">"Over een tomaat gestruikeld!"</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Meeuwen -->
+    <section class="kaart" id="meeuwen">
+        <span class="sticker">Na 6 seconden!</span>
+        <h2><span class="bol">🐦</span>Pas op voor de meeuwen!</h2>
+        <p>Na ongeveer <strong>6 seconden</strong> worden de meeuwen wakker. En meeuwen zijn slim, want ze vliegen niet altijd even hoog:</p>
+        <div class="meeuwen">
+            <div class="meeuw springen">
+                <div class="tekening" aria-hidden="true">
+                    <span style="left: 20px; bottom: 2px;">🍟</span>
+                    <span style="right: 30px; bottom: 6px;">🐦</span>
+                </div>
+                <h3>Lage meeuw</h3>
+                Vliegt vlak boven de grond.
+                <div class="opdracht">→ Spring eroverheen! 🦘</div>
+            </div>
+            <div class="meeuw blijven">
+                <div class="tekening" aria-hidden="true">
+                    <span style="left: 20px; bottom: 2px;">🍟</span>
+                    <span style="right: 30px; bottom: 52px;">🐦</span>
+                </div>
+                <h3>Hoge meeuw</h3>
+                Vliegt hoog in de lucht.
+                <div class="opdracht">→ NIET springen! 🙅</div>
+            </div>
+        </div>
+        <p>Bij een hoge meeuw ren je er gewoon <strong>onderdoor</strong>. Spring je toch, dan vlieg je recht in zijn snavel. 😬 Meeuwen vliegen ook nog eens een beetje <strong>sneller</strong> dan de rest, dus blijf goed opletten! 👀</p>
+        <p>Word je gepakt? Dan staat er <strong>"Gepikt door een meeuw!"</strong> en wordt je frietje helemaal duizelig: 😵</p>
+    </section>
+
+    <!-- Punten -->
+    <section class="kaart" id="punten">
+        <h2><span class="bol">⭐</span>Hoe krijg je punten?</h2>
+
+        <h3>1. Rennen = punten 🏃</h3>
+        <p>Hoe verder het frietje rent, hoe meer punten. Ze tikken er vanzelf bij, net als een teller bij het tanken. ⛽ En het frietje gaat <strong>steeds sneller</strong> rennen, dus de punten komen er ook steeds sneller bij!</p>
+        <div class="snelheid">
+            <div class="snelheid-rij"><span class="wanneer">🐢 Begin</span><span class="balk"><span style="width: 40%"></span></span><span class="getal">±33 per sec</span></div>
+            <div class="snelheid-rij"><span class="wanneer">🐇 Halve minuut</span><span class="balk"><span style="width: 73%"></span></span><span class="getal">±60 per sec</span></div>
+            <div class="snelheid-rij"><span class="wanneer">🚀 Na 1 minuut</span><span class="balk"><span style="width: 100%"></span></span><span class="getal">±82 per sec</span></div>
+        </div>
+        <p class="klein">Na ongeveer een minuut rent hij op zijn allersnelst. Sneller kan echt niet! 🔥</p>
+
+        <h3>2. Muntjes = bonuspunten 🪙</h3>
+        <div class="munt-blok">
+            <span class="munt" aria-hidden="true">🪙</span>
+            <div>
+                <div class="waarde">+25 punten!</div>
+                Soms zweeft er een glimmend muntje boven een zoutvaatje, blik of tomaat. Ze zweven best hoog, dus daar heb je een <strong>superhoge sprong</strong> voor nodig (lang vasthouden!). Rechtsboven in het spel zie je hoeveel muntjes je hebt.
+            </div>
+        </div>
+
+        <h3>🧮 Het grote rekensommetje</h3>
+        <div class="som">
+            <div class="som-rij"><span>🏃 punten van het rennen</span><span></span></div>
+            <div class="som-rij"><span>➕ 🪙 aantal muntjes × 25</span><span></span></div>
+            <div class="som-rij totaal"><span>⭐ JOUW SCORE!</span><span>🎉</span></div>
+        </div>
+        <div class="voorbeeld">
+            <strong>Voorbeeld:</strong> je rent 500 punten bij elkaar en pakt 4 muntjes.<br>
+            500 + (4 × 25) = 500 + 100 = <span class="uitkomst">600 punten!</span> 🎉
+        </div>
+    </section>
+
+    <!-- Highscores -->
+    <section class="kaart" id="highscores">
+        <h2><span class="bol">🏆</span>Wie is de Frietkampioen?</h2>
+        <p>Ben je af? Dan verschijnt onder het spel een vakje: <strong>"Zet je naam erbij!"</strong> ✍️</p>
+        <ol class="stappen">
+            <li>Typ je naam in.</li>
+            <li>Klik op <strong>🏆 Opslaan</strong>.</li>
+            <li>Tadaa! Je staat in de lijst! 📋</li>
+        </ol>
+        <div class="podium" aria-hidden="true">
+            <div class="p2"><span class="emoji">🥈</span>2</div>
+            <div class="p1"><span class="emoji">👑</span>1</div>
+            <div class="p3"><span class="emoji">🥉</span>3</div>
+        </div>
+        <p>Onder het spel staat de <strong>top 10</strong> van iedereen op kantoor. Plek 1 is de <strong>Frietkoning</strong> of <strong>Frietkoningin</strong>! 👑 Jouw eigen naam licht <strong>geel</strong> op, zodat je jezelf meteen ziet. 🌟</p>
+        <ul class="lijstje">
+            <li>Per naam telt alleen je <strong>beste score</strong>. Slechter gespeeld dan vorige keer? Geen probleem, je oude record blijft gewoon staan. 😌</li>
+            <li>Haal je een nieuw record op je eigen apparaat, dan staat er: <strong>"🏆 Nieuw record!"</strong></li>
+            <li>Speel je op de telefoon? Dan is het frietje een stukje <strong>groter</strong> en rent alles een beetje <strong>langzamer</strong>, zodat je net zoveel tijd hebt om te reageren. 👍</li>
+        </ul>
+    </section>
+
+    <!-- Tips -->
+    <section class="kaart" id="tips">
+        <h2><span class="bol">💡</span>Tips van de Frietprofessor 🧑‍🏫</h2>
+        <div class="tips">
+            <div class="tip"><span class="nr">1</span><h3>Kijk vooruit! 👀</h3><p>Let niet op het frietje zelf, maar op wat eraan komt.</p></div>
+            <div class="tip"><span class="nr">2</span><h3>Hoge meeuw? Niks doen! 🙅</h3><p>De moeilijkste: je wilt springen, maar dat moet juist niet.</p></div>
+            <div class="tip"><span class="nr">3</span><h3>Muntjes zijn het waard 🪙</h3><p>Maar alleen als je er niet door in een meeuw springt.</p></div>
+            <div class="tip"><span class="nr">4</span><h3>Eerder springen ⏩</h3><p>Het wordt steeds sneller, dus spring na een tijdje ietsje eerder.</p></div>
+            <div class="tip"><span class="nr">5</span><h3>Nog een keer! 💪</h3><p>Af? Tik gewoon opnieuw. Elk frietje verdient een tweede kans.</p></div>
+        </div>
+    </section>
+
+    <!-- Einde -->
+    <section class="kaart einde">
+        <div class="groot" aria-hidden="true">🍟🐦🏆</div>
+        <h2 style="justify-content: center;">Einde!</h2>
+        <p>En zo rent het frietje elke vrijdag weer weg van de hongerige meeuwen, terwijl jij wacht op je <strong>echte</strong> friet. 😋</p>
+        <p>Wie wordt de <strong>Frietkampioen van Family Vrijdag</strong>?</p>
+        <a class="speel-knop" href="./#spelen">🎮 Speel nu!</a>
+        <p class="klein" style="margin-top: 14px;">Eet smakelijk, en spring op tijd! 🦘</p>
+    </section>
+
+</div>
+</body>
+</html>

@@ -290,6 +290,12 @@
 
         /* ---------- Wachtspelletje ---------- */
         .spel-uitleg { margin: -8px 0 14px; color: var(--muted); font-size: 14px; }
+        .spel-uitleg-link {
+            display: inline-block; margin-left: 4px; padding: 2px 10px; border-radius: 999px;
+            background: rgba(255, 194, 26, 0.14); border: 1px solid rgba(255, 194, 26, 0.5);
+            color: var(--sun); font-weight: 600; text-decoration: none; white-space: nowrap;
+        }
+        .spel-uitleg-link:hover { background: rgba(255, 194, 26, 0.26); }
         .spel-opslaan { margin-top: 14px; padding: 14px; border-radius: 16px; background: rgba(255, 194, 26, 0.08); border: 1px dashed rgba(255, 194, 26, 0.55); font-size: 14px; }
         .spel-opslaan-rij { display: flex; gap: 8px; margin-top: 10px; }
         .spel-opslaan-rij input { flex: 1; min-width: 0; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0, 0, 0, 0.25); color: var(--text); font: inherit; }
@@ -1171,7 +1177,8 @@
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="spelTitel" style="width: min(660px, 100%);">
             <button class="modal-sluit" onclick="sluitSpel()" aria-label="Sluiten">✕</button>
             <h3 class="kies-vraag" id="spelTitel">🍟 Friet op de vlucht</h3>
-            <p class="spel-uitleg">Spring over zout, saus en tomaten en ontwijk de meeuwen. <b>Spatie</b> of <b>tikken</b> = springen, langer vasthouden = hoger.</p>
+            <p class="spel-uitleg">Spring over zout, saus en tomaten en ontwijk de meeuwen. <b>Spatie</b> of <b>tikken</b> = springen, langer vasthouden = hoger.
+                <a class="spel-uitleg-link" href="spel-uitleg.html" target="_blank" rel="noopener">📖 Lees de grote uitleg</a></p>
             <canvas id="spelVeld" class="spel-veld" width="600" height="200" aria-label="Spelletje Friet op de vlucht"></canvas>
             <div id="spelOpslaan" class="spel-opslaan verborgen">
                 <span id="spelOpslaanTekst"></span>
@@ -1368,6 +1375,8 @@
             document.getElementById('emailInput').value = leesEmail();
             laadBetaling();
             controleerAfgesloten();
+            // Vanaf de uitlegpagina ("Speel nu!") meteen het spel openen
+            if (location.hash === '#spelen') { history.replaceState(null, '', location.pathname); openSpel(); }
 
             // menu.json wordt elke donderdag bijgewerkt door GitHub Actions (scripts/update-menu.js)
             fetch('menu.json', { cache: 'no-cache' })

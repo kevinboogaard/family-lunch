@@ -43,6 +43,10 @@ over zout, saus en tomaten. Over een lage meeuw spring je heen, onder een hoge m
 25 punten extra. Springen met **spatie**, **pijltje omhoog** of **tikken**; langer vasthouden = hoger springen.
 Op een telefoon is de wereld smaller en het tempo iets lager.
 
+In het spelvenster staat **📖 Lees de grote uitleg**: een kindvriendelijke uitlegpagina (`spel-uitleg.html`) met het
+verhaal, de besturing, de meeuwen, hoe de punten werken en tips. De knop **🎮 Speel nu!** onderaan opent het spel
+meteen (`index.html#spelen`).
+
 **Highscores:** na afloop kun je je naam invullen en je score opslaan. Onder het spel staat de top 10 van iedereen,
 met je eigen naam gemarkeerd. Per naam telt alleen je beste score. De scores staan in een tabblad **Highscores** van
 je Google Sheet; een rij weghalen daar haalt hem ook uit de lijst.
