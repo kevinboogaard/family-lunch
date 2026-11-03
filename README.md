@@ -76,7 +76,24 @@ Heeft iemand iets in zijn mandje dat nog niet is verstuurd, dan staat dat erbij.
 balk rood. Wegklikken kan; in de laatste 5 minuten komt hij één keer terug.
 
 De tijd staat bovenin het script van `index.html` in `BESTELLEN_TOT` (en `HERINNER_MINUTEN` voor hoe lang van
-tevoren). Het is alleen een herinnering: na 10:30 kun je nog steeds bestellen.
+tevoren).
+
+## Wanneer kan er besteld worden?
+
+Alleen op **vrijdag**. Collega's zien overal **10:30** als deadline, maar achter de schermen kan het tot **11:00**,
+zodat een laatkomer er nog bij kan. Daarna, en op elke andere dag, weigert het script nieuwe bestellingen. De app
+laat dan zien "📅 Bestellen kan op vrijdag tot 10:30" of "🔒 Bestellen kon vandaag tot 10:30". Rondkijken en een
+mandje vullen kan altijd.
+
+- **Lunch op een andere dag, of wil je testen?** Klik op `admin.html` bij **Wie heeft betaald?** op
+  **🟢 Vandaag toch openzetten**. Bestellen blijft dan de rest van die dag open tot je hem dichtzet; de dag erna
+  geldt weer de gewone besteltijd.
+- **Na 11:00 nog iemand erbij?** Klik op **🟢 Toch nog openzetten**.
+- De tijden staan in het script in `BESTELMOMENT` (`TOT` is de echte sluitingstijd, `TEKST` wat collega's zien) en in
+  `index.html` in `BESTELLEN_TOT` (zichtbaar) en `BESTELLEN_ECHT_TOT` (echt). Pas ze samen aan.
+
+Opvragen (de stand van je betaling, en in het beheer de lijsten) wacht niet meer op andere verzoeken. Alleen opslaan
+gaat één voor één, zodat het vrijdag rond 10:30 minder snel "Het is even erg druk" wordt.
 
 ## Centrale opslag instellen (eenmalig, ±5 minuten)
 
@@ -203,8 +220,8 @@ met als afzendernaam "Family Vrijdag".
 
 ## Bestellen dicht
 
-Ga je bij e-food bestellen? Zet dan op `admin.html` bij **Wie heeft betaald?** (met de dag van vandaag gekozen)
-**🛑 Bestellen dicht** aan. Er kan dan vandaag niet meer besteld of geannuleerd worden; de app toont
+Ga je vóór 11:00 al bij e-food bestellen? Zet dan op `admin.html` bij **Wie heeft betaald?** (dit blok gaat altijd
+over vandaag) **🛑 Bestellen dicht** aan. Er kan dan vandaag niet meer besteld of geannuleerd worden; de app toont
 "🔒 De bestellijst van vandaag is gesloten". Collega's zien hun bestelling nog wel en kunnen gewoon **betalen**.
 Met **🟢 Bestellen weer open** draai je het terug. De volgende dag is bestellen vanzelf weer open.
 

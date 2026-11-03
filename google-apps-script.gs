@@ -37,6 +37,14 @@ const LIMIETEN = {
   MAX_PRODUCT_TEKST: 250
 };
 
+// Wanneer er besteld kan worden. De app noemt 10:30 als deadline; achter de schermen kan het tot 11:00, zodat een
+// laatkomer er nog bij kan. Op een andere dag of na 11:00 toch bestellen? Zet bestellen open in de beheerpagina.
+const BESTELMOMENT = {
+  DAG: 5,                      // 1 = maandag ... 5 = vrijdag ... 7 = zondag
+  TOT: '11:00',                // echte sluitingstijd
+  TEKST: '10:30'               // de tijd die collega's te zien krijgen
+};
+
 // Beheer (admin.html): de QR-code om af te rekenen. Alleen met de beheercode te wijzigen.
 const INSTELLINGEN_SHEET = 'Instellingen';
 const BEHEER = {
@@ -598,14 +606,49 @@ function sleutelKlopt_(datum, naam, sleutel) {
 
 // ---------- Bestellen dicht (los van afsluiten): geen nieuwe bestellingen, betalen kan nog ----------
 
-function isBestellenDicht_() {
-  return PropertiesService.getScriptProperties().getProperty('BESTELLEN_DICHT') === vandaag_() || isAfgesloten_(vandaag_());
+/** 'dag' of 'tijd' als het nu buiten de besteltijd is (zie BESTELMOMENT), anders null. */
+function buitenBesteltijd_(nu) {
+  const tz = Session.getScriptTimeZone();
+  if (Number(Utilities.formatDate(nu, tz, 'u')) !== BESTELMOMENT.DAG) return 'dag';
+  if (Utilities.formatDate(nu, tz, 'HH:mm') >= BESTELMOMENT.TOT) return 'tijd';
+  return null;
 }
 
+/**
+ * Kan er nu besteld worden? reden bij dicht: 'afgesloten', 'beheer' (jij zette hem dicht), 'dag' of 'tijd' (buiten de besteltijd).
+ * handmatigOpen: jij hebt bestellen vandaag buiten de besteltijd opengezet.
+ */
+function bestelStatus_() {
+  const props = PropertiesService.getScriptProperties();
+  const vandaag = vandaag_();
+  if (isAfgesloten_(vandaag)) return { dicht: true, reden: 'afgesloten', handmatigOpen: false };
+  if (props.getProperty('BESTELLEN_DICHT') === vandaag) return { dicht: true, reden: 'beheer', handmatigOpen: false };
+  if (props.getProperty('BESTELLEN_OPEN') === vandaag) return { dicht: false, reden: null, handmatigOpen: true };
+  const reden = buitenBesteltijd_(new Date());
+  return { dicht: !!reden, reden: reden, handmatigOpen: false };
+}
+
+function isBestellenDicht_() {
+  return bestelStatus_().dicht;
+}
+
+/** Dicht: vandaag niet meer. Open: weer open, en buiten de besteltijd voor de rest van vandaag opengezet. */
 function zetBestellenDicht_(dicht) {
   const props = PropertiesService.getScriptProperties();
-  if (dicht) props.setProperty('BESTELLEN_DICHT', vandaag_());
-  else props.deleteProperty('BESTELLEN_DICHT');
+  const vandaag = vandaag_();
+  if (dicht) {
+    props.setProperty('BESTELLEN_DICHT', vandaag);
+    props.deleteProperty('BESTELLEN_OPEN');
+  } else {
+    props.deleteProperty('BESTELLEN_DICHT');
+    if (buitenBesteltijd_(new Date())) props.setProperty('BESTELLEN_OPEN', vandaag);
+  }
+}
+
+function geslotenTekst_(reden) {
+  if (reden === 'dag') return 'Bestellen kan alleen op vrijdag, tot ' + BESTELMOMENT.TEKST + '. Tot vrijdag!';
+  if (reden === 'tijd') return 'Bestellen kon vandaag tot ' + BESTELMOMENT.TEKST + '. Volgende keer weer!';
+  return 'De bestellijst van vandaag is gesloten. Volgende keer weer!';
 }
 
 /** Bestellingen van vandaag annuleren, alleen met de sleutel en zolang bestellen nog open is en er niet betaald is. */
@@ -687,19 +730,27 @@ function controleerBeheercode_(code) {
   return { ok: true };
 }
 
-function beheerActie_(body) {
-  const toegang = controleerBeheercode_(body.beheercode);
-  if (!toegang.ok) return toegang;
+// Acties voor collega's; elke andere actie is beheer en vraagt de beheercode
+const GEWONE_ACTIES = { betaalStatus: true, zegtBetaald: true, zegtNietBetaald: true, highscore: true, annuleer: true };
+// Beheeracties die alleen lezen: die hoeven niet op het slot te wachten
+const BEHEER_LEZEN = { controleer: true, bestellingen: true, betalingen: true };
 
+function bestelStatusVoorBeheer_() {
+  const st = bestelStatus_();
+  return { bestellenDicht: st.dicht, bestelReden: st.reden, handmatigOpen: st.handmatigOpen, besteltijd: BESTELMOMENT.TEKST, besteltijdEcht: BESTELMOMENT.TOT };
+}
+
+/** Voert een beheeractie uit. De beheercode is dan al gecontroleerd (zie doPost). */
+function beheerActie_(body) {
   if (body.actie === 'controleer') return { ok: true };
 
   // Alles wat meer laat zien dan iemands eigen gegevens: alleen met de beheercode
   if (body.actie === 'bestellingen') return { ok: true, bestellingen: leesBestellingen_(body.datum) };
-  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_(), emails: leesEmails_(), bestellenDicht: isBestellenDicht_(), vandaag: vandaag_() };
+  if (body.actie === 'betalingen') return Object.assign({ ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_(), emails: leesEmails_(), vandaag: vandaag_() }, bestelStatusVoorBeheer_());
 
   if (body.actie === 'bestellenDicht') {
     zetBestellenDicht_(body.dicht !== false);
-    return { ok: true, bestellenDicht: isBestellenDicht_() };
+    return Object.assign({ ok: true }, bestelStatusVoorBeheer_());
   }
 
   if (body.actie === 'afsluiten') {
@@ -754,22 +805,34 @@ function beheerActie_(body) {
 
 /** Bestelling opslaan. Verwacht JSON: { code?, data: [{ Naam, Product, Aantal, Stuksprijs }, ...] } */
 function doPost(e) {
+  let body;
+  try {
+    body = JSON.parse(e.postData.contents) || {};
+  } catch (err) {
+    return json_(fout_('ONGELDIG', 'De bestelling kon niet gelezen worden.'));
+  }
+
+  // Wat alleen leest, hoeft niet te wachten tot een ander klaar is met opslaan (scheelt veel op vrijdag rond 10:30)
+  try {
+    if (body.actie === 'betaalStatus') return json_(betaalStatus_(body));
+    if (body.actie && !GEWONE_ACTIES[body.actie]) {
+      // Beheer: de code eerst, buiten het slot, zodat een foute code (die even wacht) niemand anders ophoudt
+      const toegang = controleerBeheercode_(body.beheercode);
+      if (!toegang.ok) return json_(toegang);
+      if (BEHEER_LEZEN[body.actie]) return json_(beheerActie_(body));
+    }
+  } catch (err) {
+    return json_(fout_('FOUT', String(err)));
+  }
+
   const lock = LockService.getScriptLock();
   // Lukt het slot niet binnen 10 seconden (erg druk), dan een nette fout in plaats van een foutpagina
   if (!lock.tryLock(10000)) return json_(fout_('BEZIG', 'Het is even erg druk. Probeer het over een paar seconden opnieuw.'));
   try {
-    let body;
-    try {
-      body = JSON.parse(e.postData.contents);
-    } catch (err) {
-      return json_(fout_('ONGELDIG', 'De bestelling kon niet gelezen worden.'));
-    }
-
-    if (body && body.actie === 'betaalStatus') return json_(betaalStatus_(body));
-    if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
-    if (body && body.actie === 'highscore') return json_(bewaarHighscore_(body));
-    if (body && body.actie === 'annuleer') return json_(annuleer_(body));
-    if (body && body.actie) return json_(beheerActie_(body));
+    if (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald') return json_(betaaldMelding_(body));
+    if (body.actie === 'highscore') return json_(bewaarHighscore_(body));
+    if (body.actie === 'annuleer') return json_(annuleer_(body));
+    if (body.actie) return json_(beheerActie_(body));
 
     const sheet = getSheet_();
     const waarden = sheet.getDataRange().getValues();
@@ -787,7 +850,8 @@ function doPost(e) {
       if (eerder.length) bestelNr = ''; // nummer al in gebruik door een andere bestelling: gewoon een nieuw nummer
     }
 
-    if (isBestellenDicht_()) return json_(fout_('GESLOTEN', 'De bestellijst van vandaag is gesloten. Volgende keer weer!'));
+    const bestelStatus = bestelStatus_();
+    if (bestelStatus.dicht) return json_(Object.assign(fout_('GESLOTEN', geslotenTekst_(bestelStatus.reden)), { reden: bestelStatus.reden }));
 
     const tel = telVandaag_(waarden);
     const resultaat = valideerBestelling_(body, {
@@ -886,7 +950,10 @@ function doGet(e) {
     if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, scores: topHighscores_() });
     if (e && e.parameter && e.parameter.actie === 'qr') {
       const uit = leesQr_();
-      uit.vandaagGesloten = isBestellenDicht_();
+      const st = bestelStatus_();
+      uit.vandaagGesloten = st.dicht;
+      uit.geslotenReden = st.reden;
+      uit.handmatigOpen = st.handmatigOpen;
       return json_(uit);
     }
     return json_(fout_('BEHEER', 'Bestellingen zijn alleen zichtbaar voor de beheerder, via admin.html.'));

@@ -343,6 +343,7 @@
     let alleBestellingen = [], alleBetalingen = [], betalingenBekend = true, eersteKeer = true;
     let afgesloten = null; // [{ Datum, Op }], of null als het script afsluiten nog niet kent
     let bestellenDicht = null;      // vandaag geen nieuwe bestellingen meer; null = het script kent dit nog niet
+    let bestelStand = {};           // { bestelReden, handmatigOpen, besteltijd, besteltijdEcht } van het script
     let scriptVandaag = '';         // "vandaag" volgens het script (tijdzone van de Sheet), gezet door laadAlles
     let alleEmails = [];   // [{ Datum, Naam, Email }]: wie bij het bestellen een adres voor de bevestigingsmail gaf
     const euro = n => '€ ' + Number(n).toFixed(2).replace('.', ',');
@@ -367,6 +368,7 @@
             afgesloten = betalingenBekend && Array.isArray(bet.afgesloten) ? bet.afgesloten : null;
             alleEmails = betalingenBekend && Array.isArray(bet.emails) ? bet.emails : [];
             bestellenDicht = betalingenBekend && typeof bet.bestellenDicht === 'boolean' ? bet.bestellenDicht : null;
+            bestelStand = betalingenBekend ? bet : {};
             scriptVandaag = (betalingenBekend && bet.vandaag) || vandaagISO();
             if (eersteKeer) {
                 eersteKeer = false;
@@ -407,18 +409,35 @@
 
     // ---------- Afsluiten: de dag is klaar, collega's zien de bestelling niet meer ----------
     // Bestellen dicht: geen nieuwe bestellingen meer, maar collega's zien hun bestelling nog en kunnen nog betalen
-    function bestellenDichtBlok(datum) {
-        if (datum !== scriptVandaag || bestellenDicht === null || (afgesloten || []).some(a => a.Datum === datum)) return null;
+    // Gaat altijd over vandaag, welke dag je hierboven ook kiest
+    function bestellenDichtBlok() {
+        if (bestellenDicht === null || (afgesloten || []).some(a => a.Datum === scriptVandaag)) return null;
         const blok = document.createElement('div');
         blok.className = 'afsluit-blok' + (bestellenDicht ? ' dicht' : '');
         const tekst = document.createElement('p');
         const knop = document.createElement('button');
-        if (bestellenDicht) {
-            tekst.innerHTML = '<strong>🛑 Bestellen is dicht.</strong> Er kan vandaag niet meer besteld worden. Collega\'s zien hun bestelling nog en kunnen nog betalen.';
+        // Een ouder script stuurt de besteltijd niet mee
+        const zichtbaar = bestelStand.besteltijd || '10:30', echt = bestelStand.besteltijdEcht || '11:00';
+        const kop = '<strong>Vandaag (' + dagNaam(scriptVandaag) + '):</strong> ';
+        if (bestellenDicht && bestelStand.bestelReden === 'dag') {
+            tekst.innerHTML = kop + '📅 er kan niet besteld worden, want bestellen kan alleen op vrijdag (collega\'s zien ' + zichtbaar + ', het kan tot ' + echt + '). Lunch op een andere dag, of wil je testen? Zet het dan voor vandaag open.';
+            knop.textContent = '🟢 Vandaag toch openzetten';
+            knop.onclick = () => zetBestellenDicht(false);
+        } else if (bestellenDicht && bestelStand.bestelReden === 'tijd') {
+            tekst.innerHTML = kop + '⏰ het is na ' + echt + ', dus bestellen is vanzelf dicht (collega\'s zagen ' + zichtbaar + ' als deadline). Betalen kan gewoon.';
+            knop.textContent = '🟢 Toch nog openzetten';
+            knop.onclick = () => zetBestellenDicht(false);
+        } else if (bestellenDicht) {
+            tekst.innerHTML = kop + '<strong>🛑 Bestellen is dicht.</strong> Er kan vandaag niet meer besteld worden. Collega\'s zien hun bestelling nog en kunnen nog betalen.';
             knop.textContent = '🟢 Bestellen weer open';
             knop.onclick = () => zetBestellenDicht(false);
+        } else if (bestelStand.handmatigOpen) {
+            tekst.innerHTML = kop + '<strong>🟢 Bestellen is open</strong>, omdat jij het buiten de besteltijd hebt opengezet. Het blijft vandaag open tot je het dichtzet; morgen geldt weer de gewone besteltijd.';
+            knop.className = 'hoofd';
+            knop.textContent = '🛑 Bestellen dicht';
+            knop.onclick = () => zetBestellenDicht(true);
         } else {
-            tekst.innerHTML = '<strong>🟢 Bestellen is open.</strong> Ga je bij e-food bestellen? Zet bestellen dan dicht, zodat er niemand meer bij komt. Betalen kan daarna gewoon.';
+            tekst.innerHTML = kop + '<strong>🟢 Bestellen is open.</strong> Om ' + echt + ' gaat het vanzelf dicht (collega\'s zien ' + zichtbaar + '). Ga je eerder bij e-food bestellen? Zet bestellen dan dicht, zodat er niemand meer bij komt. Betalen kan daarna gewoon.';
             knop.className = 'hoofd';
             knop.textContent = '🛑 Bestellen dicht';
             knop.onclick = () => zetBestellenDicht(true);
@@ -433,8 +452,9 @@
             const r = await postActie('bestellenDicht', { dicht });
             if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Opslaan mislukt.'); return; }
             bestellenDicht = r.bestellenDicht;
+            bestelStand = r;
             toonAfsluiten();
-            melding($('betaalMelding'), 'ok', dicht ? '🛑 Bestellen is dicht. Betalen kan nog.' : '🟢 Bestellen is weer open.');
+            melding($('betaalMelding'), 'ok', dicht ? '🛑 Bestellen is dicht. Betalen kan nog.' : r.handmatigOpen ? '🟢 Bestellen is vandaag open, ook buiten de besteltijd.' : '🟢 Bestellen is weer open.');
         } catch (err) {
             melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
         }
@@ -445,7 +465,7 @@
         const datum = $('betaalDatum').value;
         vak.replaceChildren();
         if (!datum || !betalingenBekend) return;
-        const dichtBlok = bestellenDichtBlok(datum);
+        const dichtBlok = bestellenDichtBlok();
         if (dichtBlok) vak.appendChild(dichtBlok);
         const blok = document.createElement('div');
         blok.className = 'afsluit-blok';

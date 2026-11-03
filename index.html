@@ -1270,6 +1270,9 @@
         // Tot hoe laat collega's op vrijdag kunnen bestellen. Het laatste half uur verschijnt bovenin een herinnering.
         const BESTELLEN_TOT = { uur: 10, minuut: 30 };
         const HERINNER_MINUTEN = 30;
+        // Achter de schermen kan het tot 11:00 (net als in het Google-script, BESTELMOMENT), zodat een laatkomer er nog bij kan.
+        // Collega's zien alleen 10:30.
+        const BESTELLEN_ECHT_TOT = { uur: 11, minuut: 0 };
 
         let menuData = [];
         let vragenData = [];
@@ -1367,6 +1370,10 @@
         function updateAftellen() {
             const nu = new Date();
             updateDeadline(nu);
+            // Staat de app nog open als het 11:00 wordt, dan gaat bestellen hier ook dicht (behalve als de beheerder hem opende)
+            const echtDicht = new Date(nu);
+            echtDicht.setHours(BESTELLEN_ECHT_TOT.uur, BESTELLEN_ECHT_TOT.minuut, 0, 0);
+            if (GOOGLE_SCRIPT_URL && !bestellenGesloten && !handmatigOpen && nu.getDay() === 5 && nu >= echtDicht) zetBestellenGesloten('tijd');
             const el = document.getElementById('aftellen');
             if (nu.getDay() === 5 && nu.getHours() >= 12 && nu.getHours() < 17) {
                 el.innerHTML = '🎉 <strong>Het is vrijdag!</strong> Eet smakelijk';
@@ -2751,14 +2758,27 @@
         // ---------- Afrekenen: de QR-code die de beheerder in admin.html heeft gezet ----------
         let betaling = null;
         let bestellenGesloten = false;
+        let geslotenReden = null;   // 'dag' / 'tijd' (buiten de besteltijd), 'beheer' of 'afgesloten'
+        let handmatigOpen = false;  // de beheerder heeft bestellen vandaag buiten de besteltijd opengezet
 
-        // De beheerder heeft vandaag afgesloten: bestellen kan niet meer
-        function zetBestellenGesloten() {
+        const tijdTekst = t => `${t.uur}:${String(t.minuut).padStart(2, '0')}`;
+        function geslotenTekst(reden) {
+            if (reden === 'dag') return `Bestellen kan op vrijdag tot ${tijdTekst(BESTELLEN_TOT)}`;
+            if (reden === 'tijd') return `Bestellen kon vandaag tot ${tijdTekst(BESTELLEN_TOT)}`;
+            return 'De bestellijst van vandaag is gesloten';
+        }
+
+        // Bestellen kan niet (meer): buiten de besteltijd, of de beheerder heeft hem dichtgezet
+        function zetBestellenGesloten(reden = geslotenReden) {
             bestellenGesloten = true;
+            geslotenReden = reden || null;
             const knop = document.querySelector('.checkout-btn');
             knop.disabled = true;
-            knop.innerText = '🔒 Bestellen is gesloten';
+            knop.innerText = geslotenReden === 'dag' ? '🔒 Bestellen kan vrijdag weer' : '🔒 Bestellen is gesloten';
             const banner = document.getElementById('geslotenBanner');
+            banner.textContent = (geslotenReden === 'dag' ? '📅 ' : '🔒 ') + geslotenTekst(geslotenReden);
+            // Een gewone doordeweekse dag is geen fout, dus dan niet in het rood
+            banner.classList.toggle('fout', geslotenReden !== 'dag');
             banner.classList.remove('verborgen');
             document.getElementById('deadlineBalk').classList.add('verborgen');
         }
@@ -2767,7 +2787,8 @@
             if (!GOOGLE_SCRIPT_URL) return;
             try {
                 const r = await (await fetch(GOOGLE_SCRIPT_URL + '?actie=qr')).json();
-                if (r.vandaagGesloten) zetBestellenGesloten();
+                handmatigOpen = !!r.handmatigOpen;
+                if (r.vandaagGesloten) zetBestellenGesloten(r.geslotenReden);
                 // Een ouder script kent "actie=qr" niet: dan is er geen qr en dus geen knop
                 if (r.ok && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(r.qr || '')) {
                     betaling = r;
@@ -2970,7 +2991,7 @@
                 const e = new Error(result.error || 'Onbekende fout');
                 e.afgewezen = ['LIMIET', 'ONGELDIG', 'GESLOTEN', 'SLEUTEL', 'BEZIG'].includes(result.code);
                 e.code = result.code;
-                if (result.code === 'GESLOTEN' && extra.data) bestellenGesloten = true;
+                if (result.code === 'GESLOTEN' && extra.data) { bestellenGesloten = true; geslotenReden = result.reden || null; }
                 throw e;
             }
             const e = new Error('De teamcode klopt niet.');
@@ -2994,7 +3015,7 @@
                 return;
             }
             if (bestellenGesloten) {
-                toast('🔒 De bestellijst van vandaag is gesloten. Volgende keer weer!', 'fout');
+                toast('🔒 ' + geslotenTekst(geslotenReden) + '. ' + (geslotenReden === 'dag' ? 'Tot vrijdag!' : 'Volgende keer weer!'), 'fout');
                 return;
             }
             const emailVeld = document.getElementById('emailInput');
