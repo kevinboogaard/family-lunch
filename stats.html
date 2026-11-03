@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats voor nerds</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #120b24;
+            --panel: rgba(40, 28, 72, 0.72);
+            --panel-licht: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.13);
+            --grid: rgba(255, 255, 255, 0.08);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --orange: #ff7a2f;
+            --hot: #ff3d81;
+            --mint: #2fe3a3;
+            --vibe: linear-gradient(120deg, var(--sun), var(--orange) 45%, var(--hot));
+            --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--text);
+            background:
+                radial-gradient(900px 600px at 10% -10%, rgba(255, 61, 129, 0.22), transparent 60%),
+                radial-gradient(900px 600px at 100% 30%, rgba(109, 59, 255, 0.22), transparent 60%),
+                var(--bg);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .pagina { width: min(1100px, 100%); margin: 0 auto; padding: 24px 16px 60px; }
+        .terug { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95em; }
+        .terug:hover { color: var(--text); }
+        h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(2em, 6vw, 3.2em); margin: 14px 0 4px; line-height: 1.1; }
+        h1 .verloop { background: var(--vibe); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .prompt { font-family: var(--mono); color: var(--mint); font-size: 0.9em; margin: 0 0 26px; }
+        .prompt .cursor { display: inline-block; width: 0.6em; height: 1.1em; background: var(--mint); vertical-align: -0.2em; animation: knipper 1s steps(1) infinite; }
+        @keyframes knipper { 50% { opacity: 0; } }
+
+        .tegels { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .tegel { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; }
+        .tegel small { display: block; color: var(--muted); font-size: 0.8em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .tegel strong { display: block; font-family: var(--mono); font-size: 1.7em; font-weight: 700; margin: 2px 0; font-variant-numeric: tabular-nums; }
+        .tegel span { color: var(--muted); font-size: 0.82em; }
+
+        .raster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .kaart { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: 18px 20px 20px; min-width: 0; }
+        .kaart.breed { grid-column: 1 / -1; }
+        .kaart h2 { font-family: 'Fredoka', sans-serif; font-size: 1.3em; margin: 0; }
+        .kaart .sql { font-family: var(--mono); font-size: 0.75em; color: var(--muted); margin: 2px 0 14px; overflow-wrap: anywhere; }
+        .kaart .noot { color: var(--muted); font-size: 0.85em; margin: 12px 0 0; }
+        .kaart .noot b { color: var(--text); font-family: var(--mono); }
+
+        /* Liggende balken */
+        .hbalken { display: grid; gap: 7px; }
+        .hbalk { display: grid; grid-template-columns: minmax(0, 11em) 1fr auto; gap: 10px; align-items: center; font-size: 0.9em; padding: 2px 0; border-radius: 6px; }
+        .hbalk:hover { background: var(--panel-licht); }
+        .hbalk .naam { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .hbalk .naam span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hbalk img { width: 26px; height: 26px; border-radius: 7px; object-fit: cover; flex: none; background: var(--panel-licht); }
+        .hbalk .spoor { height: 14px; }
+        .hbalk .vulling { height: 100%; background: var(--sun); border-radius: 0 4px 4px 0; min-width: 2px; }
+        .hbalk .waarde { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--text); min-width: 3ch; text-align: right; }
+
+        /* Staande balken */
+        .vbalken { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 180px; border-bottom: 1px solid var(--border);
+                   background: repeating-linear-gradient(to top, var(--grid) 0 1px, transparent 1px 45px); }
+        .vbalk { flex: 1; height: 100%; display: flex; align-items: flex-end; min-width: 0; cursor: default; }
+        .vbalk:hover .vulling { background: var(--orange); }
+        .vbalk .vulling { width: 100%; background: var(--sun); border-radius: 4px 4px 0 0; min-height: 0; }
+        .vbalk .vulling.nul { min-height: 0; }
+        .vbalk.later .vulling { background: var(--hot); }
+        .as { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.72em; color: var(--muted); margin-top: 5px; gap: 6px; }
+        .markeer { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--hot); pointer-events: none; }
+        .markeer span { position: absolute; top: -2px; left: 4px; font-family: var(--mono); font-size: 0.7em; color: var(--text); white-space: nowrap; background: var(--bg); padding: 0 4px; border-radius: 4px; }
+        .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8em; color: var(--muted); margin-top: 8px; }
+        .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+        .duos { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+        .duos li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--panel-licht); border-radius: 12px; font-size: 0.9em; }
+        .duos b { font-family: var(--mono); white-space: nowrap; }
+
+        .weetjes { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .weetje { background: var(--panel-licht); border-radius: 14px; padding: 12px 14px; font-size: 0.9em; color: var(--muted); }
+        .weetje strong { display: block; font-family: var(--mono); color: var(--text); font-size: 1.25em; }
+
+        details { margin-top: 16px; }
+        summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+        .tabel-wrap { overflow-x: auto; margin-top: 10px; }
+        table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 0.82em; font-variant-numeric: tabular-nums; }
+        th, td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+        th:first-child, td:first-child { text-align: left; }
+        th { color: var(--muted); font-weight: 600; }
+
+        .melding { text-align: center; padding: 60px 16px; color: var(--muted); font-size: 1.05em; }
+        .tip { position: fixed; z-index: 10; pointer-events: none; background: #fff8ef; color: #2a1d12; font-family: var(--mono); font-size: 0.8em;
+               padding: 7px 10px; border-radius: 10px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); max-width: 260px; display: none; white-space: pre-line; }
+        .verborgen { display: none !important; }
+
+        @media (max-width: 760px) {
+            .raster { grid-template-columns: minmax(0, 1fr); }
+            .hbalk { grid-template-columns: minmax(0, 8.5em) 1fr auto; }
+            .tegel strong { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body>
+    <main class="pagina">
+        <a class="terug" href="index.html">← Terug naar bestellen</a>
+        <h1><span class="verloop">Stats voor nerds</span> 🤓</h1>
+        <p class="prompt" id="prompt">&gt; SELECT * FROM frietdag;<span class="cursor"></span></p>
+
+        <div id="melding" class="melding">⏳ Data ophalen uit de frituur…</div>
+
+        <div id="inhoud" class="verborgen">
+            <section class="tegels" id="tegels"></section>
+
+            <div class="raster">
+                <article class="kaart">
+                    <h2>🏆 Top 10 producten</h2>
+                    <p class="sql">SELECT product, SUM(aantal) GROUP BY product ORDER BY 2 DESC LIMIT 10</p>
+                    <div class="hbalken" id="topProducten"></div>
+                </article>
+
+                <article class="kaart">
+                    <h2>🗂️ Per categorie</h2>
+                    <p class="sql">SELECT categorie, SUM(aantal) GROUP BY categorie</p>
+                    <div class="hbalken" id="categorieen"></div>
+                </article>
+
+                <article class="kaart breed">
+                    <h2>⏱️ Wanneer wordt er besteld?</h2>
+                    <p class="sql">SELECT FLOOR(tijd / 10 min), COUNT(bon) GROUP BY 1</p>
+                    <div class="vbalken" id="tijden"></div>
+                    <div class="as" id="tijdenAs"></div>
+                    <div class="legenda"><span><i style="background: var(--sun)"></i>op tijd</span><span><i style="background: var(--hot)"></i>na 10:30 (stiekem, het kan tot 11:00)</span></div>
+                    <p class="noot" id="tijdenNoot"></p>
+                </article>
+
+                <article class="kaart breed">
+                    <h2>📈 Omzet per vrijdag</h2>
+                    <p class="sql">SELECT datum, SUM(totaal) GROUP BY datum ORDER BY datum</p>
+                    <div class="vbalken" id="perVrijdag"></div>
+                    <div class="as" id="perVrijdagAs"></div>
+                    <p class="noot" id="perVrijdagNoot"></p>
+                </article>
+
+                <article class="kaart">
+                    <h2>💞 Beste duo's</h2>
+                    <p class="sql">SELECT a.product, b.product, COUNT(*) FROM bon a JOIN bon b USING (bon) WHERE a &lt; b</p>
+                    <ul class="duos" id="duos"></ul>
+                </article>
+
+                <article class="kaart">
+                    <h2>🧂 Populairste opties</h2>
+                    <p class="sql">SELECT optie, SUM(aantal) WHERE product LIKE '%(%' GROUP BY optie</p>
+                    <div class="hbalken" id="opties"></div>
+                </article>
+
+                <article class="kaart">
+                    <h2>🧾 Hoe groot is een bon?</h2>
+                    <p class="sql">SELECT FLOOR(totaal / 5) * 5, COUNT(bon) GROUP BY 1</p>
+                    <div class="vbalken" id="bonGrootte"></div>
+                    <div class="as" id="bonGrootteAs"></div>
+                    <p class="noot" id="bonGrootteNoot"></p>
+                </article>
+
+                <article class="kaart">
+                    <h2>🫶 Trouwe frietfans</h2>
+                    <p class="sql">SELECT vrijdagen, COUNT(collega) GROUP BY vrijdagen</p>
+                    <div class="vbalken" id="trouw"></div>
+                    <div class="as" id="trouwAs"></div>
+                    <p class="noot" id="trouwNoot"></p>
+                </article>
+
+                <article class="kaart breed">
+                    <h2>🧪 Weetjes</h2>
+                    <p class="sql">-- voor wie het echt wil weten</p>
+                    <div class="weetjes" id="weetjes"></div>
+                    <details>
+                        <summary>Ruwe cijfers per vrijdag</summary>
+                        <div class="tabel-wrap"><table id="tabel"></table></div>
+                    </details>
+                </article>
+            </div>
+            <p class="noot" style="color: var(--muted); font-size: 0.82em; margin-top: 18px;">Zonder namen: je ziet hier nooit wie wat besteld heeft. Geannuleerde bestellingen tellen niet mee.</p>
+        </div>
+    </main>
+    <div class="tip" id="tip" role="tooltip"></div>
+
+    <script>
+        // Hetzelfde adres als in index.html
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQoX7KhN74KetP3D8G9VTF59zRMauPE1V57Z-ThODdUtaSLfyWRhNsGCKBJrXF_rpSBw/exec";
+        const DEADLINE = '10:30';
+        const FRIKANDEL_CM = 20;
+
+        const euro = n => '€ ' + n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const getal = (n, d = 0) => n.toLocaleString('nl-NL', { minimumFractionDigits: d, maximumFractionDigits: d });
+        const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const nlDatum = d => new Date(d + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+        const minuten = t => { const [u, m] = t.split(':').map(Number); return u * 60 + m; };
+        const klok = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+        const mediaan = lijst => { const s = [...lijst].sort((a, b) => a - b); const h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+
+        // "Frites Mayonaise (Zonder zout)" → het menuproduct met de langste passende naam, plus de opties
+        function knipProduct(tekst, menuNamen) {
+            let beste = null;
+            for (const naam of menuNamen) {
+                if ((tekst === naam || tekst.startsWith(naam + ' (')) && (!beste || naam.length > beste.length)) beste = naam;
+            }
+            const basis = beste || tekst.replace(/\s*\(.*\)\s*$/, '');
+            const rest = tekst.slice(basis.length).trim().replace(/^\(|\)$/g, '');
+            return { basis, opties: rest ? rest.split(', ').map(o => o.trim()).filter(Boolean) : [] };
+        }
+
+        function hBalken(id, rijen, opmaak = v => getal(v)) {
+            const max = Math.max(1, ...rijen.map(r => r.waarde));
+            document.getElementById(id).innerHTML = rijen.length ? rijen.map(r => `
+                <div class="hbalk" data-tip="${esc(r.tip || r.naam + ': ' + opmaak(r.waarde))}">
+                    <div class="naam">${r.foto ? `<img src="${esc(r.foto)}" alt="" loading="lazy">` : ''}<span>${esc(r.naam)}</span></div>
+                    <div class="spoor"><div class="vulling" style="width: ${(r.waarde / max * 100).toFixed(1)}%"></div></div>
+                    <div class="waarde">${opmaak(r.waarde)}</div>
+                </div>`).join('') : '<p class="noot">Nog niets om te tellen.</p>';
+        }
+
+        function vBalken(id, rijen, asLabels, markeer) {
+            const max = Math.max(1, ...rijen.map(r => r.waarde));
+            const el = document.getElementById(id);
+            el.innerHTML = rijen.map(r => `
+                <div class="vbalk${r.later ? ' later' : ''}" data-tip="${esc(r.tip)}">
+                    <div class="vulling" style="height: ${(r.waarde / max * 100).toFixed(1)}%"></div>
+                </div>`).join('') +
+                (markeer ? `<div class="markeer" style="left: ${markeer.pos}%"><span>${esc(markeer.tekst)}</span></div>` : '');
+            document.getElementById(id + 'As').innerHTML = asLabels.map(l => `<span>${esc(l)}</span>`).join('');
+        }
+
+        function tegel(label, waarde, onder = '') {
+            return `<div class="tegel"><small>${esc(label)}</small><strong>${esc(waarde)}</strong><span>${esc(onder)}</span></div>`;
+        }
+
+        function teken(data, menu) {
+            const producten = menu.producten || [];
+            const perNaam = new Map(producten.map(p => [p.name, p]));
+            const menuNamen = [...perNaam.keys()];
+            const bonnen = data.bonnen.filter(b => b.r.length);
+            if (!bonnen.length) {
+                document.getElementById('melding').textContent = '🍟 Nog geen bestellingen. Kom na vrijdag terug voor de cijfers!';
+                return;
+            }
+
+            // Alles één keer doorlopen
+            const stuksPerProduct = new Map(), omzetPerProduct = new Map(), perCat = new Map(), perOptie = new Map(), duos = new Map();
+            const perDag = new Map();
+            let stuks = 0, omzet = 0;
+            const bonBedragen = [], bonStuks = [], tijden = [];
+            let grootste = null;
+            for (const bon of bonnen) {
+                const bedrag = bon.r.reduce((s, r) => s + r[2], 0);
+                const aantal = bon.r.reduce((s, r) => s + r[1], 0);
+                stuks += aantal; omzet += bedrag;
+                bonBedragen.push(bedrag); bonStuks.push(aantal);
+                tijden.push(minuten(bon.t));
+                if (!grootste || bedrag > grootste.bedrag) grootste = { bedrag, aantal, datum: bon.d };
+                const dag = perDag.get(bon.d) || { bonnen: 0, stuks: 0, omzet: 0 };
+                dag.bonnen++; dag.stuks += aantal; dag.omzet += bedrag;
+                perDag.set(bon.d, dag);
+
+                const inBon = new Set();
+                for (const [tekst, n, totaal] of bon.r) {
+                    const { basis, opties } = knipProduct(tekst, menuNamen);
+                    stuksPerProduct.set(basis, (stuksPerProduct.get(basis) || 0) + n);
+                    omzetPerProduct.set(basis, (omzetPerProduct.get(basis) || 0) + totaal);
+                    const cat = perNaam.get(basis)?.cat || 'Van het oude menu';
+                    perCat.set(cat, (perCat.get(cat) || 0) + n);
+                    opties.forEach(o => perOptie.set(o, (perOptie.get(o) || 0) + n));
+                    inBon.add(basis);
+                }
+                const lijst = [...inBon].sort();
+                for (let i = 0; i < lijst.length; i++) for (let j = i + 1; j < lijst.length; j++) {
+                    const sleutel = lijst[i] + '\u0000' + lijst[j];
+                    duos.set(sleutel, (duos.get(sleutel) || 0) + 1);
+                }
+            }
+            const dagen = [...perDag.keys()].sort();
+            const gem = omzet / bonnen.length;
+            const sigma = Math.sqrt(bonBedragen.reduce((s, b) => s + (b - gem) ** 2, 0) / bonBedragen.length);
+            const frikandellen = [...stuksPerProduct].filter(([n]) => /frikandel/i.test(n) && !/broodje/i.test(n)).reduce((s, [, n]) => s + n, 0);
+            const ooitBesteld = [...stuksPerProduct.keys()].filter(n => perNaam.has(n)).length;
+
+            document.getElementById('prompt').innerHTML =
+                `&gt; SELECT * FROM frietdag; <span style="color: var(--muted)">-- ${getal(bonnen.length)} rows, bijgewerkt ${esc(String(data.bijgewerkt).replace('T', ' '))}</span><span class="cursor"></span>`;
+
+            document.getElementById('tegels').innerHTML = [
+                tegel('Vrijdagen', getal(dagen.length), `sinds ${nlDatum(dagen[0])}`),
+                tegel('Bonnen', getal(bonnen.length), `${getal(bonnen.length / dagen.length, 1)} per vrijdag`),
+                tegel('Stuks', getal(stuks), `${getal(stuks / bonnen.length, 1)} per bon`),
+                tegel('Omzet', euro(omzet), `${euro(omzet / dagen.length)} per vrijdag`),
+                tegel('Gemiddelde bon', euro(gem), `mediaan ${euro(mediaan(bonBedragen))} · σ ${euro(sigma)}`),
+                tegel('Collega\'s', getal(data.collegas), 'ooit iets besteld'),
+                tegel('Menudekking', `${ooitBesteld}/${producten.length}`, `${getal(ooitBesteld / Math.max(1, producten.length) * 100, 1)}% ooit besteld`),
+                tegel('Frikandel-meter', `${getal(frikandellen * FRIKANDEL_CM / 100, 1)} m`, `${getal(frikandellen)} frikandellen × ${FRIKANDEL_CM} cm`)
+            ].join('');
+
+            // Top 10 producten
+            hBalken('topProducten', [...stuksPerProduct].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([naam, n]) => ({
+                naam, waarde: n, foto: perNaam.get(naam)?.foto,
+                tip: `${naam}\n${getal(n)} stuks · ${euro(omzetPerProduct.get(naam))} omzet`
+            })));
+
+            // Categorieën
+            hBalken('categorieen', [...perCat].sort((a, b) => b[1] - a[1]).map(([naam, n]) => ({
+                naam, waarde: n, tip: `${naam}\n${getal(n)} stuks · ${getal(n / stuks * 100, 1)}%`
+            })), v => getal(v / stuks * 100, 0) + '%');
+
+            // Bestelmoment per 10 minuten
+            const STAP = 10;
+            const deadline = minuten(DEADLINE);
+            const van = Math.floor(Math.min(...tijden, deadline - 60) / STAP) * STAP;
+            const tot = Math.max(Math.floor(Math.max(...tijden) / STAP) * STAP, deadline);
+            const vakken = [];
+            for (let m = van; m <= tot; m += STAP) vakken.push({ m, n: 0 });
+            tijden.forEach(t => vakken[Math.floor((t - van) / STAP)].n++);
+            vBalken('tijden', vakken.map(v => ({
+                waarde: v.n, later: v.m >= deadline,
+                tip: `${klok(v.m)}–${klok(v.m + STAP - 1)}\n${getal(v.n)} bonnen`
+            })), [klok(van), klok(van + Math.round((tot - van) / 2 / STAP) * STAP), klok(tot)],
+                { pos: (deadline - van) / (tot - van + STAP) * 100, tekst: 'deadline ' + DEADLINE });
+            const laat = tijden.filter(t => t >= deadline).length;
+            const drukst = vakken.reduce((a, b) => b.n > a.n ? b : a);
+            document.getElementById('tijdenNoot').innerHTML =
+                `Vroegste bon ooit: <b>${klok(Math.min(...tijden))}</b> · mediaan: <b>${klok(Math.round(mediaan(tijden)))}</b> · ` +
+                `drukste 10 minuten: <b>${klok(drukst.m)}</b> · na de deadline: <b>${getal(laat)}</b> (${getal(laat / tijden.length * 100, 1)}%)`;
+
+            // Omzet per vrijdag
+            vBalken('perVrijdag', dagen.map(d => {
+                const x = perDag.get(d);
+                return { waarde: x.omzet, tip: `${nlDatum(d)}\n${euro(x.omzet)} · ${x.bonnen} bonnen · ${data.bestellers[d] || '?'} collega's · ${x.stuks} stuks` };
+            }), dagen.length > 1 ? [nlDatum(dagen[0]), nlDatum(dagen[dagen.length - 1])] : [nlDatum(dagen[0])]);
+            const record = dagen.reduce((a, d) => perDag.get(d).omzet > perDag.get(a).omzet ? d : a);
+            document.getElementById('perVrijdagNoot').innerHTML =
+                `Recordvrijdag: <b>${nlDatum(record)}</b> met <b>${euro(perDag.get(record).omzet)}</b> · meeste collega's op één dag: <b>${Math.max(0, ...Object.values(data.bestellers))}</b>`;
+
+            // Duo's
+            const topDuos = [...duos].sort((a, b) => b[1] - a[1]).slice(0, 6);
+            document.getElementById('duos').innerHTML = topDuos.length
+                ? topDuos.map(([s, n]) => { const [a, b] = s.split('\u0000'); return `<li><span>${esc(a)} <span style="color: var(--hot)">+</span> ${esc(b)}</span><b>${n}×</b></li>`; }).join('')
+                : '<li>Nog geen bon met twee verschillende producten.</li>';
+
+            // Opties
+            hBalken('opties', [...perOptie].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([naam, n]) => ({ naam, waarde: n })));
+
+            // Bongrootte per € 5
+            const maxBak = Math.min(Math.floor(Math.max(...bonBedragen) / 5), 12);
+            const bakken = Array.from({ length: maxBak + 1 }, () => 0);
+            bonBedragen.forEach(b => bakken[Math.min(Math.floor(b / 5), maxBak)]++);
+            vBalken('bonGrootte', bakken.map((n, i) => ({
+                waarde: n, tip: `${i === maxBak && maxBak === 12 ? '€ 60 of meer' : `€ ${i * 5}–${i * 5 + 5}`}\n${getal(n)} bonnen`
+            })), ['€ 0', `€ ${maxBak * 5}${maxBak === 12 ? '+' : ''}`]);
+            document.getElementById('bonGrootteNoot').innerHTML =
+                `Grootste bon: <b>${euro(grootste.bedrag)}</b> (${grootste.aantal} stuks, ${nlDatum(grootste.datum)}) · ` +
+                `kleinste: <b>${euro(Math.min(...bonBedragen))}</b>`;
+
+            // Trouw: hoeveel collega's bestelden op N vrijdagen
+            const maxTrouw = Math.max(1, ...data.trouw);
+            const trouwBakken = Array.from({ length: maxTrouw }, (_, i) => data.trouw.filter(n => n === i + 1).length);
+            vBalken('trouw', trouwBakken.map((n, i) => ({ waarde: n, tip: `${i + 1} vrijdag${i ? 'en' : ''}\n${getal(n)} collega's` })),
+                maxTrouw > 1 ? ['1×', `${maxTrouw}×`] : ['1×']);
+            const altijd = data.trouw.filter(n => n === dagen.length).length;
+            document.getElementById('trouwNoot').innerHTML =
+                `Stamgasten die er <b>elke</b> vrijdag bij waren: <b>${altijd}</b> · gemiddeld <b>${getal(data.trouw.reduce((s, n) => s + n, 0) / Math.max(1, data.trouw.length), 1)}</b> vrijdagen per collega`;
+
+            // Weetjes
+            const kansen = [...stuksPerProduct.values()].map(n => n / stuks);
+            const entropie = -kansen.reduce((s, p) => s + p * Math.log2(p), 0);
+            const gesorteerd = [...stuksPerProduct.values()].sort((a, b) => b - a);
+            let opgeteld = 0, voorHelft = 0;
+            for (const n of gesorteerd) { opgeteld += n; voorHelft++; if (opgeteld >= stuks / 2) break; }
+            const duurste = [...omzetPerProduct].map(([naam, e]) => [naam, e / stuksPerProduct.get(naam)]).sort((a, b) => b[1] - a[1])[0];
+            const sauzen = perCat.get('Sauzen') || 0;
+            const weetjes = [
+                [`${getal(entropie, 2)} bits`, `Shannon-entropie van de menukeuze. Hoger = meer variatie; ${getal(Math.log2(Math.max(2, producten.length)), 2)} bits als iedereen alles even vaak zou kiezen.`],
+                [`${voorHelft} producten`, `zijn samen goed voor de helft van alles wat er ooit besteld is (Pareto lacht).`],
+                [euro(duurste[1]), `gemiddelde stuksprijs van het duurste wat er besteld wordt: ${duurste[0]}.`],
+                [`${getal(sauzen / Math.max(1, bonnen.length), 2)}`, `losse sauzen per bon. ${sauzen ? 'Er wordt gedipt.' : 'Iedereen eet het droog?!'}`],
+                [euro(omzet / Math.max(1, stuks)), `gemiddelde prijs per stuk over alles heen.`],
+                [`${getal(Math.round((new Date(dagen[dagen.length - 1]) - new Date(dagen[0])) / 864e5 / 7) + 1)} weken`, `frietgeschiedenis in deze database, van ${nlDatum(dagen[0])} tot ${nlDatum(dagen[dagen.length - 1])}.`]
+            ];
+            document.getElementById('weetjes').innerHTML = weetjes.map(([groot, uitleg]) =>
+                `<div class="weetje"><strong>${esc(groot)}</strong>${esc(uitleg)}</div>`).join('');
+
+            document.getElementById('tabel').innerHTML =
+                '<thead><tr><th>Vrijdag</th><th>Bonnen</th><th>Collega\'s</th><th>Stuks</th><th>Omzet</th><th>μ bon</th></tr></thead><tbody>' +
+                dagen.slice().reverse().map(d => {
+                    const x = perDag.get(d);
+                    return `<tr><td>${esc(d)}</td><td>${x.bonnen}</td><td>${data.bestellers[d] ?? '?'}</td><td>${x.stuks}</td><td>${euro(x.omzet)}</td><td>${euro(x.omzet / x.bonnen)}</td></tr>`;
+                }).join('') + '</tbody>';
+
+            document.getElementById('melding').classList.add('verborgen');
+            document.getElementById('inhoud').classList.remove('verborgen');
+        }
+
+        // Eén tooltip voor alle balken; op een telefoon met een tik
+        const tip = document.getElementById('tip');
+        function toonTip(e) {
+            const doel = e.target.closest('[data-tip]');
+            if (!doel) { tip.style.display = 'none'; return; }
+            tip.textContent = doel.dataset.tip;
+            tip.style.display = 'block';
+            const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+            const y = e.clientY - tip.offsetHeight - 12;
+            tip.style.left = Math.max(8, x) + 'px';
+            tip.style.top = (y < 8 ? e.clientY + 18 : y) + 'px';
+        }
+        document.addEventListener('pointermove', toonTip);
+        document.addEventListener('pointerdown', toonTip);
+        document.addEventListener('scroll', () => { tip.style.display = 'none'; }, { passive: true });
+
+        (async function laad() {
+            try {
+                const [data, menu] = await Promise.all([
+                    fetch(GOOGLE_SCRIPT_URL + '?actie=stats').then(r => r.json()),
+                    fetch('menu.json').then(r => r.json()).catch(() => ({ producten: [] }))
+                ]);
+                if (!data.ok || !Array.isArray(data.bonnen)) throw new Error(data.error || 'geen stats');
+                teken(data, menu);
+            } catch (err) {
+                document.getElementById('melding').textContent = '😵 De stats konden niet geladen worden. Probeer het straks nog eens.';
+            }
+        })();
+    </script>
+</body>
+</html>

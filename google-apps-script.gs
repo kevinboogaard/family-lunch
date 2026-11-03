@@ -942,12 +942,64 @@ function betaalStatus_(body) {
 }
 
 /**
- * Alleen de QR-code is openbaar (die moet iedereen kunnen zien om te betalen), plus of de bestellijst van vandaag dicht is.
+ * Stats voor nerds (stats.html): alle bonnen, maar zonder naam en sleutel. Per bon alleen dag, tijd en regels;
+ * van de namen alleen tellingen (hoeveel collega's, en hoe vaak ieder besteld heeft), nooit wie.
+ * Vijf minuten in de cache, zodat een volle pagina met nerds de Sheet niet steeds leest.
+ */
+function statsVoorNerds_() {
+  const cache = CacheService.getScriptCache();
+  const bewaard = cache.get('nerdStats');
+  if (bewaard) return JSON.parse(bewaard);
+
+  const waarden = getSheet_().getDataRange().getValues();
+  const bonnen = {};
+  const volgorde = [];
+  const perNaam = {};
+  const perDag = {};
+  for (let i = 1; i < waarden.length; i++) {
+    const rij = waarden[i];
+    const id = String(rij[KOLOM.ID]);
+    const datum = celNaarTekst_(rij[KOLOM.DATUM], 'yyyy-MM-dd');
+    if (!id || !datumGeldig_(datum)) continue;
+    const naam = String(rij[KOLOM.NAAM]).trim().toLowerCase();
+    if (!bonnen[id]) {
+      bonnen[id] = { d: datum, t: celNaarTekst_(rij[2], 'HH:mm:ss').slice(0, 5), r: [] };
+      volgorde.push(id);
+    }
+    bonnen[id].r.push([String(rij[4]), Number(rij[5]) || 0, afronden_(Number(rij[7]) || 0)]);
+    if (naam) {
+      (perNaam[naam] = perNaam[naam] || {})[datum] = true;
+      (perDag[datum] = perDag[datum] || {})[naam] = true;
+    }
+  }
+
+  const bestellers = {};
+  Object.keys(perDag).forEach(function (d) { bestellers[d] = Object.keys(perDag[d]).length; });
+  // Hoe trouw: per collega het aantal dagen dat hij besteld heeft (alleen de getallen, gesorteerd)
+  const trouw = Object.keys(perNaam).map(function (n) { return Object.keys(perNaam[n]).length; }).sort(function (a, b) { return b - a; });
+
+  const uit = {
+    ok: true,
+    bijgewerkt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm"),
+    bonnen: volgorde.map(function (id) { return bonnen[id]; }),
+    bestellers: bestellers,
+    collegas: trouw.length,
+    trouw: trouw
+  };
+  const tekst = JSON.stringify(uit);
+  if (tekst.length < 90000) cache.put('nerdStats', tekst, 300);
+  return uit;
+}
+
+/**
+ * Alleen de QR-code is openbaar (die moet iedereen kunnen zien om te betalen), plus of de bestellijst van vandaag dicht is,
+ * de highscores en de stats zonder namen.
  * De rest gaat via POST met beheercode.
  */
 function doGet(e) {
   try {
     if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, scores: topHighscores_() });
+    if (e && e.parameter && e.parameter.actie === 'stats') return json_(statsVoorNerds_());
     if (e && e.parameter && e.parameter.actie === 'qr') {
       const uit = leesQr_();
       const st = bestelStatus_();

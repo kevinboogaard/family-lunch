@@ -133,6 +133,7 @@
             cursor: pointer;
             transition: background 0.2s, transform 0.2s;
         }
+        a.glas-knop { text-decoration: none; font-family: inherit; }
         .glas-knop:hover { background: var(--panel-hover); transform: translateY(-2px); }
         .verborgen { display: none !important; }
         .topbar .acties { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -1152,6 +1153,7 @@
         <div class="acties">
             <button class="glas-knop verborgen" id="betaalKnop" onclick="openBetaalModal()">💶 Afrekenen</button>
             <button class="glas-knop verborgen" id="mijnKnop" onclick="openMijnModal()">🧾 Mijn bestelling</button>
+            <a class="glas-knop" href="stats.html" aria-label="Stats voor nerds">📊 <span class="knop-tekst-lang">Stats</span></a>
             <button class="glas-knop" id="spelKnop" onclick="openSpel()" aria-label="Spelletje voor tijdens het wachten">🎮 <span class="knop-tekst-lang">Spelletje</span></button>
         </div>
     </div>

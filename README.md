@@ -64,6 +64,18 @@ je Google Sheet; een rij weghalen daar haalt hem ook uit de lijst.
 - Dit werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
   Tot dan werkt het spel gewoon, maar zonder naamveld en top 5.
 
+## Stats voor nerds
+
+Via de knop **📊 Stats** in de app (of `stats.html`) ziet iedereen cijfers over alle bestellingen tot nu toe:
+top 10 producten, categorieën, hoe laat er besteld wordt (en hoeveel er stiekem na 10:30 binnenkomt), omzet per vrijdag,
+de beste duo's op één bon, populairste opties, de grootte van een bon, hoe trouw collega's bestellen en een paar
+weetjes (entropie van de menukeuze, de frikandel-meter).
+
+- **Zonder namen**: het script geeft per bon alleen de dag, de tijd en wat erop staat. Van de namen alleen tellingen
+  (hoeveel collega's, en hoe vaak ieder besteld heeft), nooit wie.
+- De cijfers staan 5 minuten in de cache van het script, dus een nieuwe bestelling telt pas daarna mee.
+- Werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
+
 ## Hetzelfde als vorige keer
 
 Heeft iemand op dit apparaat al eens besteld, dan staat bovenin (en in het lege mandje) de knop
@@ -272,7 +284,8 @@ meer getoond.
 - De knop **💶 Afrekenen** staat er alleen als er op dat apparaat een bestelling openstaat. Bestelde iemand op een ander
   apparaat of is de browser opgeruimd? Dan betaalt hij op het apparaat waarmee hij bestelde, of je stuurt hem zelf de
   QR en het bedrag (je ziet het op `admin.html`).
-- Alleen de QR-code is openbaar, want die moet iedereen kunnen zien om te betalen.
+- Alleen de QR-code is openbaar, want die moet iedereen kunnen zien om te betalen. Verder alleen de
+  **Stats voor nerds**: cijfers over alle bonnen, zonder namen.
 - Elke bestelling krijgt een **geheime sleutel** die alleen op het apparaat van de besteller staat (en in de kolom
   **Sleutel** van het tabblad Bestellingen). Alleen met die sleutel kun je **Ik heb betaald** melden, je betaalstatus
   zien en je bestelling annuleren. Iemand anders kan dus niet voor jou "betaald" melden. Bestellingen van voor deze
