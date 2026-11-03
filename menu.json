@@ -1,6 +1,6 @@
 {
- "opgehaald": "2026-10-30T07:13:40.212Z",
- "geldigVanaf": "2026-10-26T12:55:02.7344321",
+ "opgehaald": "2026-11-03T12:27:07.172Z",
+ "geldigVanaf": "2026-11-03T12:25:49.7125732",
  "bron": "e-food.nl",
  "producten": [
   {
@@ -582,8 +582,8 @@
    "extraSets": [
     56305
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg"
   },
   {
    "id": 515709,
@@ -598,8 +598,8 @@
    "extraSets": [
     56305
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg"
   },
   {
    "id": 515710,
@@ -614,8 +614,8 @@
    "extraSets": [
     56305
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg"
   },
   {
    "id": 515711,
@@ -630,8 +630,8 @@
    "extraSets": [
     56305
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-0b98dc24-7db1-4616-a46f-928dc39e3a00.jpg"
   },
   {
    "id": 515214,
@@ -692,8 +692,24 @@
    "extraSets": [
     84919
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-5107d32e-9eb6-4d20-ab0a-1a734f09af62.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-5107d32e-9eb6-4d20-ab0a-1a734f09af62.jpg"
+  },
+  {
+   "id": 515226,
+   "menuItemId": 4509101,
+   "cat": "Frites",
+   "sub": "Fritesspecials",
+   "name": "Frites Pulled Chicken",
+   "desc": "",
+   "price": 10.25,
+   "statiegeld": 0,
+   "vragenSetID": null,
+   "extraSets": [
+    84919
+   ],
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg"
   },
   {
    "id": 515218,
@@ -951,13 +967,13 @@
    "cat": "Snacks",
    "sub": "Snacks",
    "name": "Loempia Speciaal",
-   "desc": "",
+   "desc": "met een gebakken ei en pindasaus",
    "price": 7.5,
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-694b7926-0144-40aa-81c4-d63fb31db9f3.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-694b7926-0144-40aa-81c4-d63fb31db9f3.jpg"
   },
   {
    "id": 515256,
@@ -1102,8 +1118,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635951058605117458.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635951058605117458.jpg"
   },
   {
    "id": 587766,
@@ -1116,8 +1132,8 @@
    "statiegeld": 0,
    "vragenSetID": 107484,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-61dc3c8f-97bb-47d2-bf06-0e6b0ed39bda.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-61dc3c8f-97bb-47d2-bf06-0e6b0ed39bda.jpg"
   },
   {
    "id": 515277,
@@ -1703,8 +1719,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-96c8b3b2-3e82-48a5-8e52-0e01137a5600.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-96c8b3b2-3e82-48a5-8e52-0e01137a5600.jpg"
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-fcaa2184-d367-4247-9fd5-cd1874ba1783.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-fcaa2184-d367-4247-9fd5-cd1874ba1783.jpg"
   },
   {
    "id": 515323,
@@ -1949,8 +1965,8 @@
    "extraSets": [
     56308
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-a29c4caa-c7ee-47b9-b7a3-a203f2b61dcd.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-a29c4caa-c7ee-47b9-b7a3-a203f2b61dcd.jpg"
   },
   {
    "id": 515445,
@@ -1965,8 +1981,8 @@
    "extraSets": [
     56308
    ],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-a29c4caa-c7ee-47b9-b7a3-a203f2b61dcd.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-a29c4caa-c7ee-47b9-b7a3-a203f2b61dcd.jpg"
   },
   {
    "id": 602948,
@@ -2220,8 +2236,8 @@
    "extraSets": [
     56310
    ],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-637920294777831943.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637920294777831943.jpg"
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-636028707119309843.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-636028707119309843.jpg"
   },
   {
    "id": 515509,
@@ -2236,8 +2252,8 @@
    "extraSets": [
     56312
    ],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-635967381056807423.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635967381056807423.jpg"
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-7e488bb8-3be1-4e72-a57f-d61748ef05d7.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-7e488bb8-3be1-4e72-a57f-d61748ef05d7.jpg"
   },
   {
    "id": 515508,
@@ -2332,8 +2348,8 @@
    "extraSets": [
     56312
    ],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-637891861592726104.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637891861592726104.jpg"
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-14940d3a-0783-4687-89ac-419414be6e93.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-14940d3a-0783-4687-89ac-419414be6e93.jpg"
   },
   {
    "id": 660372,
@@ -3110,8 +3126,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-a4714e98-7370-4136-8349-d0e5b320abab.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-a4714e98-7370-4136-8349-d0e5b320abab.jpg"
   },
   {
    "id": 516310,
@@ -3124,8 +3140,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-ba63f486-4c39-4a36-a0ce-cf311a14e4ab.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-ba63f486-4c39-4a36-a0ce-cf311a14e4ab.jpg"
   },
   {
    "id": 515754,
@@ -3357,8 +3373,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-638791043271552280.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638791043271552280.jpg"
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-d6daafcc-54ac-4f6c-a531-41ff87177001.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-d6daafcc-54ac-4f6c-a531-41ff87177001.jpg"
   },
   {
    "id": 682768,
@@ -3427,8 +3443,8 @@
    "statiegeld": 0.15,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637841364964443429.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637841364964443429.jpg"
   },
   {
    "id": 516647,
@@ -3441,8 +3457,8 @@
    "statiegeld": 0.15,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637841364420454274.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637841364420454274.jpg"
   },
   {
    "id": 516648,
@@ -3455,8 +3471,8 @@
    "statiegeld": 0.15,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-637841368891873646.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-637841368891873646.jpg"
   },
   {
    "id": 516651,
@@ -3539,8 +3555,8 @@
    "statiegeld": 0.15,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-635811063105015703.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-635811063105015703.jpg"
   },
   {
    "id": 515739,
@@ -3861,8 +3877,8 @@
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
-   "foto": null,
-   "fotoGroot": null
+   "foto": "https://ntf.blob.core.windows.net/pictures/5-cd33edf8-a26a-40a5-af9c-83b41ac0b95b.jpg",
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-cd33edf8-a26a-40a5-af9c-83b41ac0b95b.jpg"
   },
   {
    "id": 515267,
