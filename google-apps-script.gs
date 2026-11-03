@@ -589,8 +589,8 @@ function stuurBevestiging_(datum, naam) {
  * Hoort deze sleutel bij een bestelling van deze naam op deze dag? Bestellingen van voor de sleutels (lege kolom)
  * blijven werken zonder sleutel, anders zou "Ik heb betaald" voor oude bestellingen stoppen.
  */
-function sleutelKlopt_(datum, naam, sleutel) {
-  const waarden = getSheet_().getDataRange().getValues();
+function sleutelKlopt_(datum, naam, sleutel, waarden) {
+  waarden = waarden || getSheet_().getDataRange().getValues(); // al gelezen? Dan niet nog eens (scheelt tijd)
   const sleutelNaam = String(naam).toLowerCase();
   let heeftSleutels = false;
   for (let i = 1; i < waarden.length; i++) {
@@ -936,7 +936,7 @@ function betaalStatus_(body) {
   const extra = ids ? { bestaand: ids.filter(function (id) { return rijen.some(function (rij) { return String(rij[KOLOM.ID]) === id; }); }) } : {};
   if (!rijen.length) return Object.assign({ ok: true, status: null, afgesloten: afgesloten, verwijderd: true }, extra);
 
-  if (!sleutelKlopt_(datum, naam, body.sleutel)) return Object.assign({ ok: true, status: null, afgesloten: afgesloten }, extra);
+  if (!sleutelKlopt_(datum, naam, body.sleutel, waarden)) return Object.assign({ ok: true, status: null, afgesloten: afgesloten }, extra);
   const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
   return Object.assign({ ok: true, status: huidig ? huidig.Status : 'open', afgesloten: afgesloten }, extra);
 }

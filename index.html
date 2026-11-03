@@ -2528,7 +2528,7 @@
         async function controleerAfgesloten() {
             const open = mijnDagen().slice(0, 5);
             if (!GOOGLE_SCRIPT_URL || !open.length) return;
-            await Promise.all(open.map(g => haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID))));
+            await Promise.all(open.map(haalStatusVers));
             toonMijnKnop();
         }
 
@@ -2664,10 +2664,38 @@
                     if (weg.length) verwijderLokaal(datum, naam, weg);
                 }
                 if (r.ok && r.afgesloten) { markeerAfgesloten(datum); return 'afgesloten'; }
+                if (r.ok && r.status) onthoudStatus(datum, naam, r.status);
                 return r.ok ? r.status : null;
             } catch (err) {
                 return null;
             }
+        }
+
+        // Het script is traag (een paar seconden). Daarom: de laatst bekende stand meteen tonen, en dezelfde vraag
+        // binnen een minuut niet opnieuw stellen. Bij het openen van de app wordt de stand al opgehaald (controleerAfgesloten),
+        // zodat hij bij "Afrekenen" meestal al binnen is.
+        const STATUS_VERS_MS = 60 * 1000;
+        const statusVragen = new Map(); // datum|naam -> { tijd, belofte }
+        const statusSleutel = (datum, naam) => datum + '|' + naam.toLowerCase();
+        function leesBekendeStatus() { try { return JSON.parse(localStorage.getItem('familyBetaalStatus') || '{}'); } catch (e) { return {}; } }
+        function bekendeStatus(datum, naam) { return leesBekendeStatus()[statusSleutel(datum, naam)] || null; }
+        function onthoudStatus(datum, naam, status) {
+            const lijst = leesBekendeStatus();
+            lijst[statusSleutel(datum, naam)] = status;
+            // Alleen de nieuwste 20 bewaren
+            const kort = Object.fromEntries(Object.entries(lijst).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 20));
+            try { localStorage.setItem('familyBetaalStatus', JSON.stringify(kort)); } catch (e) { /* dan alleen voor nu */ }
+            statusVragen.set(statusSleutel(datum, naam), { tijd: Date.now(), belofte: Promise.resolve(status) });
+        }
+        function haalStatusVers(g) {
+            const sleutel = statusSleutel(g.datum, g.naam);
+            const eerder = statusVragen.get(sleutel);
+            if (eerder && Date.now() - eerder.tijd < STATUS_VERS_MS) return eerder.belofte;
+            const belofte = haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
+            statusVragen.set(sleutel, { tijd: Date.now(), belofte });
+            // Mislukt (geen verbinding)? Dan de volgende keer gewoon opnieuw vragen
+            belofte.then(s => { if (s === null && statusVragen.get(sleutel)?.belofte === belofte) statusVragen.delete(sleutel); });
+            return belofte;
         }
 
         async function openMijnModal() {
@@ -2696,9 +2724,14 @@
             });
             document.getElementById('mijnAfrekenen').classList.toggle('verborgen', !betaling || !groepen.length);
             document.getElementById('mijnModal').style.display = 'flex';
-            // De stand per bestelling komt er daarna bij
+            // De laatst bekende stand meteen, de actuele komt er daarna bij (alle tegelijk opgevraagd)
             for (const [g, badge] of badges) {
-                const status = await haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
+                const bekend = bekendeStatus(g.datum, g.naam);
+                if (STATUS_TEKST[bekend]) { badge.className = 'status-badge ' + bekend; badge.textContent = STATUS_TEKST[bekend]; }
+            }
+            const standen = badges.map(([g]) => haalStatusVers(g));
+            for (const [i, [g, badge]] of badges.entries()) {
+                const status = await standen[i];
                 if (status === 'afgesloten' || status === 'verwijderd') g.kaart.remove();
                 else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
                 // Vandaag, nog niet betaald en bestellen nog open: aanpassen of annuleren
@@ -2733,6 +2766,7 @@
                 toast(err.afgewezen ? '🚫 ' + err.message : '😬 Annuleren mislukt, probeer het nog eens. (' + err.message + ')', 'fout');
                 return;
             }
+            statusVragen.delete(statusSleutel(g.datum, g.naam));
             const weg = new Set(g.bestellingen.map(b => b.bestelID));
             try { localStorage.setItem('familyMijnBestellingen', JSON.stringify(leesMijn().filter(b => !weg.has(b.bestelID)))); } catch (e) { /* lukt het niet, dan ziet hij hem nog tot het script zegt dat hij weg is */ }
             sluitMijnModal();
@@ -2869,7 +2903,18 @@
             vak.innerHTML = `${euro(g.totaal)}<small>${g.stuks} ${g.stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dagTekst(g.datum))} · ${escapeHtml(g.naam)}</small>`;
             betaalKopie = { bedrag: g.totaal.toFixed(2).replace('.', ','), omschrijving: `Lunch ${g.datum.slice(8, 10)}-${g.datum.slice(5, 7)} ${g.naam}` };
             document.getElementById('betaalKopieer').classList.remove('verborgen');
-            const status = await haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
+            // De laatst bekende stand meteen tonen; het script bevestigt of verbetert hem daarna
+            const bekend = bekendeStatus(g.datum, g.naam);
+            if (STATUS_TEKST[bekend]) {
+                betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: true, status: bekend };
+                toonBetaalStatus();
+            } else if (GOOGLE_SCRIPT_URL) {
+                const wacht = document.createElement('p');
+                wacht.className = 'betaal-status-tekst';
+                wacht.textContent = '⏳ Even kijken of je al betaald hebt…';
+                document.getElementById('betaalStatus').replaceChildren(wacht);
+            }
+            const status = await haalStatusVers(g);
             if (String(Number(document.getElementById('betaalKeuze').value) || 0) !== gekozen) return; // intussen een andere gekozen
             if (status === 'afgesloten' || status === 'verwijderd') {
                 vak.innerHTML = status === 'afgesloten' ? '<small>🔒 Deze bestelling is afgesloten.</small>' : '<small>🗑️ Deze bestelling is weggehaald door de beheerder.</small>';
@@ -2877,7 +2922,9 @@
                 toonMijnKnop();
                 return;
             }
-            betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: status !== null, status: status || 'open' };
+            // Geen antwoord (geen verbinding)? Dan blijft de laatst bekende stand staan
+            const stand = status || bekend;
+            betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: !!stand, status: stand || 'open' };
             toonBetaalStatus();
         }
 
@@ -2912,6 +2959,7 @@
             try {
                 const r = await postMetCode({ actie, naam: c.naam, datum: c.datum, sleutel: c.sleutel });
                 c.status = r.status;
+                onthoudStatus(c.datum, c.naam, r.status);
                 toonBetaalStatus();
                 toast(r.status === 'zegt' ? '🙏 Bedankt! Je betaling wordt gecontroleerd.' : r.status === 'bevestigd' ? '✅ Je betaling was al bevestigd.' : 'Oké, je betaling staat weer op open.', r.status === 'open' ? '' : 'succes');
             } catch (err) {
@@ -3088,6 +3136,9 @@
             feest();
             toast(`🎉 Bedankt ${naam}! Je bestelling is geplaatst.`, 'succes');
             bewaarMijn(naam, nieuweBestellingen, info);
+            // Net besteld: de stand is "open", tenzij je vandaag al eerder betaald meldde. Dan meteen tonen zonder te wachten.
+            statusVragen.delete(statusSleutel(vandaagISO(), naam));
+            if (!bekendeStatus(vandaagISO(), naam)) onthoudStatus(vandaagISO(), naam, 'open');
             // Is er een QR-code ingesteld, dan na het feestje meteen de gelegenheid om af te rekenen
             if (betaling) setTimeout(() => openBetaalModal({ naam, datum: vandaagISO() }), 1800);
             cart = [];
