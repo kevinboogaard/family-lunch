@@ -1,5 +1,5 @@
 {
- "opgehaald": "2026-11-03T12:27:07.172Z",
+ "opgehaald": "2026-11-03T13:14:38.782Z",
  "geldigVanaf": "2026-11-03T12:25:49.7125732",
  "bron": "e-food.nl",
  "producten": [
@@ -693,23 +693,8 @@
     84919
    ],
    "foto": "https://ntf.blob.core.windows.net/pictures/5-5107d32e-9eb6-4d20-ab0a-1a734f09af62.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-5107d32e-9eb6-4d20-ab0a-1a734f09af62.jpg"
-  },
-  {
-   "id": 515226,
-   "menuItemId": 4509101,
-   "cat": "Frites",
-   "sub": "Fritesspecials",
-   "name": "Frites Pulled Chicken",
-   "desc": "",
-   "price": 10.25,
-   "statiegeld": 0,
-   "vragenSetID": null,
-   "extraSets": [
-    84919
-   ],
-   "foto": "https://ntf.blob.core.windows.net/pictures/5-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg",
-   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-6bf8bfb4-295d-4653-bc50-1a3d8cc9dbae.jpg"
+   "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-5107d32e-9eb6-4d20-ab0a-1a734f09af62.jpg",
+   "toegevoegd": "2026-11-03"
   },
   {
    "id": 515218,

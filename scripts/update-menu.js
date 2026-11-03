@@ -55,7 +55,9 @@ function vergelijk(oud, nieuw) {
     else if (p.price > o.price) omhoog.push({ p, van: o.price });
     else if (p.price < o.price) omlaag.push({ p, van: o.price });
   }
-  for (const [id, o] of oudP) if (!nieuwP.has(id)) verdwenen.push(o);
+  // Een oudere versie die plaatsmaakte voor een nieuwe met dezelfde naam is niet echt verdwenen
+  const nieuweNamen = new Set([...nieuwP.values()].map(p => p.name.toLowerCase()));
+  for (const [id, o] of oudP) if (!nieuwP.has(id) && !nieuweNamen.has(o.name.toLowerCase())) verdwenen.push(o);
 
   const oudO = optiePrijzen(oud), nieuwO = optiePrijzen(nieuw);
   const opties = [];
@@ -133,6 +135,17 @@ async function main() {
     }
   }
 
+  // Zet de cafetaria een vernieuwd product naast het oude (zelfde naam, zelfde categorie, ander product), dan alleen
+  // het nieuwste tonen (hoogste ID), met zijn eigen foto. Eén product in twee categorieën (zelfde ID) blijft gewoon staan.
+  const nieuwste = new Map();
+  for (const p of producten) {
+    const sleutel = p.cat + '|' + p.name.toLowerCase();
+    if (!nieuwste.has(sleutel) || p.id > nieuwste.get(sleutel)) nieuwste.set(sleutel, p.id);
+  }
+  const dubbel = producten.filter(p => nieuwste.get(p.cat + '|' + p.name.toLowerCase()) !== p.id);
+  if (dubbel.length) console.log(`Dubbel (oudere versie weggelaten): ${dubbel.map(p => `${p.name} (${p.id})`).join(', ')}`);
+  producten.splice(0, producten.length, ...producten.filter(p => !dubbel.includes(p)));
+
   // Extra's (aanvinkbaar, bijv. "Zonder zout" of "Met bestek"); alleen sets die een product gebruikt
   const extras = {};
   for (const id of new Set(producten.flatMap(p => p.extraSets))) {
@@ -163,10 +176,19 @@ async function main() {
   // Veiligheidscheck: liever het oude menu houden dan een leeg of kapot menu publiceren
   if (producten.length < 50) throw new Error(`Maar ${producten.length} producten gevonden, menu niet bijgewerkt`);
 
+  // Wanneer kwam een product op het menu? De app zet er een week lang "Nieuw" bij.
+  // Een product dat al op het vorige menu stond houdt zijn datum; een product dat er niet op stond is van vandaag.
+  // (Producten van voor deze functie hebben geen datum en tellen als oud.)
+  const oud = fs.existsSync(OUT_FILE) ? JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')) : null;
+  const vandaag = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+  const oudeDatum = new Map((oud ? oud.producten : []).map(p => [p.id, p.toegevoegd || null]));
+  producten.forEach(p => {
+    const datum = oudeDatum.has(p.id) ? oudeDatum.get(p.id) : (oud ? vandaag : null);
+    if (datum) p.toegevoegd = datum;
+  });
+
   const menu = { opgehaald: new Date().toISOString(), geldigVanaf: a.validFrom, bron: 'e-food.nl', producten, vragen, extras };
-  if (fs.existsSync(OUT_FILE)) {
-    schrijfWijzigingen(JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')), menu);
-  }
+  if (oud) schrijfWijzigingen(oud, menu);
   fs.writeFileSync(OUT_FILE, JSON.stringify(menu, null, 1) + '\n');
   console.log(`menu.json geschreven: ${producten.length} producten, ${vragen.length} antwoordopties, ` +
     `${Object.keys(extras).length} sets met extra's (geldig vanaf ${a.validFrom})`);
