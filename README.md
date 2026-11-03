@@ -47,16 +47,16 @@ In het spelvenster staat **📖 Lees de grote uitleg**: een kindvriendelijke uit
 verhaal, de besturing, de meeuwen, hoe de punten werken en tips. De knop **🎮 Speel nu!** onderaan opent het spel
 meteen (`index.html#spelen`).
 
-**Highscores:** na afloop kun je je naam invullen en je score opslaan. Onder het spel staat de top 10 van iedereen,
+**Highscores:** na afloop kun je je naam invullen en je score opslaan. Onder het spel staat de top 5 van iedereen,
 met je eigen naam gemarkeerd. Per naam telt alleen je beste score. De scores staan in een tabblad **Highscores** van
 je Google Sheet; een rij weghalen daar haalt hem ook uit de lijst.
 
-- De top 10 is voor iedereen met de link te zien (alleen naam en score).
+- De top 10 (onder het spel de eerste 5) is voor iedereen met de link te zien (alleen naam en score).
 - Het script weigert onmogelijke scores, namen korter dan 2 tekens en te vaak opslaan (30 keer per uur per naam),
   en vraagt de teamcode als je die hebt ingesteld. Echt valsspelen tegenhouden kan het niet: wie handig is, kan een
   nep-score insturen. Haal die dan weg in het tabblad.
 - Dit werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
-  Tot dan werkt het spel gewoon, maar zonder naamveld en top 10.
+  Tot dan werkt het spel gewoon, maar zonder naamveld en top 5.
 
 ## Hetzelfde als vorige keer
 

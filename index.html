@@ -2039,6 +2039,7 @@
 
         // ---------- Highscores: gedeeld via het Google-script, per naam de beste score ----------
         let spelHighscores = null; // null = het script kent highscores (nog) niet
+        const SPEL_TOP = 5;        // zoveel scores staan onder het spel (het script stuurt er 10)
 
         function leesSpelNaam() { try { return localStorage.getItem('familySpelNaam') || ''; } catch (e) { return ''; } }
 
@@ -2059,7 +2060,7 @@
             blok.classList.remove('verborgen');
             if (!spelHighscores.length) { lijst.innerHTML = '<li class="leeg">Nog geen scores. Wordt jij de eerste?</li>'; return; }
             const medaille = ['🥇', '🥈', '🥉'];
-            lijst.innerHTML = spelHighscores.map((h, i) => `
+            lijst.innerHTML = spelHighscores.slice(0, SPEL_TOP).map((h, i) => `
                 <li class="${mijnNaam && h.naam.toLowerCase() === mijnNaam.toLowerCase() ? 'ik' : ''}">
                     <span class="plek">${medaille[i] || i + 1}</span>
                     <span class="wie">${escapeHtml(h.naam)}${highscoreDatum(h.datum)}</span>
@@ -2081,8 +2082,8 @@
             if (!spel || spel.status !== 'over' || !spel.eindScore || spelHighscores === null) return;
             const ik = (document.getElementById('spelNaam').value || leesSpelNaam()).trim().toLowerCase();
             const plek = spelHighscores.filter(h => h.score >= spel.eindScore && h.naam.toLowerCase() !== ik).length + 1;
-            document.getElementById('spelOpslaanTekst').innerHTML = plek <= 10
-                ? `<b>${spel.eindScore} punten</b>: goed voor plek ${plek} in de top 10! Zet je naam erbij.`
+            document.getElementById('spelOpslaanTekst').innerHTML = plek <= SPEL_TOP
+                ? `<b>${spel.eindScore} punten</b>: goed voor plek ${plek} in de top ${SPEL_TOP}! Zet je naam erbij.`
                 : `<b>${spel.eindScore} punten</b>. Sla je score op met je naam.`;
             const naamVeld = document.getElementById('spelNaam');
             if (!naamVeld.value) naamVeld.value = leesSpelNaam() || document.getElementById('naamInput').value.trim();
