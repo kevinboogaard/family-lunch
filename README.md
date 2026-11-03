@@ -18,6 +18,12 @@ wanneer het menu voor het laatst is opgehaald.
   (bijv. `wijzigingen/2026-10-29.md`) met prijsverhogingen, prijsverlagingen,
   gewijzigde meerprijzen van sauzen/opties en nieuwe of verdwenen producten,
   vergeleken met de vorige run.
+- **Nieuw op het menu:** een product dat er bij een run bij komt, krijgt in `menu.json` de datum `toegevoegd`.
+  De app zet er dan een week lang een roze label **✨ Nieuw** op (`NIEUW_DAGEN` in `index.html`).
+- **Dubbele producten:** zet de cafetaria een vernieuwd product naast het oude (zelfde naam, zelfde categorie),
+  dan toont de app alleen het nieuwste, met zijn eigen foto.
+
+Het mandje ziet eruit als een kassabon van Cafetaria Family, met de vrijdag waarvoor je bestelt bovenaan.
 
 ## "Ik weet het niet"
 

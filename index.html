@@ -6,7 +6,7 @@
     <title>Family Vrijdag Bestel-App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -585,6 +585,24 @@
         .product-card:hover .product-foto img { transform: scale(1.12) rotate(-3deg); }
         .product-foto .icoon-groot { transition: transform 0.5s cubic-bezier(.34, 1.56, .64, 1); }
         .product-card:hover .product-foto .icoon-groot { transform: scale(1.2) rotate(10deg); }
+        .nieuw-badge {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            z-index: 1;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: var(--hot);
+            color: #fff;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            box-shadow: 0 6px 16px -6px rgba(255, 61, 129, 0.9);
+            transform: rotate(-4deg);
+            animation: nieuwPuls 2.4s ease-in-out infinite;
+        }
+        @keyframes nieuwPuls { 0%, 100% { transform: rotate(-4deg) scale(1); } 50% { transform: rotate(-4deg) scale(1.08); } }
         .in-mandje-badge {
             position: absolute;
             top: 18px;
@@ -751,44 +769,71 @@
         .vorige-mandje small { display: block; margin-top: 4px; font-weight: 400; color: var(--muted); font-size: 12px; line-height: 1.4; }
         .chip-knop { color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-color: rgba(255, 194, 26, 0.55); transition: background 0.2s, transform 0.2s; }
         .chip-knop:hover { background: rgba(255, 194, 26, 0.18); transform: translateY(-2px); }
+        /* ---------- Het mandje als kassabon ---------- */
+        .bonnetje {
+            position: relative;
+            padding: 18px 18px 12px;
+            border-radius: 6px 6px 0 0;
+            background: #fff8ef;
+            color: #2a1d12;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            box-shadow: 0 18px 36px -24px rgba(0, 0, 0, 0.9);
+        }
+        .bon-kop { text-align: center; }
+        .bon-kop strong { display: block; font-family: 'Fredoka', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: 0.04em; }
+        .bon-kop small { display: block; margin-top: 2px; font-size: 12px; color: #6b5a48; }
+        .bon-lijn { border-top: 2px dashed #d8c9b3; margin: 12px 0 4px; }
+        .bonnetje #cartItems { scrollbar-color: rgba(42, 29, 18, 0.3) transparent; }
+        .bon-voet { margin-top: 10px; text-align: center; font-size: 11px; color: #8a7760; letter-spacing: 0.08em; }
+        /* Gekartelde onderrand, alsof hij net van de rol is gescheurd */
+        .bon-rand {
+            height: 12px;
+            margin-bottom: 20px;
+            background: radial-gradient(circle at 10px 0, #fff8ef 10px, transparent 10.5px) 0 0 / 20px 12px repeat-x;
+        }
+        .bonnetje .leeg-mandje { color: #6b5a48; font-family: 'Inter', sans-serif; padding: 16px 0 8px; }
+        .bonnetje .vorige-mandje { border-color: #c98a00; background: rgba(255, 194, 26, 0.18); color: #2a1d12; }
+        .bonnetje .vorige-mandje:hover { background: rgba(255, 194, 26, 0.32); }
+        .bonnetje .vorige-mandje small { color: #6b5a48; }
         .cart-item {
             display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 4px 10px;
-            padding: 12px 0;
-            border-bottom: 1px dashed var(--border);
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
             font-size: 14px;
             animation: inschuiven 0.35s cubic-bezier(.2, .8, .2, 1.2);
         }
         @keyframes inschuiven { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
-        .cart-item-naam { font-weight: 600; line-height: 1.35; }
-        .cart-item-prijs { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; color: var(--sun); white-space: nowrap; }
-        .aantal-knoppen { display: flex; align-items: center; gap: 6px; }
+        .cart-item-naam { line-height: 1.3; overflow-wrap: anywhere; }
+        .cart-item-naam small { display: block; font-size: 11px; color: #6b5a48; }
+        .cart-item-prijs { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .aantal-knoppen { display: flex; align-items: center; height: 32px; border: 1.5px solid #2a1d12; border-radius: 16px; }
         .aantal-knoppen button {
-            width: 28px;
-            height: 28px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--text);
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 15px;
+            background: transparent;
+            color: #2a1d12;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
+            transition: background 0.2s;
         }
-        .aantal-knoppen button:hover { background: rgba(255, 255, 255, 0.16); transform: scale(1.1); }
-        .aantal-knoppen span { min-width: 18px; text-align: center; font-weight: 700; }
-        .verwijder-knop { justify-self: end; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; }
-        .verwijder-knop:hover { color: var(--danger); }
+        .aantal-knoppen button:hover { background: rgba(42, 29, 18, 0.1); }
+        .aantal-knoppen span { min-width: 14px; text-align: center; font-weight: 700; }
+        .verwijder-knop { width: 28px; height: 28px; border-radius: 14px; background: none; border: none; color: #8a7760; cursor: pointer; font-size: 14px; }
+        .verwijder-knop:hover { color: #c4162f; background: rgba(196, 22, 47, 0.08); }
         .cart-total {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin: 18px 0;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 18px;
+            margin: 8px 0 0;
+            font-weight: 700;
+            font-size: 15px;
         }
-        .cart-total strong { font-size: 32px; color: var(--sun); font-variant-numeric: tabular-nums; }
+        .cart-total strong { font-family: 'Fredoka', sans-serif; font-size: 30px; color: #2a1d12; font-variant-numeric: tabular-nums; }
         .checkout-btn {
             position: relative;
             width: 100%;
@@ -1149,17 +1194,27 @@
                 <span class="mandje-icoon" id="mandjeIcoon">🛒<span class="aantal-badge" id="aantalBadge" data-aantal="0"></span></span>
                 <button class="glas-knop sluit-mandje" onclick="toggleMandje(false)" aria-label="Mandje sluiten">✕</button>
             </div>
-            <label class="veld-label" for="naamInput">Jouw naam</label>
+            <!-- Het mandje als kassabon van de cafetaria -->
+            <div class="bonnetje">
+                <div class="bon-kop">
+                    <strong>CAFETARIA FAMILY</strong>
+                    <small id="bonDatum">vrijdaglunch</small>
+                </div>
+                <div class="bon-lijn" aria-hidden="true"></div>
+                <div id="cartItems"></div>
+                <div class="bon-lijn" aria-hidden="true"></div>
+                <div class="cart-total">
+                    <span>TOTAAL</span>
+                    <strong id="cartTotal">€ 0,00</strong>
+                </div>
+                <div class="bon-voet" aria-hidden="true">*** Eet smakelijk! ***</div>
+            </div>
+            <div class="bon-rand" aria-hidden="true"></div>
+
+            <label class="veld-label" for="naamInput">Op naam van</label>
             <input type="text" id="naamInput" placeholder="Bijv. Jan de Vries" autocomplete="name">
             <label class="veld-label" for="emailInput">E-mail voor je betaalbevestiging <small>(optioneel)</small></label>
             <input type="text" id="emailInput" inputmode="email" placeholder="Bijv. jan@bedrijf.nl" autocomplete="email" maxlength="120" spellcheck="false" autocapitalize="off">
-
-            <div id="cartItems"></div>
-
-            <div class="cart-total">
-                <span>Totaal</span>
-                <strong id="cartTotal">€ 0,00</strong>
-            </div>
             <button class="checkout-btn" onclick="plaatsBestelling()">Bestelling plaatsen 🚀</button>
         </aside>
     </div>
@@ -1394,6 +1449,7 @@
             updateAftellen();
             setInterval(updateAftellen, 1000);
             herstelMandje();
+            zetBonDatum();
             document.getElementById('naamInput').addEventListener('input', bewaarMandje);
             renderCart();
             toonMijnKnop();
@@ -1420,7 +1476,8 @@
                         extraSets: p.extraSets || [],
                         statiegeld: Number(p.statiegeld) || 0,
                         foto: p.foto || null,
-                        fotoGroot: p.fotoGroot || p.foto || null
+                        fotoGroot: p.fotoGroot || p.foto || null,
+                        toegevoegd: p.toegevoegd || null
                     }));
 
                     extrasData = menu.extras || {};
@@ -1530,6 +1587,14 @@
             return { titel: `🔍 “${document.getElementById('zoekInput').value.trim()}”`, lijst };
         }
 
+        // Een week lang "Nieuw" bij producten die net op het menu staan (de datum zet scripts/update-menu.js)
+        const NIEUW_DAGEN = 7;
+        function isNieuw(product) {
+            if (!product.toegevoegd) return false;
+            const dagen = (new Date(vandaagISO() + 'T12:00') - new Date(product.toegevoegd + 'T12:00')) / 86400000;
+            return dagen >= 0 && dagen < NIEUW_DAGEN;
+        }
+
         function renderProducts(category, animeer = true) {
             if (category) activeCat = category;
             const grid = document.getElementById("productGrid");
@@ -1564,6 +1629,7 @@
 
                 card.innerHTML = `
                     ${aantalInMandje ? `<span class="in-mandje-badge">${aantalInMandje}×</span>` : ''}
+                    ${isNieuw(item) ? '<span class="nieuw-badge">✨ Nieuw</span>' : ''}
                     <div class="product-foto${item.foto ? '' : ' zonder'}">${fotoHtml}</div>
                     <div class="product-title">${escapeHtml(item.name)}</div>
                     <div class="product-desc">${escapeHtml(item.desc)}</div>
@@ -1802,6 +1868,14 @@
             toast(`⚠️ Niet meer op het menu, uit je mandje gehaald: ${weg.map(i => i.name).join(', ')}`, 'fout');
         }
 
+        // Kop van het bonnetje: de vrijdag waarvoor je bestelt (vandaag als het vrijdag is, anders de volgende)
+        function zetBonDatum() {
+            const dag = new Date();
+            dag.setDate(dag.getDate() + ((5 - dag.getDay() + 7) % 7));
+            const tekst = dag.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('bonDatum').textContent = `${tekst} · voor ${tijdTekst(BESTELLEN_TOT)}`;
+        }
+
         function renderCart(bump = false) {
             bewaarMandje();
             const cartContainer = document.getElementById("cartItems");
@@ -1825,23 +1899,27 @@
 
             if (cart.length === 0) {
                 const vorige = vorigeBestelling();
-                cartContainer.innerHTML = '<div class="leeg-mandje"><span>🛒</span>Je mandje is nog leeg.<br>Tijd om te kiezen!' +
+                cartContainer.innerHTML = '<div class="leeg-mandje"><span>🧾</span>Je bonnetje is nog leeg.<br>Tijd om te kiezen!' +
                     (vorige ? `<button class="vorige-mandje" onclick="bestelVorigeKeer()">🔁 Hetzelfde als vorige keer<small>${escapeHtml(vorigeSamenvatting(vorige))}</small></button>` : '') +
                     '</div>';
                 return;
             }
 
-            cartContainer.innerHTML = cart.map((item, index) => `
+            // Als regels op een kassabon: aantal, product (met de keuzes er klein onder), bedrag
+            cartContainer.innerHTML = cart.map((item, index) => {
+                const opties = item.name.length > item.baseName.length ? item.name.slice(item.baseName.length + 2, -1) : '';
+                return `
                 <div class="cart-item">
-                    <span class="cart-item-naam">${escapeHtml(item.name)}</span>
-                    <span class="cart-item-prijs">${euro(item.price * item.qty)}</span>
                     <span class="aantal-knoppen">
-                        <button onclick="wijzigAantal(${index}, -1)" aria-label="Eén minder">−</button>
+                        <button onclick="wijzigAantal(${index}, -1)" aria-label="Eén ${escapeHtml(item.baseName)} minder">−</button>
                         <span>${item.qty}</span>
-                        <button onclick="wijzigAantal(${index}, 1)" aria-label="Eén meer">+</button>
+                        <button onclick="wijzigAantal(${index}, 1)" aria-label="Eén ${escapeHtml(item.baseName)} meer">+</button>
                     </span>
-                    <button class="verwijder-knop" onclick="removeItem(${index})">🗑️ Verwijder</button>
-                </div>`).join('');
+                    <span class="cart-item-naam">${escapeHtml(item.baseName)}${opties ? `<small>${escapeHtml(opties)}</small>` : ''}</span>
+                    <span class="cart-item-prijs">${euro(item.price * item.qty).slice(2)}</span>
+                    <button class="verwijder-knop" onclick="removeItem(${index})" aria-label="${escapeHtml(item.name)} verwijderen">✕</button>
+                </div>`;
+            }).join('');
         }
 
         function wijzigAantal(index, delta) {
