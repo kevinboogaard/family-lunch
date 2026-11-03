@@ -2521,7 +2521,7 @@
         async function controleerAfgesloten() {
             const open = mijnDagen().slice(0, 5);
             if (!GOOGLE_SCRIPT_URL || !open.length) return;
-            await Promise.all(open.map(g => haalStatus(g.naam, g.datum, g.sleutel)));
+            await Promise.all(open.map(g => haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID))));
             toonMijnKnop();
         }
 
@@ -2546,7 +2546,10 @@
         }
 
         function toonMijnKnop() {
-            document.getElementById('mijnKnop').classList.toggle('verborgen', mijnDagen().length === 0);
+            const open = mijnDagen().length > 0;
+            document.getElementById('mijnKnop').classList.toggle('verborgen', !open);
+            // Afrekenen alleen als er op dit apparaat een bestelling openstaat (en er een QR-code is)
+            document.getElementById('betaalKnop').classList.toggle('verborgen', !betaling || !open);
             const vorige = vorigeBestelling();
             const knop = document.getElementById('vorigeKnop');
             knop.classList.toggle('verborgen', !vorige);
@@ -2633,14 +2636,26 @@
         const STATUS_TEKST = { open: '⏳ open', zegt: '🟡 zegt betaald', bevestigd: '✅ bevestigd' };
 
         // De stand van alleen je eigen betaling (nooit een lijst van anderen). null als het script dat niet kent.
-        async function haalStatus(naam, datum, sleutel) {
+        // Haalt je eigen bestellingen van een dag (of een deel ervan) weg uit dit apparaat
+        function verwijderLokaal(datum, naam, bestelIDs) {
+            const weg = b => b.datum === datum && b.naam.toLowerCase() === naam.toLowerCase() && (!bestelIDs || bestelIDs.includes(b.bestelID));
+            try { localStorage.setItem('familyMijnBestellingen', JSON.stringify(leesMijn().filter(b => !weg(b)))); } catch (e) { /* dan de volgende keer */ }
+        }
+
+        // Geeft de betaalstatus, of 'afgesloten' / 'verwijderd' (door de beheerder uit de Sheet gehaald, dan ook hier weg)
+        async function haalStatus(naam, datum, sleutel, bestelIDs = []) {
             if (!GOOGLE_SCRIPT_URL) return null;
             try {
                 const r = await (await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ actie: 'betaalStatus', naam, datum, sleutel })
+                    body: JSON.stringify({ actie: 'betaalStatus', naam, datum, sleutel, ...(bestelIDs.length ? { bestelIDs } : {}) })
                 })).json();
+                if (r.ok && r.verwijderd) { verwijderLokaal(datum, naam); return 'verwijderd'; }
+                if (r.ok && Array.isArray(r.bestaand) && bestelIDs.length) {
+                    const weg = bestelIDs.filter(id => !r.bestaand.includes(id));
+                    if (weg.length) verwijderLokaal(datum, naam, weg);
+                }
                 if (r.ok && r.afgesloten) { markeerAfgesloten(datum); return 'afgesloten'; }
                 return r.ok ? r.status : null;
             } catch (err) {
@@ -2676,8 +2691,8 @@
             document.getElementById('mijnModal').style.display = 'flex';
             // De stand per bestelling komt er daarna bij
             for (const [g, badge] of badges) {
-                const status = await haalStatus(g.naam, g.datum, g.sleutel);
-                if (status === 'afgesloten') g.kaart.remove();
+                const status = await haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
+                if (status === 'afgesloten' || status === 'verwijderd') g.kaart.remove();
                 else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
                 // Vandaag, nog niet betaald en bestellen nog open: aanpassen of annuleren
                 if (status === 'open' && g.datum === vandaagISO() && g.bestellingen.length && !bestellenGesloten) {
@@ -2756,7 +2771,7 @@
                 // Een ouder script kent "actie=qr" niet: dan is er geen qr en dus geen knop
                 if (r.ok && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/]+=*$/.test(r.qr || '')) {
                     betaling = r;
-                    document.getElementById('betaalKnop').classList.remove('verborgen');
+                    toonMijnKnop();
                 }
             } catch (err) {
                 console.warn('Betaalgegevens ophalen mislukt:', err);
@@ -2833,10 +2848,11 @@
             vak.innerHTML = `${euro(g.totaal)}<small>${g.stuks} ${g.stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dagTekst(g.datum))} · ${escapeHtml(g.naam)}</small>`;
             betaalKopie = { bedrag: g.totaal.toFixed(2).replace('.', ','), omschrijving: `Lunch ${g.datum.slice(8, 10)}-${g.datum.slice(5, 7)} ${g.naam}` };
             document.getElementById('betaalKopieer').classList.remove('verborgen');
-            const status = await haalStatus(g.naam, g.datum, g.sleutel);
+            const status = await haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
             if (String(Number(document.getElementById('betaalKeuze').value) || 0) !== gekozen) return; // intussen een andere gekozen
-            if (status === 'afgesloten') {
-                vak.innerHTML = '<small>🔒 Deze bestelling is afgesloten.</small>';
+            if (status === 'afgesloten' || status === 'verwijderd') {
+                vak.innerHTML = status === 'afgesloten' ? '<small>🔒 Deze bestelling is afgesloten.</small>' : '<small>🗑️ Deze bestelling is weggehaald door de beheerder.</small>';
+                document.getElementById('betaalKopieer').classList.add('verborgen');
                 toonMijnKnop();
                 return;
             }

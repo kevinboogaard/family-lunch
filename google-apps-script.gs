@@ -861,9 +861,20 @@ function betaalStatus_(body) {
   const datum = body.datum ? String(body.datum) : vandaag_();
   if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
   const afgesloten = isAfgesloten_(datum);
-  if (!sleutelKlopt_(datum, naam, body.sleutel)) return { ok: true, status: null, afgesloten: afgesloten };
+
+  // Heeft de beheerder de bestelling uit de Sheet gehaald? Dan zegt het script dat, zodat de app hem ook weghaalt.
+  // "bestaand": welke van de meegestuurde bestelnummers er nog zijn (als iemand maar een deel weghaalde).
+  const waarden = getSheet_().getDataRange().getValues();
+  const rijen = waarden.filter(function (rij, i) {
+    return i > 0 && celNaarTekst_(rij[KOLOM.DATUM], 'yyyy-MM-dd') === datum && String(rij[KOLOM.NAAM]).toLowerCase() === naam.toLowerCase();
+  });
+  const ids = Array.isArray(body.bestelIDs) ? body.bestelIDs.slice(0, 20).map(String) : null;
+  const extra = ids ? { bestaand: ids.filter(function (id) { return rijen.some(function (rij) { return String(rij[KOLOM.ID]) === id; }); }) } : {};
+  if (!rijen.length) return Object.assign({ ok: true, status: null, afgesloten: afgesloten, verwijderd: true }, extra);
+
+  if (!sleutelKlopt_(datum, naam, body.sleutel)) return Object.assign({ ok: true, status: null, afgesloten: afgesloten }, extra);
   const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
-  return { ok: true, status: huidig ? huidig.Status : 'open', afgesloten: afgesloten };
+  return Object.assign({ ok: true, status: huidig ? huidig.Status : 'open', afgesloten: afgesloten }, extra);
 }
 
 /**

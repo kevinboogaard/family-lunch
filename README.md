@@ -244,8 +244,11 @@ meer getoond.
   apparaat heeft besteld. Er is geen lijst met bestellingen van anderen. De bestellingen van iedereen
   worden niet aan de website gegeven, ook niet als iemand rechtstreeks naar je Google-script vraagt.
 - **Jij** ziet alles op `admin.html`, na het invullen van je beheercode (zie "Misbruik voorkomen").
-- Bestelde iemand op een ander apparaat of is de browser opgeruimd? Dan staat de bestelling daar niet. Hij kan de
-  QR nog wel gebruiken, maar je zegt hem zelf het bedrag (je ziet het op `admin.html`).
+- De app onthoudt je eigen bestellingen op het apparaat. Haal jij een bestelling weg in het tabblad **Bestellingen**,
+  dan ruimt de app hem de volgende keer dat hij geopend wordt ook op (dat vraagt hij aan het script).
+- De knop **💶 Afrekenen** staat er alleen als er op dat apparaat een bestelling openstaat. Bestelde iemand op een ander
+  apparaat of is de browser opgeruimd? Dan betaalt hij op het apparaat waarmee hij bestelde, of je stuurt hem zelf de
+  QR en het bedrag (je ziet het op `admin.html`).
 - Alleen de QR-code is openbaar, want die moet iedereen kunnen zien om te betalen.
 - Elke bestelling krijgt een **geheime sleutel** die alleen op het apparaat van de besteller staat (en in de kolom
   **Sleutel** van het tabblad Bestellingen). Alleen met die sleutel kun je **Ik heb betaald** melden, je betaalstatus
