@@ -201,6 +201,15 @@ met als afzendernaam "Family Vrijdag".
 **Eenmalig na het bijwerken van het script:** kies in Apps Script bovenin de functie `toestemmingTesten` en klik op
 **Uitvoeren**. Geef toestemming om e-mail te versturen namens jou. Publiceer daarna een **nieuwe versie**.
 
+## Bestellen dicht
+
+Ga je bij e-food bestellen? Zet dan op `admin.html` bij **Wie heeft betaald?** (met de dag van vandaag gekozen)
+**🛑 Bestellen dicht** aan. Er kan dan vandaag niet meer besteld of geannuleerd worden; de app toont
+"🔒 De bestellijst van vandaag is gesloten". Collega's zien hun bestelling nog wel en kunnen gewoon **betalen**.
+Met **🟢 Bestellen weer open** draai je het terug. De volgende dag is bestellen vanzelf weer open.
+
+Dit is iets anders dan **afsluiten** (hieronder): dat doe je pas als je helemaal klaar bent met een dag.
+
 ## Een dag afsluiten
 
 Klaar met een vrijdag (iedereen heeft betaald, of je wilt er een streep onder zetten)? Kies op `admin.html` bij
@@ -238,6 +247,23 @@ meer getoond.
 - Bestelde iemand op een ander apparaat of is de browser opgeruimd? Dan staat de bestelling daar niet. Hij kan de
   QR nog wel gebruiken, maar je zegt hem zelf het bedrag (je ziet het op `admin.html`).
 - Alleen de QR-code is openbaar, want die moet iedereen kunnen zien om te betalen.
+- Elke bestelling krijgt een **geheime sleutel** die alleen op het apparaat van de besteller staat (en in de kolom
+  **Sleutel** van het tabblad Bestellingen). Alleen met die sleutel kun je **Ik heb betaald** melden, je betaalstatus
+  zien en je bestelling annuleren. Iemand anders kan dus niet voor jou "betaald" melden. Bestellingen van voor deze
+  sleutels werken zoals vroeger.
+
+## Bestellen: wat de app voor je regelt
+
+- **Mandje bewaard.** Het mandje en je naam blijven 12 uur bewaard, ook als je telefoon de pagina herlaadt (bijv.
+  na even naar je bank-app). Staat er intussen iets niet meer op het menu, dan haalt de app het eruit en meldt dat.
+- **Geen dubbele bestellingen.** Elke bestelling krijgt een nummer. Komt het antwoord van het script niet aan en
+  probeer je het opnieuw, dan herkent het script de bestelling en slaat hij hem niet nog een keer op.
+- **Zelfde naam?** Heeft er vandaag al iemand met dezelfde naam besteld, dan vraagt de app of jij dat bent. Zo
+  niet, zet dan je achternaam erbij, anders lopen de bestellingen en betalingen van twee mensen door elkaar.
+- **Aanpassen of annuleren.** Onder **🧾 Mijn bestelling** staan bij je bestelling van vandaag **✏️ Aanpassen**
+  (alles terug in je mandje) en **🗑️ Annuleren**. Dat kan zolang bestellen open is en je nog niet "betaald" hebt gemeld.
+- **Afrekenen.** Het bedrag komt van het script, dus het klopt altijd met `admin.html`. Met **📋 Kopieer bedrag**
+  en **📋 Kopieer omschrijving** (bijv. "Lunch 30-10 Anna") plak je alles in je bank-app.
 
 **Let op:** zolang je het Google-script niet hebt bijgewerkt, kan iedereen met de web-app URL de oude bestellijst
 nog ophalen. Plak de nieuwe `google-apps-script.gs` en publiceer een nieuwe versie.

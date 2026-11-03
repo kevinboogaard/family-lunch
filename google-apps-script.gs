@@ -14,7 +14,10 @@
  */
 
 const SHEET_NAME = 'Bestellingen';
-const HEADERS = ['BestelID', 'Datum', 'Tijd', 'Naam', 'Product', 'Aantal', 'Stuksprijs', 'Totaal'];
+// "Sleutel": een geheime code per bestelling die alleen het apparaat van de besteller kent. Daarmee kan alleen
+// de besteller zelf "Ik heb betaald" melden, zijn status zien en zijn bestelling annuleren.
+const HEADERS = ['BestelID', 'Datum', 'Tijd', 'Naam', 'Product', 'Aantal', 'Stuksprijs', 'Totaal', 'Sleutel'];
+const KOLOM = { ID: 0, DATUM: 1, NAAM: 3, SLEUTEL: 8 };
 
 // Het menu waartegen producten en prijzen gecontroleerd worden (leeg laten = niet controleren)
 const MENU_URL = 'https://kevinboogaard.github.io/family-lunch/menu.json';
@@ -81,6 +84,8 @@ function getSheet_() {
     // Datum en tijd als tekst bewaren, zodat Sheets ze niet omzet
     sheet.getRange('B:C').setNumberFormat('@');
   }
+  // Een Sheet van voor de sleutels: kolomkop erbij zetten
+  if (sheet.getLastColumn() < HEADERS.length) sheet.getRange(1, HEADERS.length).setValue(HEADERS[HEADERS.length - 1]);
   return sheet;
 }
 
@@ -570,6 +575,68 @@ function stuurBevestiging_(datum, naam) {
   }
 }
 
+// ---------- Sleutels: alleen de besteller zelf ----------
+
+/**
+ * Hoort deze sleutel bij een bestelling van deze naam op deze dag? Bestellingen van voor de sleutels (lege kolom)
+ * blijven werken zonder sleutel, anders zou "Ik heb betaald" voor oude bestellingen stoppen.
+ */
+function sleutelKlopt_(datum, naam, sleutel) {
+  const waarden = getSheet_().getDataRange().getValues();
+  const sleutelNaam = String(naam).toLowerCase();
+  let heeftSleutels = false;
+  for (let i = 1; i < waarden.length; i++) {
+    if (celNaarTekst_(waarden[i][KOLOM.DATUM], 'yyyy-MM-dd') !== datum || String(waarden[i][KOLOM.NAAM]).toLowerCase() !== sleutelNaam) continue;
+    const eigen = String(waarden[i][KOLOM.SLEUTEL] || '');
+    if (eigen) {
+      heeftSleutels = true;
+      if (sleutel && eigen === String(sleutel)) return true;
+    }
+  }
+  return !heeftSleutels;
+}
+
+// ---------- Bestellen dicht (los van afsluiten): geen nieuwe bestellingen, betalen kan nog ----------
+
+function isBestellenDicht_() {
+  return PropertiesService.getScriptProperties().getProperty('BESTELLEN_DICHT') === vandaag_() || isAfgesloten_(vandaag_());
+}
+
+function zetBestellenDicht_(dicht) {
+  const props = PropertiesService.getScriptProperties();
+  if (dicht) props.setProperty('BESTELLEN_DICHT', vandaag_());
+  else props.deleteProperty('BESTELLEN_DICHT');
+}
+
+/** Bestellingen van vandaag annuleren, alleen met de sleutel en zolang bestellen nog open is en er niet betaald is. */
+function annuleer_(body) {
+  const lijst = Array.isArray(body.bestellingen) ? body.bestellingen.slice(0, 10) : [];
+  if (!lijst.length) return fout_('ONGELDIG', 'Geen bestelling om te annuleren.');
+  if (isBestellenDicht_()) return fout_('GESLOTEN', 'Bestellen is al dicht, dus annuleren kan niet meer. Vraag het de beheerder.');
+  const sheet = getSheet_();
+  const waarden = sheet.getDataRange().getValues();
+  const vandaag = vandaag_();
+  const weg = [];
+  let naam = null;
+  lijst.forEach(function (b) {
+    const id = String(b && b.bestelID || ''), sleutel = String(b && b.sleutel || '');
+    if (!id || !sleutel) return;
+    for (let i = 1; i < waarden.length; i++) {
+      if (String(waarden[i][KOLOM.ID]) !== id) continue;
+      if (String(waarden[i][KOLOM.SLEUTEL] || '') !== sleutel) return;
+      if (celNaarTekst_(waarden[i][KOLOM.DATUM], 'yyyy-MM-dd') !== vandaag) return;
+      naam = String(waarden[i][KOLOM.NAAM]);
+      weg.push(i);
+    }
+  });
+  if (!weg.length) return fout_('ONGELDIG', 'Deze bestelling is niet (meer) te vinden.');
+  const status = leesBetalingen_().filter(function (b) { return b.Datum === vandaag && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
+  if (status && status.Status !== 'open') return fout_('ONGELDIG', 'Je hebt al gemeld dat je betaald hebt. Vraag de beheerder om je bestelling aan te passen.');
+  // Van onder naar boven weghalen, anders schuiven de rijnummers op
+  weg.sort(function (a, b) { return b - a; }).forEach(function (i) { sheet.deleteRow(i + 1); });
+  return { ok: true, verwijderd: weg.length };
+}
+
 /** Een collega meldt "ik heb betaald" (of toch niet). Een bevestiging van de beheerder blijft staan. */
 function betaaldMelding_(body) {
   const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
@@ -587,6 +654,7 @@ function betaaldMelding_(body) {
 
   const echteNaam = vindBestelNaam_(naam, datum);
   if (!echteNaam) return fout_('ONGELDIG', 'Geen bestelling gevonden voor "' + naam + '" op deze dag.');
+  if (!sleutelKlopt_(datum, echteNaam, body.sleutel)) return fout_('SLEUTEL', 'Dit kan alleen op het apparaat waarmee je besteld hebt.');
 
   const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === echteNaam.toLowerCase(); })[0];
   if (huidig && huidig.Status === 'bevestigd') return { ok: true, status: 'bevestigd' };
@@ -627,7 +695,12 @@ function beheerActie_(body) {
 
   // Alles wat meer laat zien dan iemands eigen gegevens: alleen met de beheercode
   if (body.actie === 'bestellingen') return { ok: true, bestellingen: leesBestellingen_(body.datum) };
-  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_(), emails: leesEmails_() };
+  if (body.actie === 'betalingen') return { ok: true, betalingen: leesBetalingen_(), afgesloten: leesAfgesloten_(), emails: leesEmails_(), bestellenDicht: isBestellenDicht_(), vandaag: vandaag_() };
+
+  if (body.actie === 'bestellenDicht') {
+    zetBestellenDicht_(body.dicht !== false);
+    return { ok: true, bestellenDicht: isBestellenDicht_() };
+  }
 
   if (body.actie === 'afsluiten') {
     const datum = String(body.datum || '');
@@ -682,7 +755,8 @@ function beheerActie_(body) {
 /** Bestelling opslaan. Verwacht JSON: { code?, data: [{ Naam, Product, Aantal, Stuksprijs }, ...] } */
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  // Lukt het slot niet binnen 10 seconden (erg druk), dan een nette fout in plaats van een foutpagina
+  if (!lock.tryLock(10000)) return json_(fout_('BEZIG', 'Het is even erg druk. Probeer het over een paar seconden opnieuw.'));
   try {
     let body;
     try {
@@ -694,28 +768,53 @@ function doPost(e) {
     if (body && body.actie === 'betaalStatus') return json_(betaalStatus_(body));
     if (body && (body.actie === 'zegtBetaald' || body.actie === 'zegtNietBetaald')) return json_(betaaldMelding_(body));
     if (body && body.actie === 'highscore') return json_(bewaarHighscore_(body));
+    if (body && body.actie === 'annuleer') return json_(annuleer_(body));
     if (body && body.actie) return json_(beheerActie_(body));
 
-    if (isAfgesloten_(vandaag_())) return json_(fout_('GESLOTEN', 'De bestellijst van vandaag is gesloten. Volgende keer weer!'));
-
     const sheet = getSheet_();
+    const waarden = sheet.getDataRange().getValues();
+
+    // Bestelnummer en sleutel maakt de app zelf, zodat een herhaalde poging (het antwoord kwam niet aan) te herkennen is.
+    // Alleen met dezelfde sleutel telt hij als dezelfde bestelling; de sleutel stuurt het script nooit terug.
+    let bestelNr = /^[a-z0-9]{10,32}$/.test(String(body && body.bestelNr || '')) ? String(body.bestelNr) : '';
+    const eigenSleutel = /^[a-f0-9]{32}$/.test(String(body && body.sleutel || '')) ? String(body.sleutel) : '';
+    if (bestelNr) {
+      const eerder = waarden.filter(function (rij, i) { return i > 0 && String(rij[KOLOM.ID]) === bestelNr; });
+      if (eerder.length && eigenSleutel && String(eerder[0][KOLOM.SLEUTEL] || '') === eigenSleutel) {
+        const som = eerder.reduce(function (s, rij) { return s + (Number(rij[7]) || 0); }, 0);
+        return json_({ ok: true, bestelID: bestelNr, totaal: afronden_(som), dubbel: true });
+      }
+      if (eerder.length) bestelNr = ''; // nummer al in gebruik door een andere bestelling: gewoon een nieuw nummer
+    }
+
+    if (isBestellenDicht_()) return json_(fout_('GESLOTEN', 'De bestellijst van vandaag is gesloten. Volgende keer weer!'));
+
+    const tel = telVandaag_(waarden);
     const resultaat = valideerBestelling_(body, {
       code: PropertiesService.getScriptProperties().getProperty('BESTELCODE'),
       menuPrijzen: haalMenuPrijzen_(),
-      tel: telVandaag_(sheet.getDataRange().getValues())
+      tel: tel
     });
     if (!resultaat.ok) return json_(resultaat);
+
+    // Heeft er vandaag al iemand met deze naam besteld? Eerst vragen of dat dezelfde persoon is.
+    const eerderVandaag = tel.perNaam[resultaat.naam.toLowerCase()];
+    if (eerderVandaag && eerderVandaag.bestellingen > 0 && !body.naamBevestigd) {
+      return json_(fout_('NAAM_BESTAAT', 'Er heeft vandaag al iemand als "' + resultaat.naam + '" besteld.'));
+    }
 
     const nu = new Date();
     const tz = Session.getScriptTimeZone();
     const datum = Utilities.formatDate(nu, tz, 'yyyy-MM-dd');
     const tijd = Utilities.formatDate(nu, tz, 'HH:mm:ss');
-    const bestelID = Utilities.getUuid().slice(0, 8);
+    const bestelID = bestelNr || Utilities.getUuid().replace(/-/g, '').slice(0, 12);
+    const sleutel = eigenSleutel || Utilities.getUuid().replace(/-/g, '');
 
     // Totaal rekent het script zelf uit; wat de website meestuurt als Totaal wordt genegeerd
     const rows = resultaat.regels.map(function (r) {
-      return [bestelID, datum, tijd, resultaat.naam, r.product, r.aantal, r.prijs, r.totaal];
+      return [bestelID, datum, tijd, resultaat.naam, r.product, r.aantal, r.prijs, r.totaal, sleutel];
     });
+    const totaal = afronden_(resultaat.regels.reduce(function (s, r) { return s + r.totaal; }, 0));
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
 
@@ -723,7 +822,7 @@ function doPost(e) {
     const email = geldigEmail_(body.email);
     if (email) bewaarEmail_(datum, resultaat.naam, email);
 
-    return json_({ ok: true, bestelID: bestelID });
+    return json_({ ok: true, bestelID: bestelID, sleutel: sleutel, totaal: totaal });
   } catch (err) {
     return json_(fout_('FOUT', String(err)));
   } finally {
@@ -761,8 +860,10 @@ function betaalStatus_(body) {
   if (naam.length < LIMIETEN.MIN_NAAM) return fout_('ONGELDIG', 'Vul je naam in.');
   const datum = body.datum ? String(body.datum) : vandaag_();
   if (!datumGeldig_(datum)) return fout_('ONGELDIG', 'Deze datum klopt niet.');
+  const afgesloten = isAfgesloten_(datum);
+  if (!sleutelKlopt_(datum, naam, body.sleutel)) return { ok: true, status: null, afgesloten: afgesloten };
   const huidig = leesBetalingen_().filter(function (b) { return b.Datum === datum && b.Naam.toLowerCase() === naam.toLowerCase(); })[0];
-  return { ok: true, status: huidig ? huidig.Status : 'open', afgesloten: isAfgesloten_(datum) };
+  return { ok: true, status: huidig ? huidig.Status : 'open', afgesloten: afgesloten };
 }
 
 /**
@@ -774,7 +875,7 @@ function doGet(e) {
     if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, scores: topHighscores_() });
     if (e && e.parameter && e.parameter.actie === 'qr') {
       const uit = leesQr_();
-      uit.vandaagGesloten = isAfgesloten_(vandaag_());
+      uit.vandaagGesloten = isBestellenDicht_();
       return json_(uit);
     }
     return json_(fout_('BEHEER', 'Bestellingen zijn alleen zichtbaar voor de beheerder, via admin.html.'));

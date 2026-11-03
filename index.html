@@ -154,6 +154,16 @@
         .betaal-status-tekst.wacht { color: var(--sun); }
         .knop-betaald { padding: 13px 24px; border: 0; border-radius: 14px; background: rgba(47, 227, 163, 0.18); color: #b9f7e0; font: 700 16px 'Inter', sans-serif; cursor: pointer; border: 1px solid rgba(47, 227, 163, 0.5); transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s; }
         .knop-betaald:hover { transform: translateY(-2px); background: rgba(47, 227, 163, 0.3); }
+        .knop-klein {
+            padding: 8px 14px; border-radius: 12px; border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.07); color: var(--text); font: 600 13px 'Inter', sans-serif; cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .knop-klein:hover { background: rgba(255, 255, 255, 0.14); transform: translateY(-1px); }
+        .knop-klein.gevaar { color: #ffd0d6; border-color: rgba(255, 90, 110, 0.45); }
+        .knop-klein.gevaar:hover { background: rgba(255, 90, 110, 0.18); }
+        .betaal-kopieer { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+        .mijn-acties { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .knop-tekst { background: none; border: 0; color: var(--muted); font: 13px 'Inter', sans-serif; text-decoration: underline; cursor: pointer; }
         .status-badge { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 8px; white-space: nowrap; }
         .status-badge.open { background: rgba(255, 255, 255, 0.1); color: var(--muted); }
@@ -1208,6 +1218,10 @@
             <button class="modal-sluit" onclick="sluitBetaalModal()" aria-label="Sluiten">✕</button>
             <h3 id="betaalTitel">💶 Afrekenen</h3>
             <div id="betaalBedrag" class="betaal-bedrag"></div>
+            <div id="betaalKopieer" class="betaal-kopieer verborgen">
+                <button class="knop-klein" onclick="kopieerBetaal('bedrag')">📋 Kopieer bedrag</button>
+                <button class="knop-klein" onclick="kopieerBetaal('omschrijving')">📋 Kopieer omschrijving</button>
+            </div>
             <img id="betaalQr" class="betaal-qr" alt="QR-code om af te rekenen">
             <p id="betaalTekst" class="betaal-tekst"></p>
             <a id="betaalLink" class="knop-link verborgen" target="_blank" rel="noopener noreferrer">📱 Open betaallink</a>
@@ -1372,6 +1386,8 @@
             maakZwevers();
             updateAftellen();
             setInterval(updateAftellen, 1000);
+            herstelMandje();
+            document.getElementById('naamInput').addEventListener('input', bewaarMandje);
             renderCart();
             toonMijnKnop();
             document.getElementById('emailInput').value = leesEmail();
@@ -1429,6 +1445,7 @@
             if (menuData.length === 0) return;
             activeCat = [...new Set(menuData.map(item => item.cat))][0];
             document.getElementById('weetNietKnop').disabled = false;
+            controleerMandje();
             renderCategories();
             renderProducts(activeCat);
         }
@@ -1755,7 +1772,31 @@
             requestAnimationFrame(stap);
         }
 
+        // Het mandje en je naam blijven bewaard, ook als de telefoon de pagina herlaadt (bijv. na even naar je bank-app)
+        const MANDJE_BEWAARTIJD = 12 * 3600 * 1000;
+        function bewaarMandje() {
+            try { localStorage.setItem('familyMandje', JSON.stringify({ tijd: Date.now(), cart, naam: document.getElementById('naamInput').value })); } catch (e) { /* dan alleen voor nu */ }
+        }
+        function herstelMandje() {
+            try {
+                const opgeslagen = JSON.parse(localStorage.getItem('familyMandje') || 'null');
+                if (!opgeslagen || Date.now() - opgeslagen.tijd > MANDJE_BEWAARTIJD) return;
+                if (Array.isArray(opgeslagen.cart)) cart = opgeslagen.cart.filter(i => i && i.name && i.baseName && i.qty > 0 && i.price >= 0);
+                if (opgeslagen.naam) document.getElementById('naamInput').value = opgeslagen.naam;
+            } catch (e) { /* kapotte opslag: gewoon leeg beginnen */ }
+        }
+        // Na het laden van het menu: producten die er niet meer op staan uit het mandje halen
+        function controleerMandje() {
+            const namen = new Set(menuData.map(p => p.name));
+            const weg = cart.filter(i => !namen.has(i.baseName));
+            if (!weg.length) return;
+            cart = cart.filter(i => namen.has(i.baseName));
+            renderCart();
+            toast(`⚠️ Niet meer op het menu, uit je mandje gehaald: ${weg.map(i => i.name).join(', ')}`, 'fout');
+        }
+
         function renderCart(bump = false) {
+            bewaarMandje();
             const cartContainer = document.getElementById("cartItems");
             const aantal = cart.reduce((s, i) => s + i.qty, 0);
             const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -2452,9 +2493,15 @@
         // De bestellingen van anderen komen nooit in deze pagina: het Google-script geeft ze alleen aan de beheerder.
         function leesMijn() { try { return JSON.parse(localStorage.getItem('familyMijnBestellingen') || '[]'); } catch (e) { return []; } }
 
-        function bewaarMijn(naam, regels) {
+        // info: { bestelID, sleutel, totaal } uit het antwoord van het script (leeg zonder script)
+        function bewaarMijn(naam, regels, info = {}) {
             const lijst = leesMijn();
-            lijst.push({ naam, datum: vandaagISO(), tijd: new Date().toLocaleTimeString('nl-NL'), regels: regels.map(r => ({ product: r.Product, aantal: r.Aantal, totaal: r.Totaal })) });
+            lijst.push({
+                naam, datum: vandaagISO(), tijd: new Date().toLocaleTimeString('nl-NL'),
+                regels: regels.map(r => ({ product: r.Product, aantal: r.Aantal, totaal: r.Totaal })),
+                ...(info.bestelID ? { bestelID: info.bestelID, sleutel: info.sleutel } : {}),
+                ...(typeof info.totaal === 'number' ? { totaal: info.totaal } : {})
+            });
             try { localStorage.setItem('familyMijnBestellingen', JSON.stringify(lijst.slice(-30))); } catch (e) { /* zonder opslag zie je je bestelling hier niet terug */ }
             toonMijnKnop();
         }
@@ -2474,7 +2521,7 @@
         async function controleerAfgesloten() {
             const open = mijnDagen().slice(0, 5);
             if (!GOOGLE_SCRIPT_URL || !open.length) return;
-            await Promise.all(open.map(g => haalStatus(g.naam, g.datum)));
+            await Promise.all(open.map(g => haalStatus(g.naam, g.datum, g.sleutel)));
             toonMijnKnop();
         }
 
@@ -2483,14 +2530,16 @@
             const groepen = new Map();
             leesMijn().filter(b => !afgesloten.has(b.datum)).forEach(b => {
                 const sleutel = b.datum + '|' + b.naam.toLowerCase();
-                const g = groepen.get(sleutel) || { datum: b.datum, naam: b.naam, regels: new Map(), totaal: 0, stuks: 0 };
+                const g = groepen.get(sleutel) || { datum: b.datum, naam: b.naam, regels: new Map(), totaal: 0, stuks: 0, bestellingen: [], sleutel: '' };
                 b.regels.forEach(r => {
                     const x = g.regels.get(r.product) || { product: r.product, aantal: 0 };
                     x.aantal += Number(r.aantal) || 0;
                     g.regels.set(r.product, x);
-                    g.totaal += Number(r.totaal) || 0;
                     g.stuks += Number(r.aantal) || 0;
                 });
+                // Het totaal dat het script uitrekende is het echte bedrag; oudere bestellingen hebben alleen de regels
+                g.totaal += typeof b.totaal === 'number' ? b.totaal : b.regels.reduce((s, r) => s + (Number(r.totaal) || 0), 0);
+                if (b.bestelID && b.sleutel) { g.bestellingen.push({ bestelID: b.bestelID, sleutel: b.sleutel }); g.sleutel = g.sleutel || b.sleutel; }
                 groepen.set(sleutel, g);
             });
             return [...groepen.values()].sort((a, b) => b.datum.localeCompare(a.datum) || a.naam.localeCompare(b.naam, 'nl'));
@@ -2543,13 +2592,11 @@
             return { product, extraKosten, optiesTekst };
         }
 
-        function bestelVorigeKeer() {
-            const vorige = vorigeBestelling();
-            if (!vorige) return;
-            if (!menuData.length) { toast('⏳ Even wachten tot het menu is geladen.', 'fout'); return; }
+        // Zet regels ({ product, aantal }) van een eerdere bestelling terug in het mandje, met de prijzen van nu
+        function regelsNaarMandje(regels) {
             const missend = [];
             let toegevoegd = 0, teVeel = null;
-            vorige.regels.forEach(regel => {
+            regels.forEach(regel => {
                 const gevonden = regelUitMenu(regel.product);
                 if (!gevonden) { missend.push(regel.product); return; }
                 const { product, extraKosten, optiesTekst } = gevonden;
@@ -2563,6 +2610,14 @@
                     toegevoegd++;
                 }
             });
+            return { toegevoegd, missend, teVeel };
+        }
+
+        function bestelVorigeKeer() {
+            const vorige = vorigeBestelling();
+            if (!vorige) return;
+            if (!menuData.length) { toast('⏳ Even wachten tot het menu is geladen.', 'fout'); return; }
+            const { toegevoegd, missend, teVeel } = regelsNaarMandje(vorige.regels);
             const naamVeld = document.getElementById('naamInput');
             if (!naamVeld.value.trim()) naamVeld.value = vorige.naam;
             renderCart(toegevoegd > 0);
@@ -2578,13 +2633,13 @@
         const STATUS_TEKST = { open: '⏳ open', zegt: '🟡 zegt betaald', bevestigd: '✅ bevestigd' };
 
         // De stand van alleen je eigen betaling (nooit een lijst van anderen). null als het script dat niet kent.
-        async function haalStatus(naam, datum) {
+        async function haalStatus(naam, datum, sleutel) {
             if (!GOOGLE_SCRIPT_URL) return null;
             try {
                 const r = await (await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ actie: 'betaalStatus', naam, datum })
+                    body: JSON.stringify({ actie: 'betaalStatus', naam, datum, sleutel })
                 })).json();
                 if (r.ok && r.afgesloten) { markeerAfgesloten(datum); return 'afgesloten'; }
                 return r.ok ? r.status : null;
@@ -2621,12 +2676,57 @@
             document.getElementById('mijnModal').style.display = 'flex';
             // De stand per bestelling komt er daarna bij
             for (const [g, badge] of badges) {
-                const status = await haalStatus(g.naam, g.datum);
+                const status = await haalStatus(g.naam, g.datum, g.sleutel);
                 if (status === 'afgesloten') g.kaart.remove();
                 else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
+                // Vandaag, nog niet betaald en bestellen nog open: aanpassen of annuleren
+                if (status === 'open' && g.datum === vandaagISO() && g.bestellingen.length && !bestellenGesloten) {
+                    const acties = document.createElement('div');
+                    acties.className = 'mijn-acties';
+                    const aanpassen = document.createElement('button');
+                    aanpassen.className = 'knop-klein';
+                    aanpassen.textContent = '✏️ Aanpassen';
+                    aanpassen.onclick = () => annuleerBestelling(g, true);
+                    const annuleren = document.createElement('button');
+                    annuleren.className = 'knop-klein gevaar';
+                    annuleren.textContent = '🗑️ Annuleren';
+                    annuleren.onclick = () => annuleerBestelling(g, false);
+                    acties.append(aanpassen, annuleren);
+                    g.kaart.appendChild(acties);
+                }
             }
             if (!vak.children.length) vak.textContent = 'Je hebt geen openstaande bestelling. 🎉';
             toonMijnKnop();
+        }
+
+        // Annuleert je bestelling(en) van vandaag. Met aanpassen komt alles terug in het mandje, zodat je kunt wijzigen.
+        async function annuleerBestelling(g, aanpassen) {
+            const vraag = aanpassen
+                ? 'Je bestelling gaat terug in je mandje. Pas hem aan en klik daarna opnieuw op "Bestelling plaatsen". Doorgaan?'
+                : 'Weet je zeker dat je je bestelling van vandaag wilt annuleren?';
+            if (!confirm(vraag)) return;
+            try {
+                await postMetCode({ actie: 'annuleer', bestellingen: g.bestellingen });
+            } catch (err) {
+                toast(err.afgewezen ? '🚫 ' + err.message : '😬 Annuleren mislukt, probeer het nog eens. (' + err.message + ')', 'fout');
+                return;
+            }
+            const weg = new Set(g.bestellingen.map(b => b.bestelID));
+            try { localStorage.setItem('familyMijnBestellingen', JSON.stringify(leesMijn().filter(b => !weg.has(b.bestelID)))); } catch (e) { /* lukt het niet, dan ziet hij hem nog tot het script zegt dat hij weg is */ }
+            sluitMijnModal();
+            toonMijnKnop();
+            if (aanpassen) {
+                cart = [];
+                const { missend } = regelsNaarMandje([...g.regels.values()]);
+                document.getElementById('naamInput').value = g.naam;
+                renderCart(true);
+                werkMandjeBadgesBij();
+                toast('✏️ Je bestelling staat weer in je mandje. Pas hem aan en bestel opnieuw.', 'succes');
+                if (missend.length) toast(`⚠️ Niet meer (zo) op het menu: ${missend.join(', ')}.`, 'fout');
+                setTimeout(() => toggleMandje(true), 0);
+            } else {
+                toast('🗑️ Je bestelling is geannuleerd.', 'succes');
+            }
         }
 
         function sluitMijnModal() {
@@ -2691,14 +2791,36 @@
             document.getElementById('betaalModal').style.display = 'none';
         }
 
-        // Gegevens van de gekozen bestelling: { naam, datum, status, kanMelden }
+        // Gegevens van de gekozen bestelling: { naam, datum, sleutel, status, kanMelden }
         let betaalContext = null;
+        let betaalKopie = null; // { bedrag: "9,10", omschrijving: "Lunch 30-10 Anna" }
+
+        function kopieerTekst(tekst, melding) {
+            const klaar = () => toast('📋 ' + melding, 'succes');
+            const noodgeval = () => {
+                const ta = document.createElement('textarea');
+                ta.value = tekst;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); klaar(); } catch (e) { toast('Kopiëren lukte niet. ' + tekst, 'fout'); }
+                ta.remove();
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tekst).then(klaar, noodgeval); else noodgeval();
+        }
+
+        function kopieerBetaal(wat) {
+            if (!betaalKopie) return;
+            if (wat === 'bedrag') kopieerTekst(betaalKopie.bedrag, `Bedrag ${betaalKopie.bedrag} gekopieerd. Plak het in je bank-app.`);
+            else kopieerTekst(betaalKopie.omschrijving, `"${betaalKopie.omschrijving}" gekopieerd. Plak het bij de omschrijving.`);
+        }
 
         // Het bedrag komt uit je eigen bestelling op dit apparaat; alleen de betaalstatus wordt bij het script opgevraagd.
         async function toonBedrag() {
             const vak = document.getElementById('betaalBedrag');
             const groepen = mijnDagen();
             betaalContext = null;
+            betaalKopie = null;
+            document.getElementById('betaalKopieer').classList.add('verborgen');
             toonBetaalStatus();
             if (!groepen.length) {
                 vak.innerHTML = mijnDagen(true).length
@@ -2709,14 +2831,16 @@
             const gekozen = String(Number(document.getElementById('betaalKeuze').value) || 0);
             const g = groepen[Number(gekozen)];
             vak.innerHTML = `${euro(g.totaal)}<small>${g.stuks} ${g.stuks === 1 ? 'product' : 'producten'} · ${escapeHtml(dagTekst(g.datum))} · ${escapeHtml(g.naam)}</small>`;
-            const status = await haalStatus(g.naam, g.datum);
+            betaalKopie = { bedrag: g.totaal.toFixed(2).replace('.', ','), omschrijving: `Lunch ${g.datum.slice(8, 10)}-${g.datum.slice(5, 7)} ${g.naam}` };
+            document.getElementById('betaalKopieer').classList.remove('verborgen');
+            const status = await haalStatus(g.naam, g.datum, g.sleutel);
             if (String(Number(document.getElementById('betaalKeuze').value) || 0) !== gekozen) return; // intussen een andere gekozen
             if (status === 'afgesloten') {
                 vak.innerHTML = '<small>🔒 Deze bestelling is afgesloten.</small>';
                 toonMijnKnop();
                 return;
             }
-            betaalContext = { naam: g.naam, datum: g.datum, kanMelden: status !== null, status: status || 'open' };
+            betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: status !== null, status: status || 'open' };
             toonBetaalStatus();
         }
 
@@ -2749,7 +2873,7 @@
             const c = betaalContext;
             if (!c) return;
             try {
-                const r = await postMetCode({ actie, naam: c.naam, datum: c.datum });
+                const r = await postMetCode({ actie, naam: c.naam, datum: c.datum, sleutel: c.sleutel });
                 c.status = r.status;
                 toonBetaalStatus();
                 toast(r.status === 'zegt' ? '🙏 Bedankt! Je betaling wordt gecontroleerd.' : r.status === 'bevestigd' ? '✅ Je betaling was al bevestigd.' : 'Oké, je betaling staat weer op open.', r.status === 'open' ? '' : 'succes');
@@ -2782,8 +2906,21 @@
         function bevestigCode() { sluitCodeModal(document.getElementById('codeInput').value.trim() || null); }
         function annuleerCode() { sluitCodeModal(null); }
 
-        async function verstuurBestelling(regels, email) {
-            await postMetCode(email ? { data: regels, email } : { data: regels });
+        async function verstuurBestelling(regels, extra) {
+            return postMetCode({ data: regels, ...extra });
+        }
+
+        // Eén bestelnummer en sleutel per poging. Lukt versturen niet en probeer je opnieuw met hetzelfde mandje,
+        // dan gaan hetzelfde nummer en dezelfde sleutel mee en slaat het script hem niet dubbel op.
+        let bestelPoging = null;
+        function willekeurigHex(tekens) {
+            const bytes = new Uint8Array(tekens / 2);
+            crypto.getRandomValues(bytes);
+            return [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        function pogingVoor(inhoud) {
+            if (!bestelPoging || bestelPoging.inhoud !== inhoud) bestelPoging = { inhoud, bestelNr: willekeurigHex(16), sleutel: willekeurigHex(32) };
+            return bestelPoging;
         }
 
         // Het e-mailadres onthoudt de browser, zodat je het maar één keer hoeft in te vullen
@@ -2815,7 +2952,8 @@
                 // De code zelf was dan wel goed, want die wordt als eerste gecontroleerd.
                 if (code) bewaarTeamcode(code);
                 const e = new Error(result.error || 'Onbekende fout');
-                e.afgewezen = result.code === 'LIMIET' || result.code === 'ONGELDIG' || result.code === 'GESLOTEN';
+                e.afgewezen = ['LIMIET', 'ONGELDIG', 'GESLOTEN', 'SLEUTEL', 'BEZIG'].includes(result.code);
+                e.code = result.code;
                 if (result.code === 'GESLOTEN' && extra.data) bestellenGesloten = true;
                 throw e;
             }
@@ -2867,12 +3005,32 @@
                 });
             });
 
+            let info = {};
             if (GOOGLE_SCRIPT_URL) {
                 const knop = document.querySelector('.checkout-btn');
                 knop.disabled = true;
                 knop.innerText = 'Bezig met versturen… 🛵';
+                const poging = pogingVoor(JSON.stringify([naam.toLowerCase(), email, cart]));
+                // Heb je vandaag al op dit apparaat met deze naam besteld, dan ben jij het: niet nog eens vragen
+                const eigenNaam = leesMijn().some(b => b.datum === vandaagISO() && b.naam.toLowerCase() === naam.toLowerCase());
+                const extra = { bestelNr: poging.bestelNr, sleutel: poging.sleutel, ...(email ? { email } : {}), ...(eigenNaam || poging.naamBevestigd ? { naamBevestigd: true } : {}) };
                 try {
-                    await verstuurBestelling(nieuweBestellingen, email);
+                    let r;
+                    try {
+                        r = await verstuurBestelling(nieuweBestellingen, extra);
+                    } catch (err) {
+                        if (err.code !== 'NAAM_BESTAAT') throw err;
+                        const zelf = confirm(`Er heeft vandaag al iemand als "${naam}" besteld.\n\nBen jij dat (bijvoorbeeld op een ander apparaat)? Kies OK.\nIs het iemand anders? Kies Annuleren en zet je achternaam erbij.`);
+                        if (!zelf) {
+                            naamVeld.focus();
+                            naamVeld.select();
+                            return;
+                        }
+                        poging.naamBevestigd = true; // ook bij een volgende poging met hetzelfde mandje niet opnieuw vragen
+                        r = await verstuurBestelling(nieuweBestellingen, { ...extra, naamBevestigd: true });
+                    }
+                    info = { bestelID: r.bestelID, sleutel: poging.sleutel, totaal: r.totaal };
+                    bestelPoging = null;
                 } catch (err) {
                     console.error("Versturen mislukt:", err);
                     if (err.afgewezen) toast('🚫 ' + err.message, 'fout');
@@ -2892,7 +3050,7 @@
 
             feest();
             toast(`🎉 Bedankt ${naam}! Je bestelling is geplaatst.`, 'succes');
-            bewaarMijn(naam, nieuweBestellingen);
+            bewaarMijn(naam, nieuweBestellingen, info);
             // Is er een QR-code ingesteld, dan na het feestje meteen de gelegenheid om af te rekenen
             if (betaling) setTimeout(() => openBetaalModal({ naam, datum: vandaagISO() }), 1800);
             cart = [];

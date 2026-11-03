@@ -342,6 +342,8 @@
     // ---------- Betalingen ----------
     let alleBestellingen = [], alleBetalingen = [], betalingenBekend = true, eersteKeer = true;
     let afgesloten = null; // [{ Datum, Op }], of null als het script afsluiten nog niet kent
+    let bestellenDicht = null;      // vandaag geen nieuwe bestellingen meer; null = het script kent dit nog niet
+    let scriptVandaag = '';         // "vandaag" volgens het script (tijdzone van de Sheet), gezet door laadAlles
     let alleEmails = [];   // [{ Datum, Naam, Email }]: wie bij het bestellen een adres voor de bevestigingsmail gaf
     const euro = n => '€ ' + Number(n).toFixed(2).replace('.', ',');
     const vandaagISO = () => new Date().toLocaleDateString('sv-SE');
@@ -364,6 +366,8 @@
             alleBetalingen = betalingenBekend ? bet.betalingen : [];
             afgesloten = betalingenBekend && Array.isArray(bet.afgesloten) ? bet.afgesloten : null;
             alleEmails = betalingenBekend && Array.isArray(bet.emails) ? bet.emails : [];
+            bestellenDicht = betalingenBekend && typeof bet.bestellenDicht === 'boolean' ? bet.bestellenDicht : null;
+            scriptVandaag = (betalingenBekend && bet.vandaag) || vandaagISO();
             if (eersteKeer) {
                 eersteKeer = false;
                 // Standaard de laatste dag met bestellingen: bijvoorbeeld vrijdag, ook als je er maandag naar kijkt
@@ -402,11 +406,47 @@
     }
 
     // ---------- Afsluiten: de dag is klaar, collega's zien de bestelling niet meer ----------
+    // Bestellen dicht: geen nieuwe bestellingen meer, maar collega's zien hun bestelling nog en kunnen nog betalen
+    function bestellenDichtBlok(datum) {
+        if (datum !== scriptVandaag || bestellenDicht === null || (afgesloten || []).some(a => a.Datum === datum)) return null;
+        const blok = document.createElement('div');
+        blok.className = 'afsluit-blok' + (bestellenDicht ? ' dicht' : '');
+        const tekst = document.createElement('p');
+        const knop = document.createElement('button');
+        if (bestellenDicht) {
+            tekst.innerHTML = '<strong>🛑 Bestellen is dicht.</strong> Er kan vandaag niet meer besteld worden. Collega\'s zien hun bestelling nog en kunnen nog betalen.';
+            knop.textContent = '🟢 Bestellen weer open';
+            knop.onclick = () => zetBestellenDicht(false);
+        } else {
+            tekst.innerHTML = '<strong>🟢 Bestellen is open.</strong> Ga je bij e-food bestellen? Zet bestellen dan dicht, zodat er niemand meer bij komt. Betalen kan daarna gewoon.';
+            knop.className = 'hoofd';
+            knop.textContent = '🛑 Bestellen dicht';
+            knop.onclick = () => zetBestellenDicht(true);
+        }
+        blok.append(tekst, knop);
+        return blok;
+    }
+
+    async function zetBestellenDicht(dicht) {
+        melding($('betaalMelding'), '', '');
+        try {
+            const r = await postActie('bestellenDicht', { dicht });
+            if (!r.ok) { melding($('betaalMelding'), 'fout', r.error || 'Opslaan mislukt.'); return; }
+            bestellenDicht = r.bestellenDicht;
+            toonAfsluiten();
+            melding($('betaalMelding'), 'ok', dicht ? '🛑 Bestellen is dicht. Betalen kan nog.' : '🟢 Bestellen is weer open.');
+        } catch (err) {
+            melding($('betaalMelding'), 'fout', 'Geen verbinding met het Google-script. (' + err.message + ')');
+        }
+    }
+
     function toonAfsluiten() {
         const vak = $('afsluitBlok');
         const datum = $('betaalDatum').value;
         vak.replaceChildren();
         if (!datum || !betalingenBekend) return;
+        const dichtBlok = bestellenDichtBlok(datum);
+        if (dichtBlok) vak.appendChild(dichtBlok);
         const blok = document.createElement('div');
         blok.className = 'afsluit-blok';
         const tekst = document.createElement('p');
@@ -427,7 +467,7 @@
             knop.textContent = '🔓 Heropenen';
             knop.onclick = () => afsluiten(datum, false);
         } else {
-            tekst.innerHTML = '<strong>🔓 Open.</strong> Klaar met deze dag? Sluit hem af: dan verdwijnt de bestelling bij collega\'s uit "Mijn bestelling" en het afrekenscherm, en kan er niet meer besteld of betaald gemeld worden. Eerdere dagen die nog open staan, gaan mee.';
+            tekst.innerHTML = '<strong>🔓 Nog niet afgesloten.</strong> Heeft iedereen betaald en ben je klaar met deze dag? Sluit hem af: dan verdwijnt de bestelling bij collega\'s uit "Mijn bestelling" en het afrekenscherm, en kan er niet meer besteld of betaald gemeld worden. Eerdere dagen die nog open staan, gaan mee.';
             knop.className = 'hoofd';
             knop.textContent = '🔒 Bestelling van ' + dagNaam(datum) + ' afsluiten';
             knop.onclick = () => afsluiten(datum, true);
@@ -451,7 +491,10 @@
                 : '') + (eerder.length
                 ? '\n\nDeze eerdere dagen staan nog open en worden ook afgesloten: ' + eerder.map(dagNaam).join(', ') + '.'
                 : '');
-            if (!confirm('De bestelling van ' + dagNaam(datum) + ' afsluiten?' + waarschuwing)) return;
+            const vandaagWaarschuwing = datum === scriptVandaag
+                ? '\n\nLet op: dit is vandaag. Wil je alleen geen nieuwe bestellingen meer, maar moeten collega\'s nog kunnen betalen? Kies dan Annuleren en gebruik "Bestellen dicht".'
+                : '';
+            if (!confirm('De bestelling van ' + dagNaam(datum) + ' afsluiten?' + waarschuwing + vandaagWaarschuwing)) return;
         }
         melding($('betaalMelding'), '', '');
         try {
