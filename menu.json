@@ -1,6 +1,6 @@
 {
- "opgehaald": "2026-11-05T13:32:50.710Z",
- "geldigVanaf": "2026-11-05T14:15:03.2297069",
+ "opgehaald": "2026-11-09T15:31:33.161Z",
+ "geldigVanaf": "2026-11-06T09:10:06.6163727",
  "bron": "e-food.nl",
  "producten": [
   {
@@ -82,7 +82,7 @@
    "sub": "Actie",
    "name": "Cherry Trifle Sundae",
    "desc": "met Bastogne en kersen-kaneel topping",
-   "price": 4.95,
+   "price": 4.25,
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
@@ -3354,7 +3354,7 @@
    "sub": "Sundae",
    "name": "Cherry Trifle Sundae",
    "desc": "met Bastogne en kersen-kaneel topping",
-   "price": 4.95,
+   "price": 4.25,
    "statiegeld": 0,
    "vragenSetID": null,
    "extraSets": [],
