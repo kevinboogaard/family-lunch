@@ -495,7 +495,7 @@
             const perDag = new Map();
             let stuks = 0, omzet = 0;
             const bonBedragen = [], bonStuks = [], tijden = [];
-            let grootste = null;
+            let grootste = null, kleinste = null;
             for (const bon of bonnen) {
                 const bedrag = bon.r.reduce((s, r) => s + r[2], 0);
                 const aantal = bon.r.reduce((s, r) => s + r[1], 0);
@@ -503,6 +503,7 @@
                 bonBedragen.push(bedrag); bonStuks.push(aantal);
                 tijden.push(minuten(bon.t));
                 if (!grootste || bedrag > grootste.bedrag) grootste = { bedrag, aantal, datum: bon.d };
+                if (!kleinste || bedrag < kleinste.bedrag) kleinste = { bedrag, aantal, datum: bon.d };
                 const dag = perDag.get(bon.d) || { bonnen: 0, stuks: 0, omzet: 0 };
                 dag.bonnen++; dag.stuks += aantal; dag.omzet += bedrag;
                 perDag.set(bon.d, dag);
@@ -538,6 +539,8 @@
                 tegel('Stuks', getal(stuks), `${getal(stuks / bonnen.length, 1)} per bon`),
                 tegel('Omzet', euro(omzet), `${euro(omzet / dagen.length)} per vrijdag`),
                 tegel('Gemiddelde bon', euro(gem), `mediaan ${euro(mediaan(bonBedragen))} · σ ${euro(sigma)}`),
+                tegel('Hoogste bon', euro(grootste.bedrag), `${grootste.aantal} stuk${grootste.aantal === 1 ? '' : 's'} · ${nlDatum(grootste.datum)}`),
+                tegel('Laagste bon', euro(kleinste.bedrag), `${kleinste.aantal} stuk${kleinste.aantal === 1 ? '' : 's'} · ${nlDatum(kleinste.datum)}`),
                 tegel('Collega\'s', getal(data.collegas), 'ooit iets besteld'),
                 tegel('Menudekking', `${ooitBesteld}/${producten.length}`, `${getal(ooitBesteld / Math.max(1, producten.length) * 100, 1)}% ooit besteld`),
                 tegel('Frikandel-meter', `${getal(frikandellen * FRIKANDEL_CM / 100, 1)} m`, `${getal(frikandellen)} frikandellen × ${FRIKANDEL_CM} cm`)
