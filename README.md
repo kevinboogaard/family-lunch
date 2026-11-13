@@ -68,7 +68,7 @@ je Google Sheet; een rij weghalen daar haalt hem ook uit de lijst.
 
 Via de knop **📊 Stats** in de app (of `stats.html`) ziet iedereen cijfers over alle bestellingen tot nu toe:
 top 10 producten, categorieën, hoe laat er besteld wordt (en hoeveel er stiekem na 10:30 binnenkomt), omzet per vrijdag,
-de beste duo's op één bon, populairste opties, de grootte van een bon, hoe trouw collega's bestellen en een paar
+een animatie waarin de kroket en de frikandel op de vuist gaan (wie vaker besteld is, slaat harder), de beste duo's op één bon, populairste opties, de grootte van een bon, hoe trouw collega's bestellen en een paar
 weetjes (entropie van de menukeuze, de frikandel-meter).
 
 - **Zonder namen**: het script geeft per bon alleen de dag, de tijd en wat erop staat. Van de namen alleen tellingen

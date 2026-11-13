@@ -106,6 +106,52 @@
                padding: 7px 10px; border-radius: 10px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); max-width: 260px; display: none; white-space: pre-line; }
         .verborgen { display: none !important; }
 
+        /* Kroket tegen frikandel */
+        .gevecht { margin-bottom: 16px; overflow: hidden; }
+        .levens { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin-bottom: 6px; }
+        .leven small { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; font-size: 0.9em; }
+        .leven small b { font-family: var(--mono); color: var(--muted); font-weight: 600; }
+        .leven.rechts small { flex-direction: row-reverse; }
+        .hp { height: 14px; border-radius: 999px; background: var(--panel-licht); border: 1px solid var(--border); overflow: hidden; display: flex; margin-top: 4px; }
+        .leven.rechts .hp { justify-content: flex-end; }
+        .hp i { display: block; height: 100%; width: 100%; background: var(--mint); transition: width 0.35s ease-out, background 0.35s; }
+        .hp i.laag { background: var(--sun); }
+        .hp i.kritiek { background: var(--hot); }
+        .vs { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.4em; background: var(--vibe); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .arena { position: relative; height: 250px; border-radius: 18px; overflow: hidden;
+                 background: radial-gradient(60% 50% at 50% 100%, rgba(255, 194, 26, 0.18), transparent 70%),
+                             linear-gradient(to top, rgba(255,255,255,0.07) 0 38px, transparent 38px); }
+        .vechter { position: absolute; bottom: 22px; width: 100px; height: 200px; transform-origin: 50% 100%; }
+        .vechter svg { width: 100%; height: 100%; overflow: visible; display: block; }
+        .vechter .lijf { transform-origin: 50% 100%; animation: wiebel 1.1s ease-in-out infinite alternate; }
+        .vechter.rechts .lijf { animation-delay: -0.55s; }
+        .vechter.ko .lijf { animation: none; }
+        @keyframes wiebel { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(-6px) rotate(2deg); } }
+        .vechter.links { left: calc(50% - 150px); }
+        .vechter.rechts { right: calc(50% - 150px); }
+        .vechter .kroon { position: absolute; left: 50%; top: -34px; font-size: 34px; transform: translateX(-50%) scale(0); transition: transform 0.4s cubic-bezier(.3,1.8,.5,1); }
+        .vechter.winnaar .kroon { transform: translateX(-50%) scale(1); }
+        .vechter .ogen-dicht { display: none; }
+        .vechter.au .ogen-open, .vechter.ko .ogen-open { display: none; }
+        .vechter.au .ogen-dicht, .vechter.ko .ogen-dicht { display: inline; }
+        .knal { position: absolute; z-index: 2; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.6em; color: #2a1d12;
+                background: var(--sun); padding: 2px 12px; border-radius: 12px; border: 3px solid #2a1d12; pointer-events: none; white-space: nowrap; }
+        .schade { position: absolute; z-index: 2; font-family: var(--mono); font-weight: 700; color: var(--hot); pointer-events: none; }
+        .kruimel { position: absolute; width: 7px; height: 7px; border-radius: 50%; pointer-events: none; }
+        .uitslag { min-height: 1.6em; text-align: center; font-weight: 700; font-size: 1.05em; margin: 12px 0 0; }
+        .uitslag b { font-family: var(--mono); }
+        .opnieuw { display: block; margin: 10px auto 0; background: var(--panel-licht); color: var(--text); border: 1px solid var(--border);
+                   border-radius: 999px; padding: 8px 18px; font: inherit; font-weight: 600; font-size: 0.9em; cursor: pointer; }
+        .opnieuw:hover { background: rgba(255,255,255,0.12); }
+        .opnieuw:disabled { opacity: 0.5; cursor: default; }
+        @media (max-width: 760px) {
+            .vechter { width: 80px; height: 160px; }
+            .vechter.links { left: calc(50% - 120px); }
+            .vechter.rechts { right: calc(50% - 120px); }
+            .arena { height: 215px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .vechter .lijf { animation: none; } }
+
         @media (max-width: 760px) {
             .raster { grid-template-columns: minmax(0, 1fr); }
             .hbalk { grid-template-columns: minmax(0, 8.5em) 1fr auto; }
@@ -123,6 +169,57 @@
 
         <div id="inhoud" class="verborgen">
             <section class="tegels" id="tegels"></section>
+
+            <article class="kaart gevecht" id="gevecht">
+                <h2>🥊 Kroket vs. frikandel</h2>
+                <p class="sql">SELECT SUM(aantal) WHERE product LIKE '%kroket%' -- tegen '%frikandel%'. Elk besteld stuk is kracht.</p>
+                <div class="levens">
+                    <div class="leven"><small>Kroket <b id="kroketAantal">0</b></small><div class="hp"><i id="kroketHp"></i></div></div>
+                    <span class="vs">VS</span>
+                    <div class="leven rechts"><small>Frikandel <b id="frikandelAantal">0</b></small><div class="hp"><i id="frikandelHp"></i></div></div>
+                </div>
+                <div class="arena" id="arena">
+                    <div class="vechter links" id="kroket">
+                        <span class="kroon">👑</span>
+                        <svg viewBox="0 0 100 200" role="img" aria-label="Kroket met roze bokshandschoenen">
+                            <defs><linearGradient id="kroketKleur" x1="0" x2="1"><stop offset="0" stop-color="#e39a48"/><stop offset="1" stop-color="#a8581b"/></linearGradient></defs>
+                            <g class="lijf">
+                                <rect x="18" y="40" width="64" height="150" rx="32" fill="url(#kroketKleur)"/>
+                                <g fill="#f6c27a" opacity="0.7"><circle cx="30" cy="70" r="2.5"/><circle cx="55" cy="58" r="2"/><circle cx="70" cy="120" r="2.5"/><circle cx="36" cy="140" r="2"/><circle cx="62" cy="165" r="2.5"/><circle cx="44" cy="110" r="1.8"/><circle cx="28" cy="172" r="2"/><circle cx="74" cy="84" r="1.8"/></g>
+                                <g transform="translate(0 88)">
+                                    <g class="ogen-open"><circle cx="40" cy="0" r="9" fill="#fff"/><circle cx="43" cy="1" r="4.5" fill="#1a1020"/><circle cx="62" cy="0" r="9" fill="#fff"/><circle cx="65" cy="1" r="4.5" fill="#1a1020"/></g><g class="ogen-dicht"><path d="M34 -5 l12 10 M46 -5 l-12 10" stroke="#1a1020" stroke-width="3" stroke-linecap="round"/><path d="M56 -5 l12 10 M68 -5 l-12 10" stroke="#1a1020" stroke-width="3" stroke-linecap="round"/></g>
+                                    <path d="M30 -16 l18 7 M72 -16 l-18 7" stroke="#3a1d08" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M40 22 q11 -8 22 0" stroke="#3a1d08" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                                </g>
+                                <circle cx="14" cy="130" r="13" fill="#ff3d81" stroke="#7a1238" stroke-width="2"/>
+                                <circle cx="88" cy="122" r="13" fill="#ff3d81" stroke="#7a1238" stroke-width="2"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="vechter rechts" id="frikandel">
+                        <span class="kroon">👑</span>
+                        <svg viewBox="0 0 100 200" role="img" aria-label="Frikandel speciaal met blauwe bokshandschoenen">
+                            <defs><linearGradient id="frikandelKleur" x1="0" x2="1"><stop offset="0" stop-color="#8a4a2c"/><stop offset="1" stop-color="#4c2413"/></linearGradient></defs>
+                            <g class="lijf">
+                                <rect x="30" y="12" width="40" height="178" rx="20" fill="url(#frikandelKleur)"/>
+                                <g fill="#3a1a0c" opacity="0.5"><circle cx="40" cy="120" r="2"/><circle cx="58" cy="140" r="2.5"/><circle cx="44" cy="165" r="2"/><circle cx="60" cy="100" r="1.8"/><circle cx="50" cy="180" r="2"/></g>
+                                <path d="M30 34 q6 -16 20 -12 q14 -6 20 12 q-4 8 -10 4 q-6 8 -12 0 q-8 6 -18 -4z" fill="#fffbe9"/>
+                                <path d="M36 30 q6 6 12 0 q6 6 12 0" stroke="#e8432b" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <g fill="#f2f0c8"><rect x="40" y="16" width="5" height="5" rx="1"/><rect x="55" y="18" width="5" height="5" rx="1"/></g>
+                                <g transform="translate(0 66)">
+                                    <g class="ogen-open"><circle cx="42" cy="0" r="9" fill="#fff"/><circle cx="39" cy="1" r="4.5" fill="#1a1020"/><circle cx="60" cy="0" r="9" fill="#fff"/><circle cx="57" cy="1" r="4.5" fill="#1a1020"/></g><g class="ogen-dicht"><path d="M36 -5 l12 10 M48 -5 l-12 10" stroke="#1a1020" stroke-width="3" stroke-linecap="round"/><path d="M54 -5 l12 10 M66 -5 l-12 10" stroke="#1a1020" stroke-width="3" stroke-linecap="round"/></g>
+                                    <path d="M33 -14 l14 6 M67 -14 l-14 6" stroke="#1e0b03" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M43 20 q8 -7 16 0" stroke="#1e0b03" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                                </g>
+                                <circle cx="20" cy="108" r="13" fill="#4da3ff" stroke="#123c6b" stroke-width="2"/>
+                                <circle cx="82" cy="116" r="13" fill="#4da3ff" stroke="#123c6b" stroke-width="2"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <p class="uitslag" id="uitslag" aria-live="polite"></p>
+                <button class="opnieuw verborgen" id="opnieuw" onclick="speelGevecht()">🔁 Nog een rondje</button>
+            </article>
 
             <div class="raster">
                 <article class="kaart">
@@ -243,6 +340,142 @@
             document.getElementById(id + 'As').innerHTML = asLabels.map(l => `<span>${esc(l)}</span>`).join('');
         }
 
+        // ---------- Kroket tegen frikandel: hoe vaker besteld, hoe harder de klappen ----------
+        const KNALLEN = ['POW!', 'BAM!', 'KNAL!', 'SPLETS!', 'KRAK!', 'BOEM!', 'MAYO!', 'PATAT!'];
+        const RONDES = 9;
+        let gevechtStand = null, gevechtBezig = false;
+        const wacht = ms => new Promise(ok => setTimeout(ok, ms));
+        const rustig = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function zetHp(wie, hp) {
+            const balk = document.getElementById(wie + 'Hp');
+            balk.style.width = Math.max(0, hp) + '%';
+            balk.className = hp <= 25 ? 'kritiek' : hp <= 55 ? 'laag' : '';
+        }
+
+        // Wie slaat wanneer, en hoe hard. De verliezer gaat precies naar 0; de winnaar houdt over wat hij vaker besteld is.
+        function gevechtsplan(k, f) {
+            const totaal = k + f;
+            const slagen = { kroket: k ? Math.max(1, Math.round(RONDES * k / totaal)) : 0, frikandel: f ? Math.max(1, Math.round(RONDES * f / totaal)) : 0 };
+            const winnaar = k === f ? null : k > f ? 'kroket' : 'frikandel';
+            const schadeDoor = {
+                kroket: winnaar === 'kroket' ? 100 : winnaar ? 100 * k / f : 88,
+                frikandel: winnaar === 'frikandel' ? 100 : winnaar ? 100 * f / k : 88
+            };
+            const volgorde = [...Array(slagen.kroket).fill('kroket'), ...Array(slagen.frikandel).fill('frikandel')]
+                .map(w => [Math.random(), w]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+            if (winnaar) { volgorde.splice(volgorde.lastIndexOf(winnaar), 1); volgorde.push(winnaar); }
+            return { winnaar, volgorde, perSlag: { kroket: schadeDoor.kroket / (slagen.kroket || 1), frikandel: schadeDoor.frikandel / (slagen.frikandel || 1) } };
+        }
+
+        function knalEffect(arena, doel, naarRechts) {
+            const a = arena.getBoundingClientRect(), d = doel.getBoundingClientRect();
+            const x = d.left - a.left + d.width / 2, y = d.top - a.top + d.height * 0.3;
+            const knal = document.createElement('div');
+            knal.className = 'knal';
+            knal.textContent = KNALLEN[Math.floor(Math.random() * KNALLEN.length)];
+            knal.style.left = (x - 40) + 'px'; knal.style.top = (y - 40) + 'px';
+            arena.appendChild(knal);
+            knal.animate([{ transform: 'scale(0) rotate(-20deg)', opacity: 1 }, { transform: 'scale(1.15) rotate(' + (naarRechts ? 8 : -8) + 'deg)', opacity: 1, offset: 0.3 },
+                          { transform: 'scale(1) rotate(0deg)', opacity: 0 }], { duration: 650, easing: 'ease-out' }).onfinish = () => knal.remove();
+            const kleur = doel.id === 'kroket' ? '#e39a48' : '#8a4a2c';
+            for (let i = 0; i < 9; i++) {
+                const k = document.createElement('div');
+                k.className = 'kruimel';
+                k.style.background = i % 3 ? kleur : '#fffbe9';
+                k.style.left = x + 'px'; k.style.top = (y + 30) + 'px';
+                arena.appendChild(k);
+                const dx = (Math.random() - 0.5) * 140, dy = -40 - Math.random() * 70;
+                k.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${dx}px, ${dy}px)`, offset: 0.45 }, { transform: `translate(${dx * 1.3}px, 90px)`, opacity: 0 }],
+                          { duration: 800, easing: 'ease-out' }).onfinish = () => k.remove();
+            }
+        }
+
+        function schadeGetal(arena, doel, schade) {
+            const a = arena.getBoundingClientRect(), d = doel.getBoundingClientRect();
+            const s = document.createElement('div');
+            s.className = 'schade';
+            s.textContent = '-' + Math.round(schade);
+            s.style.left = (d.left - a.left + d.width / 2 - 12) + 'px'; s.style.top = (d.top - a.top) + 'px';
+            arena.appendChild(s);
+            s.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-40px)', opacity: 0 }], { duration: 900, easing: 'ease-out' }).onfinish = () => s.remove();
+        }
+
+        function uitslagTekst(k, f) {
+            if (!k && !f) return 'Nog geen kroket of frikandel besteld. De arena wacht…';
+            if (k === f) return `🤝 Gelijkspel! Allebei <b>${getal(k)}</b> keer besteld.`;
+            const [w, v, nw, nv] = k > f ? ['kroket', 'frikandel', k, f] : ['frikandel', 'kroket', f, k];
+            return `🏆 De <b>${w}</b> wint met <b>${getal(nw)}</b> tegen <b>${getal(nv)}</b> (${getal(nw / (k + f) * 100, 0)}%). Sorry, ${v}.`;
+        }
+
+        async function speelGevecht() {
+            if (!gevechtStand || gevechtBezig) return;
+            const { k, f } = gevechtStand;
+            const arena = document.getElementById('arena');
+            const el = { kroket: document.getElementById('kroket'), frikandel: document.getElementById('frikandel') };
+            const knop = document.getElementById('opnieuw');
+            const uitslag = document.getElementById('uitslag');
+            const hp = { kroket: 100, frikandel: 100 };
+            Object.values(el).forEach(e => { e.classList.remove('winnaar', 'ko', 'au'); e.getAnimations().forEach(a => a.cancel()); });
+            zetHp('kroket', 100); zetHp('frikandel', 100);
+            uitslag.innerHTML = '';
+            if (!k && !f) { uitslag.innerHTML = uitslagTekst(k, f); return; }
+
+            const plan = gevechtsplan(k, f);
+            gevechtBezig = true; knop.disabled = true;
+            if (!rustig()) {
+                uitslag.textContent = '🔔 Ding ding ding!';
+                await wacht(700);
+                for (const aanvaller of plan.volgorde) {
+                    const verdediger = aanvaller === 'kroket' ? 'frikandel' : 'kroket';
+                    const richting = aanvaller === 'kroket' ? 1 : -1;
+                    const afstand = arena.clientWidth < 500 ? 70 : 95;
+                    el[aanvaller].animate([{ transform: 'translateX(0)' }, { transform: `translateX(${richting * afstand}px) rotate(${richting * 8}deg)`, offset: 0.4 },
+                                           { transform: 'translateX(0)' }], { duration: 520, easing: 'cubic-bezier(.5,0,.3,1)' });
+                    await wacht(210);
+                    hp[verdediger] -= plan.perSlag[aanvaller];
+                    zetHp(verdediger, hp[verdediger]);
+                    el[verdediger].classList.add('au');
+                    el[verdediger].animate([{ transform: 'translateX(0)' }, { transform: `translateX(${richting * 14}px) rotate(${richting * 6}deg)` },
+                                            { transform: `translateX(${richting * -6}px)` }, { transform: 'translateX(0)' }], { duration: 360 });
+                    knalEffect(arena, el[verdediger], richting > 0);
+                    schadeGetal(arena, el[verdediger], plan.perSlag[aanvaller]);
+                    await wacht(330);
+                    el[verdediger].classList.remove('au');
+                    await wacht(260);
+                }
+            }
+            // Eindstand (zonder animatie meteen, voor wie liever geen beweging ziet)
+            zetHp('kroket', plan.winnaar === 'frikandel' ? 0 : plan.winnaar ? 100 - 100 * f / k : 12);
+            zetHp('frikandel', plan.winnaar === 'kroket' ? 0 : plan.winnaar ? 100 - 100 * k / f : 12);
+            if (plan.winnaar) {
+                const verliezer = plan.winnaar === 'kroket' ? 'frikandel' : 'kroket';
+                el[verliezer].classList.add('ko');
+                el[verliezer].animate([{ transform: 'rotate(0)' }, { transform: `translate(${(verliezer === 'kroket' ? 1 : -1) * el[verliezer].offsetHeight * 0.45}px, ${verliezer === 'kroket' ? -30 : -22}px) rotate(${verliezer === 'kroket' ? -90 : 90}deg)` }],
+                                      { duration: rustig() ? 0 : 600, easing: 'cubic-bezier(.6,0,.9,.6)', fill: 'forwards' });
+                el[plan.winnaar].classList.add('winnaar');
+                if (!rustig()) el[plan.winnaar].animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-30px)' }, { transform: 'translateY(0)' }],
+                                                         { duration: 450, iterations: 3, delay: 300, easing: 'ease-out' });
+            }
+            uitslag.innerHTML = uitslagTekst(k, f);
+            gevechtBezig = false; knop.disabled = false;
+            knop.classList.remove('verborgen');
+        }
+
+        function startGevecht(k, f) {
+            gevechtStand = { k, f };
+            document.getElementById('kroketAantal').textContent = getal(k);
+            document.getElementById('frikandelAantal').textContent = getal(f);
+            zetHp('kroket', 100); zetHp('frikandel', 100);
+            // Pas beginnen als het gevecht in beeld komt
+            const kaart = document.getElementById('gevecht');
+            if (!('IntersectionObserver' in window)) return speelGevecht();
+            const kijker = new IntersectionObserver(items => {
+                if (items.some(i => i.isIntersecting)) { kijker.disconnect(); speelGevecht(); }
+            }, { threshold: 0.5 });
+            kijker.observe(kaart);
+        }
+
         function tegel(label, waarde, onder = '') {
             return `<div class="tegel"><small>${esc(label)}</small><strong>${esc(waarde)}</strong><span>${esc(onder)}</span></div>`;
         }
@@ -309,6 +542,9 @@
                 tegel('Menudekking', `${ooitBesteld}/${producten.length}`, `${getal(ooitBesteld / Math.max(1, producten.length) * 100, 1)}% ooit besteld`),
                 tegel('Frikandel-meter', `${getal(frikandellen * FRIKANDEL_CM / 100, 1)} m`, `${getal(frikandellen)} frikandellen × ${FRIKANDEL_CM} cm`)
             ].join('');
+
+            const telNaam = patroon => [...stuksPerProduct].filter(([n]) => patroon.test(n)).reduce((s, [, n]) => s + n, 0);
+            startGevecht(telNaam(/kroket/i), telNaam(/frikandel/i));
 
             // Top 10 producten
             hBalken('topProducten', [...stuksPerProduct].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([naam, n]) => ({
