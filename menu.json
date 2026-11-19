@@ -1,6 +1,6 @@
 {
- "opgehaald": "2026-11-13T08:15:41.557Z",
- "geldigVanaf": "2026-11-06T09:10:06.6163727",
+ "opgehaald": "2026-11-19T14:45:18.205Z",
+ "geldigVanaf": "2026-11-16T10:57:27.9731168",
  "bron": "e-food.nl",
  "producten": [
   {
@@ -863,7 +863,7 @@
    "desc": "",
    "price": 2.65,
    "statiegeld": 0,
-   "vragenSetID": null,
+   "vragenSetID": 107484,
    "extraSets": [
     84919
    ],
@@ -2992,7 +2992,7 @@
    "cat": "Broodjes",
    "sub": "Warme brood specials",
    "name": "Uitsmijter",
-   "desc": "",
+   "desc": "Personaliseer met keuze uit kaas, ham, bacon, fricandeau, rosbief, paprika/champignon/ui",
    "price": 6.95,
    "statiegeld": 0,
    "vragenSetID": null,
