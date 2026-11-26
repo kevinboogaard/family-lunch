@@ -1,6 +1,6 @@
 {
- "opgehaald": "2026-11-19T14:45:18.205Z",
- "geldigVanaf": "2026-11-16T10:57:27.9731168",
+ "opgehaald": "2026-11-26T15:51:48.040Z",
+ "geldigVanaf": "2026-11-26T12:45:02.6197849",
  "bron": "e-food.nl",
  "producten": [
   {
@@ -2351,22 +2351,6 @@
    ],
    "foto": "https://ntf.blob.core.windows.net/pictures/5-638859995390811737.jpg",
    "fotoGroot": "https://ntf.blob.core.windows.net/pictures/2-638859995390811737.jpg"
-  },
-  {
-   "id": 626329,
-   "menuItemId": 3125436,
-   "cat": "Salades",
-   "sub": "Maaltijdsalades",
-   "name": "Tonijnsalade",
-   "desc": "",
-   "price": 8.75,
-   "statiegeld": 0,
-   "vragenSetID": 111445,
-   "extraSets": [
-    56312
-   ],
-   "foto": null,
-   "fotoGroot": null
   },
   {
    "id": 515515,
