@@ -79,10 +79,10 @@ weetjes (entropie van de menukeuze, de frikandel-meter).
 ## Snackstapelaar
 
 Een tweede spelletje (`snackstapelaar.html`, ook te openen via **🎮 Spelletje** > **🍢 Nieuw: Snackstapelaar**):
-vallende snacks stapelen tot een rij vol is. Een eigen spel, met snacks als stukken: bitterbal, kroket, frikandel,
-frietzak, bamischijf en het Family-bakje.
+vallende snacks stapelen tot een rij vol is. Een eigen spel, met echte snacks in hun eigen maat en een eigen kleur bordje:
+frikandel speciaal (5×1), kroket (3×2), bitterbal (1×1), kaassoufflé (2×1), bamischijf (2×2) en patatje mayo in een puntzak.
 
-- **Mayo-bom**: elke 15e snack. Valt hij op een snack, dan verdwijnen alle snacks van die soort en zakt de rest.
+- **Mayo-bom**: elke 12e snack. Valt hij op een snack, dan verdwijnen alle snacks van die soort en zakt de rest.
 - **Vol menu**: een volle rij met één soort snack levert extra punten op.
 - Elke 8 rijen een level hoger: dan zakken de snacks sneller.
 - Op pc met de pijltjes en de spatie, op de telefoon met knoppen onder het bord of door te tikken en te vegen.

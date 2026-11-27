@@ -112,10 +112,10 @@
                     <canvas id="bord" aria-label="Speelveld van Snackstapelaar"></canvas>
                     <div class="laag" id="startLaag">
                         <h2>🍟 Snackstapelaar</h2>
-                        <p>Stapel de snacks. Een volle rij gaat de frituur in.</p>
+                        <p>Stapel frikandellen, kroketten, bitterballen en meer. Een volle rij gaat de frituur in.</p>
                         <ul>
                             <li>🥫 <b>Mayo-bom</b>: valt hij op een snack, dan verdwijnen alle snacks van die soort</li>
-                            <li>⭐ <b>Vol menu</b>: een rij met één soort snack telt dubbel</li>
+                            <li>⭐ <b>Vol menu</b>: een volle rij met één soort snack levert extra op</li>
                             <li>⚡ Elke 8 rijen gaat het sneller</li>
                         </ul>
                         <button class="start-knop" id="startKnop">▶ Start</button>
@@ -168,30 +168,187 @@
     </main>
 
     <script>
-        const KOLOMMEN = 8, RIJEN = 16;
-        const MAYO_ELKE = 15;          // elke zoveelste snack is een mayo-bom
+        const KOLOMMEN = 10, RIJEN = 18;
+        const MAYO_ELKE = 12;          // elke zoveelste snack is een mayo-bom
         const RIJEN_PER_LEVEL = 8;
         const PUNTEN_RIJEN = [0, 100, 300, 600, 1000];
         const RECORD_SLEUTEL = 'familySnackRecord';
         const LANDTIJD = 500;          // ms dat een gelande snack nog opzij kan voor hij vastzit
 
-        // De snacks: vorm (1 = vakje) en hoe ze eruitzien
+        // ---------- Tekenhulpjes ----------
+        function rondeRechthoek(c, x, y, b, h, r) {
+            c.beginPath();
+            if (c.roundRect) c.roundRect(x, y, b, h, r); else c.rect(x, y, b, h);
+        }
+        // Vaste "willekeur", zodat kruimels en uitjes niet flikkeren
+        function willekeur(zaad) {
+            let a = zaad;
+            return () => { a = (a * 16807) % 2147483647; return (a - 1) / 2147483646; };
+        }
+        function kruimels(c, x, y, b, h, aantal, kleuren, zaad, grootte) {
+            const rnd = willekeur(zaad);
+            for (let i = 0; i < aantal; i++) {
+                c.beginPath();
+                c.arc(x + rnd() * b, y + rnd() * h, grootte * (0.5 + rnd() * 0.7), 0, Math.PI * 2);
+                c.fillStyle = kleuren[i % kleuren.length];
+                c.fill();
+            }
+        }
+        function verloop(c, y1, y2, van, naar) {
+            const g = c.createLinearGradient(0, y1, 0, y2);
+            g.addColorStop(0, van); g.addColorStop(1, naar);
+            return g;
+        }
+
+        // ---------- De snacks: vorm (1 = vakje), kleur van het bordje en een tekening over de hele snack ----------
+        // Elke tekening krijgt de vakgrootte s en tekent in het gewone (ongedraaide) vlak van de snack.
         const SNACKS = {
-            bitterbal:  { naam: 'Bitterbal',     vorm: [[1]],                 kleur: '#9a5a26', licht: '#c9853f' },
-            kroket:     { naam: 'Kroket',        vorm: [[1, 1]],              kleur: '#d98a3a', licht: '#f3b468' },
-            frikandel:  { naam: 'Frikandel',     vorm: [[1, 1, 1]],           kleur: '#7a3f22', licht: '#9d5a37' },
-            frietzak:   { naam: 'Frietzak',      vorm: [[1, 0], [1, 1]],      kleur: '#ffcf3f', licht: '#fff0a6' },
-            bamischijf: { naam: 'Bamischijf',    vorm: [[1, 1], [1, 1]],      kleur: '#f39a2b', licht: '#ffd08a' },
-            bakje:      { naam: 'Family-bakje',  vorm: [[1, 0, 1], [1, 1, 1]], kleur: '#e8432b', licht: '#ffcf3f' },
-            mayo:       { naam: 'Mayo-bom',      vorm: [[1]],                 kleur: '#fffbe9', licht: '#ffffff' }
+            frikandel: {
+                naam: 'Frikandel speciaal', vorm: [[1, 1, 1, 1, 1]], bord: '#ff5fa2',
+                teken(c, s) {
+                    rondeRechthoek(c, s * 0.08, s * 0.18, s * 4.84, s * 0.64, s * 0.32);
+                    c.fillStyle = verloop(c, s * 0.18, s * 0.82, '#b0552b', '#6b2a12'); c.fill();
+                    kruimels(c, s * 0.3, s * 0.3, s * 4.4, s * 0.45, 22, ['#5a220c', '#c8703f'], 7, s * 0.03);
+                    c.fillStyle = 'rgba(255,255,255,0.18)'; rondeRechthoek(c, s * 0.3, s * 0.26, s * 4.4, s * 0.08, s * 0.04); c.fill();
+                    // Speciaal: mayo, curry en uitjes
+                    c.lineCap = 'round'; c.lineJoin = 'round';
+                    c.beginPath();
+                    for (let i = 0; i <= 16; i++) c.lineTo(s * (0.55 + i * 0.245), s * (i % 2 ? 0.4 : 0.6));
+                    c.strokeStyle = '#fffbe9'; c.lineWidth = s * 0.13; c.stroke();
+                    c.beginPath();
+                    for (let i = 0; i <= 40; i++) c.lineTo(s * (0.6 + i * 0.095), s * (0.5 + Math.sin(i * 0.9) * 0.1));
+                    c.strokeStyle = '#ff3b1f'; c.lineWidth = s * 0.08; c.stroke();
+                    const rnd = willekeur(11);
+                    c.fillStyle = '#f6f2c8';
+                    for (let i = 0; i < 14; i++) c.fillRect(s * (0.6 + rnd() * 3.8), s * (0.32 + rnd() * 0.3), s * 0.08, s * 0.08);
+                }
+            },
+            kroket: {
+                naam: 'Kroket', vorm: [[1, 1, 1], [1, 1, 1]], bord: '#2fe3a3',
+                teken(c, s) {
+                    rondeRechthoek(c, s * 0.1, s * 0.28, s * 2.8, s * 1.44, s * 0.7);
+                    c.fillStyle = verloop(c, s * 0.28, s * 1.72, '#f6b158', '#b45e18'); c.fill();
+                    kruimels(c, s * 0.2, s * 0.35, s * 2.6, s * 1.3, 90, ['#ffd68f', '#9a4a12', '#e58b34'], 3, s * 0.045);
+                    c.fillStyle = 'rgba(255,255,255,0.15)'; rondeRechthoek(c, s * 0.45, s * 0.42, s * 2.1, s * 0.2, s * 0.1); c.fill();
+                    // Een flinke klodder mosterd
+                    c.beginPath();
+                    for (let i = 0; i <= 30; i++) c.lineTo(s * (0.55 + i * 0.063), s * (0.92 + Math.sin(i * 0.7) * 0.13));
+                    c.strokeStyle = '#ffd21a'; c.lineWidth = s * 0.16; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
+                }
+            },
+            bitterbal: {
+                naam: 'Bitterbal', vorm: [[1]], bord: '#4da3ff',
+                teken(c, s) {
+                    const g = c.createRadialGradient(s * 0.4, s * 0.38, s * 0.05, s * 0.5, s * 0.5, s * 0.42);
+                    g.addColorStop(0, '#f0a050'); g.addColorStop(1, '#8a420f');
+                    c.beginPath(); c.arc(s * 0.5, s * 0.52, s * 0.38, 0, Math.PI * 2); c.fillStyle = g; c.fill();
+                    kruimels(c, s * 0.25, s * 0.28, s * 0.5, s * 0.5, 12, ['#ffd68f', '#7a3a0c'], 5, s * 0.035);
+                    c.beginPath(); c.arc(s * 0.62, s * 0.3, s * 0.09, 0, Math.PI * 2); c.fillStyle = '#ffd21a'; c.fill();
+                }
+            },
+            kaassouffle: {
+                naam: 'Kaassoufflé', vorm: [[1, 1]], bord: '#b57bff',
+                teken(c, s) {
+                    // Gesmolten kaas die eruit loopt
+                    c.beginPath(); c.ellipse(s * 1.78, s * 0.72, s * 0.18, s * 0.12, 0, 0, Math.PI * 2); c.fillStyle = '#ffe14d'; c.fill();
+                    rondeRechthoek(c, s * 0.1, s * 0.2, s * 1.8, s * 0.6, s * 0.16);
+                    c.fillStyle = verloop(c, s * 0.2, s * 0.8, '#ffd677', '#e39a2f'); c.fill();
+                    kruimels(c, s * 0.2, s * 0.28, s * 1.6, s * 0.44, 24, ['#fff0b8', '#c47a1c'], 9, s * 0.03);
+                    // Vorkafdrukken langs de rand
+                    c.strokeStyle = '#b8701a'; c.lineWidth = s * 0.035; c.lineCap = 'round';
+                    for (let i = 0; i < 9; i++) {
+                        const x = s * (0.22 + i * 0.195);
+                        c.beginPath(); c.moveTo(x, s * 0.22); c.lineTo(x, s * 0.31); c.stroke();
+                        c.beginPath(); c.moveTo(x, s * 0.69); c.lineTo(x, s * 0.78); c.stroke();
+                    }
+                    c.beginPath(); c.moveTo(s * 1.7, s * 0.62); c.quadraticCurveTo(s * 1.95, s * 0.66, s * 1.86, s * 0.86);
+                    c.strokeStyle = '#ffe14d'; c.lineWidth = s * 0.09; c.stroke();
+                }
+            },
+            bamischijf: {
+                naam: 'Bamischijf', vorm: [[1, 1], [1, 1]], bord: '#c6f432',
+                teken(c, s) {
+                    rondeRechthoek(c, s * 0.12, s * 0.12, s * 1.76, s * 1.76, s * 0.38);
+                    c.fillStyle = verloop(c, s * 0.12, s * 1.88, '#ffb54a', '#d9701a'); c.fill();
+                    c.strokeStyle = '#ffe3a6'; c.lineWidth = s * 0.07; c.lineCap = 'round';
+                    for (let r = 0; r < 5; r++) {
+                        c.beginPath();
+                        for (let i = 0; i <= 24; i++) c.lineTo(s * (0.3 + i * 0.058), s * (0.42 + r * 0.28 + Math.sin(i * 0.8 + r) * 0.06));
+                        c.stroke();
+                    }
+                    const rnd = willekeur(21);
+                    for (let i = 0; i < 10; i++) {
+                        c.fillStyle = i % 2 ? '#2fa84f' : '#ff3b1f';
+                        c.fillRect(s * (0.35 + rnd() * 1.25), s * (0.35 + rnd() * 1.25), s * 0.11, s * 0.08);
+                    }
+                }
+            },
+            frietzak: {
+                naam: 'Patatje mayo', vorm: [[1, 1, 1], [1, 1, 1], [0, 1, 0]], bord: '#ff8a3d',
+                teken(c, s) {
+                    // Frietjes die boven de zak uitsteken
+                    const rnd = willekeur(4);
+                    for (let i = 0; i < 11; i++) {
+                        const x = s * (0.25 + i * 0.23), boven = s * (0.08 + rnd() * 0.35), hoek = (rnd() - 0.5) * 0.25;
+                        c.save(); c.translate(x, s * 1.3); c.rotate(hoek);
+                        c.fillStyle = '#ffd84a'; c.fillRect(-s * 0.08, boven - s * 1.3, s * 0.16, s * 1.3 - boven);
+                        c.fillStyle = '#f0a91a'; c.fillRect(s * 0.03, boven - s * 1.3, s * 0.05, s * 1.3 - boven);
+                        c.restore();
+                    }
+                    // Een flinke klodder mayo
+                    c.beginPath(); c.arc(s * 1.75, s * 0.62, s * 0.3, 0, Math.PI * 2); c.arc(s * 1.45, s * 0.75, s * 0.24, 0, Math.PI * 2);
+                    c.fillStyle = '#fffbe9'; c.fill();
+                    c.beginPath(); c.arc(s * 1.7, s * 0.52, s * 0.08, 0, Math.PI * 2); c.fillStyle = '#ffffff'; c.fill();
+                    // De rood-witte puntzak
+                    c.save();
+                    c.beginPath(); c.moveTo(s * 0.04, s * 1.02); c.lineTo(s * 2.96, s * 1.02); c.lineTo(s * 2.1, s * 2.96); c.lineTo(s * 0.9, s * 2.96); c.closePath();
+                    c.fillStyle = '#fffaf0'; c.fill(); c.clip();
+                    c.fillStyle = '#ef3b2f';
+                    for (let i = -3; i < 7; i++) { c.beginPath(); c.moveTo(s * (i * 0.5), s * 1); c.lineTo(s * (i * 0.5 + 0.25), s * 1); c.lineTo(s * (i * 0.5 + 1.25), s * 3); c.lineTo(s * (i * 0.5 + 1), s * 3); c.fill(); }
+                    c.restore();
+                    c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(s * 0.04, s * 1.02, s * 2.92, s * 0.12);
+                }
+            },
+            mayo: {
+                naam: 'Mayo-bom', vorm: [[1]], bord: '#ff3d81',
+                teken(c, s) {
+                    c.beginPath();
+                    c.moveTo(s * 0.18, s * 0.82);
+                    c.bezierCurveTo(s * 0.05, s * 0.55, s * 0.3, s * 0.48, s * 0.38, s * 0.42);
+                    c.bezierCurveTo(s * 0.42, s * 0.2, s * 0.6, s * 0.16, s * 0.56, s * 0.08);
+                    c.bezierCurveTo(s * 0.8, s * 0.2, s * 0.72, s * 0.42, s * 0.66, s * 0.46);
+                    c.bezierCurveTo(s * 0.92, s * 0.52, s * 0.95, s * 0.75, s * 0.82, s * 0.82);
+                    c.closePath();
+                    c.fillStyle = '#fffbe9'; c.fill();
+                    c.strokeStyle = 'rgba(200,170,120,0.6)'; c.lineWidth = s * 0.04; c.stroke();
+                    c.beginPath(); c.arc(s * 0.38, s * 0.6, s * 0.07, 0, Math.PI * 2); c.fillStyle = '#ffffff'; c.fill();
+                }
+            }
         };
-        const GEWONE = ['bitterbal', 'kroket', 'frikandel', 'frietzak', 'bamischijf', 'bakje'];
+        // Bitterballen komen wat vaker: handig om gaatjes te vullen
+        const ZAK = ['frikandel', 'kroket', 'bitterbal', 'bitterbal', 'kaassouffle', 'bamischijf', 'frietzak'];
+
+        // Vakjes van een snack bij een draaiing (0-3, met de klok mee), met per vakje waar het in de tekening zit (u, v)
+        const vakkenCache = {};
+        function vakkenVan(soort, draai) {
+            const sleutel = soort + draai;
+            if (vakkenCache[sleutel]) return vakkenCache[sleutel];
+            const vorm = SNACKS[soort].vorm, H = vorm.length, B = vorm[0].length;
+            const vakken = [];
+            vorm.forEach((rij, v) => rij.forEach((vol, u) => {
+                if (!vol) return;
+                const [x, y] = [[u, v], [H - 1 - v, u], [B - 1 - u, H - 1 - v], [v, B - 1 - u]][draai];
+                vakken.push({ u, v, x, y });
+            }));
+            const maat = draai % 2 ? { b: H, h: B } : { b: B, h: H };
+            return (vakkenCache[sleutel] = { vakken, ...maat });
+        }
 
         const bord = document.getElementById('bord');
         const ctx = bord.getContext('2d');
         const volgendeCanvas = document.getElementById('volgende');
         const vctx = volgendeCanvas.getContext('2d');
-        let cel = 30, volgendeMaat = { b: 96, h: 72, s: 22 };
+        let cel = 30, volgendeMaat = { b: 96, h: 72 };
 
         let veld, stuk, volgende, zak = [], teller, score, rijen, level, status = 'start', flits = null, teksten = [], stukNr = 0;
         let tijdOver = 0, vorigeTijd = 0, opDeGrond = 0;
@@ -207,48 +364,42 @@
             const knoppen = document.getElementById('knoppen');
             const knoppenHoog = getComputedStyle(knoppen).display === 'none' ? 0 : 64;
             const boven = bord.parentElement.getBoundingClientRect().top + scrollY;
-            const ruimteHoog = innerHeight - boven - knoppenHoog - 28;
-            const ruimteBreed = smal ? innerWidth - 46 : Math.min(innerWidth - 270, 520);
-            cel = Math.max(16, Math.min(38, Math.floor(Math.min(ruimteHoog / RIJEN, ruimteBreed / KOLOMMEN))));
+            const ruimteHoog = innerHeight - boven - knoppenHoog - 44;
+            const ruimteBreed = smal ? innerWidth - 46 : Math.min(innerWidth - 270, 560);
+            cel = Math.max(16, Math.min(36, Math.floor(Math.min(ruimteHoog / RIJEN, ruimteBreed / KOLOMMEN))));
             const dpr = window.devicePixelRatio || 1;
             bord.width = KOLOMMEN * cel * dpr; bord.height = RIJEN * cel * dpr;
             bord.style.width = KOLOMMEN * cel + 'px'; bord.style.height = RIJEN * cel + 'px';
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            const vb = smal ? 64 : 96, vh = smal ? 48 : 72;
+            const vb = smal ? 64 : 120, vh = smal ? 48 : 80;
             volgendeCanvas.width = vb * dpr; volgendeCanvas.height = vh * dpr;
             volgendeCanvas.style.width = vb + 'px'; volgendeCanvas.style.height = vh + 'px';
-            volgendeMaat = { b: vb, h: vh, s: smal ? 15 : 22 };
             vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            volgendeMaat = { b: vb, h: vh };
             tekenVolgende();
         }
 
         // ---------- Stukken ----------
         function trekSnack() {
-            if (!zak.length) zak = [...GEWONE].sort(() => Math.random() - 0.5);
+            if (!zak.length) zak = [...ZAK].sort(() => Math.random() - 0.5);
             return zak.pop();
         }
         function maakStuk(soort) {
             stukNr++;
-            const vorm = SNACKS[soort].vorm.map(r => [...r]);
-            return { soort, vorm, x: Math.floor((KOLOMMEN - vorm[0].length) / 2), y: 0, id: stukNr };
+            const { b } = vakkenVan(soort, 0);
+            return { soort, draai: 0, x: Math.floor((KOLOMMEN - b) / 2), y: 0, id: stukNr };
         }
         function volgendeSoort() {
             teller++;
             return teller % MAYO_ELKE === 0 ? 'mayo' : trekSnack();
         }
-        function draai(vorm, richting) {
-            const h = vorm.length, b = vorm[0].length;
-            return Array.from({ length: b }, (_, r) => Array.from({ length: h }, (_, c) => richting > 0 ? vorm[h - 1 - c][r] : vorm[c][b - 1 - r]));
+        function past(soort, draai, x, y) {
+            return vakkenVan(soort, draai).vakken.every(v => {
+                const vx = x + v.x, vy = y + v.y;
+                return vx >= 0 && vx < KOLOMMEN && vy < RIJEN && (vy < 0 || !veld[vy][vx]);
+            });
         }
-        function past(vorm, x, y) {
-            for (let r = 0; r < vorm.length; r++) for (let c = 0; c < vorm[r].length; c++) {
-                if (!vorm[r][c]) continue;
-                const vx = x + c, vy = y + r;
-                if (vx < 0 || vx >= KOLOMMEN || vy >= RIJEN) return false;
-                if (vy >= 0 && veld[vy][vx]) return false;
-            }
-            return true;
-        }
+        const stukPast = (dx = 0, dy = 0, draai = stuk.draai) => past(stuk.soort, draai, stuk.x + dx, stuk.y + dy);
 
         // ---------- Spelverloop ----------
         function nieuwSpel() {
@@ -266,25 +417,28 @@
             volgende = volgendeSoort();
             tekenVolgende();
             werkCijfersBij();
-            if (!past(stuk.vorm, stuk.x, stuk.y)) spelVoorbij();
+            if (!stukPast()) spelVoorbij();
         }
-        const snelheid = () => Math.max(90, 820 - (level - 1) * 75);
+        const snelheid = () => Math.max(90, 900 - (level - 1) * 80);
 
         function beweeg(dx) {
             if (status !== 'spelen' || flits) return;
-            if (past(stuk.vorm, stuk.x + dx, stuk.y)) stuk.x += dx;
+            if (stukPast(dx, 0)) stuk.x += dx;
         }
         function draaiStuk(richting = 1) {
             if (status !== 'spelen' || flits) return;
-            const nieuw = draai(stuk.vorm, richting);
-            // Past hij niet? Een stapje opzij of omhoog proberen
-            for (const [dx, dy] of [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1]]) {
-                if (past(nieuw, stuk.x + dx, stuk.y + dy)) { stuk.vorm = nieuw; stuk.x += dx; stuk.y += dy; return; }
+            const oud = vakkenVan(stuk.soort, stuk.draai);
+            const draai = (stuk.draai + (richting > 0 ? 1 : 3)) % 4;
+            const nieuw = vakkenVan(stuk.soort, draai);
+            // Draaien om het midden; past hij niet, dan een stapje opzij of omhoog proberen
+            const mx = Math.floor((oud.b - nieuw.b) / 2), my = Math.floor((oud.h - nieuw.h) / 2);
+            for (const [dx, dy] of [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [0, -2]]) {
+                if (stukPast(mx + dx, my + dy, draai)) { stuk.draai = draai; stuk.x += mx + dx; stuk.y += my + dy; return; }
             }
         }
         function zakEen(door = 'zwaartekracht') {
             if (status !== 'spelen' || flits) return false;
-            if (past(stuk.vorm, stuk.x, stuk.y + 1)) {
+            if (stukPast(0, 1)) {
                 stuk.y++;
                 if (door === 'speler') score += 1;
                 tijdOver = 0;
@@ -296,17 +450,16 @@
         function laatVallen() {
             if (status !== 'spelen' || flits) return;
             let n = 0;
-            while (past(stuk.vorm, stuk.x, stuk.y + 1)) { stuk.y++; n++; }
+            while (stukPast(0, 1)) { stuk.y++; n++; }
             score += n * 2;
             vastzetten();
         }
 
         function vastzetten() {
             if (stuk.soort === 'mayo') return mayoBom();
-            stuk.vorm.forEach((r, ri) => r.forEach((v, ci) => {
-                if (v && stuk.y + ri >= 0) veld[stuk.y + ri][stuk.x + ci] = { soort: stuk.soort, id: stuk.id, zaad: (stuk.id * 31 + ri * 7 + ci * 13) % 97 };
-            }));
-            if (stuk.vorm.some((r, ri) => r.some(v => v && stuk.y + ri < 0))) return spelVoorbij();
+            const { vakken } = vakkenVan(stuk.soort, stuk.draai);
+            if (vakken.some(v => stuk.y + v.y < 0)) return spelVoorbij();
+            vakken.forEach(v => { veld[stuk.y + v.y][stuk.x + v.x] = { soort: stuk.soort, id: stuk.id, draai: stuk.draai, u: v.u, v: v.v }; });
             controleerRijen() || nieuwStuk();
         }
 
@@ -315,21 +468,21 @@
             const x = stuk.x, onder = stuk.y + 1;
             const doelwit = onder < RIJEN ? veld[onder][x] : null;
             if (!doelwit) {
-                zweefTekst('Splats! Mis…', x, stuk.y, '#fffbe9');
+                zweefTekst('Splats! Mis…', stuk.y, '#fffbe9');
                 return nieuwStuk();
             }
-            let weg = 0;
+            const ids = new Set();
             for (let r = 0; r < RIJEN; r++) for (let c = 0; c < KOLOMMEN; c++) {
-                if (veld[r][c] && veld[r][c].soort === doelwit.soort) { veld[r][c] = null; weg++; }
+                if (veld[r][c] && veld[r][c].soort === doelwit.soort) { ids.add(veld[r][c].id); veld[r][c] = null; }
             }
             for (let c = 0; c < KOLOMMEN; c++) {
                 const kolom = [];
                 for (let r = RIJEN - 1; r >= 0; r--) if (veld[r][c]) kolom.push(veld[r][c]);
                 for (let r = RIJEN - 1, i = 0; r >= 0; r--, i++) veld[r][c] = kolom[i] || null;
             }
-            const punten = weg * 15 * level;
+            const punten = ids.size * 50 * level;
             score += punten;
-            zweefTekst(`🥫 ${weg} × ${SNACKS[doelwit.soort].naam.toLowerCase()} weg! +${punten}`, x, onder, '#fffbe9');
+            zweefTekst(`🥫 ${ids.size}× ${SNACKS[doelwit.soort].naam.toLowerCase()} weg! +${punten}`, onder, '#fffbe9');
             controleerRijen() || nieuwStuk();
         }
 
@@ -338,10 +491,10 @@
             for (let r = 0; r < RIJEN; r++) if (veld[r].every(Boolean)) vol.push(r);
             if (!vol.length) return false;
             const menu = vol.filter(r => veld[r].every(v => v.soort === veld[r][0].soort)).length;
-            const punten = (PUNTEN_RIJEN[Math.min(vol.length, 4)] + Math.max(0, vol.length - 4) * 300 + menu * 200) * level;
+            const punten = (PUNTEN_RIJEN[Math.min(vol.length, 4)] + Math.max(0, vol.length - 4) * 300 + menu * 300) * level;
             score += punten;
             const tekst = menu ? `⭐ Vol menu! +${punten}` : vol.length >= 3 ? `🔥 ${vol.length} rijen! +${punten}` : `+${punten}`;
-            zweefTekst(tekst, KOLOMMEN / 2 - 0.5, vol[0], menu ? '#ffc21a' : '#2fe3a3');
+            zweefTekst(tekst, vol[0], menu ? '#ffc21a' : '#2fe3a3');
             flits = { rijen: vol, tot: performance.now() + 260 };
             return true;
         }
@@ -350,9 +503,8 @@
             flits.rijen.forEach(r => { veld.splice(r, 1); veld.unshift(Array(KOLOMMEN).fill(null)); });
             rijen += flits.rijen.length;
             level = 1 + Math.floor(rijen / RIJEN_PER_LEVEL);
-            if (level > oudLevel) zweefTekst(`⚡ Level ${level}`, KOLOMMEN / 2 - 0.5, RIJEN / 2, '#ff3d81');
+            if (level > oudLevel) zweefTekst(`⚡ Level ${level}`, RIJEN / 2, '#ff3d81');
             flits = null;
-            // Kan een mayo-bom die rijen vrijmaakte weer volle rijen maken? Dan meteen nog een keer.
             controleerRijen() || nieuwStuk();
         }
 
@@ -376,7 +528,7 @@
             document.getElementById('pauzeLaag').classList.toggle('verborgen', welke !== 'pauze');
             document.getElementById('eindLaag').classList.toggle('verborgen', welke !== 'eind');
         }
-        function zweefTekst(tekst, x, y, kleur) { teksten.push({ tekst, y, kleur, start: performance.now() }); }
+        function zweefTekst(tekst, y, kleur) { teksten.push({ tekst, y, kleur, start: performance.now() }); }
 
         function werkCijfersBij() {
             document.getElementById('score').textContent = score.toLocaleString('nl-NL');
@@ -389,81 +541,56 @@
         }
 
         // ---------- Tekenen ----------
-        function tekenCel(c, x, y, s, vak, buren, schaduw) {
+        // Eén vakje: eerst het gekleurde bordje (aansluitend op de rest van dezelfde snack), dan het stukje van de snack-tekening
+        function tekenVak(c, x, y, s, vak, buren, schaduw) {
             const info = SNACKS[vak.soort];
-            const ins = Math.max(1, s * 0.06);
+            const ins = Math.max(1, s * 0.05), rad = s * 0.28;
             const l = x + (buren.w ? 0 : ins), t = y + (buren.n ? 0 : ins);
-            const rr = x + s - (buren.e ? 0 : ins), b = y + s - (buren.s ? 0 : ins);
-            const rad = s * 0.32;
-            const hoek = (a, bb) => (a || bb) ? 0 : rad;
+            const r = x + s - (buren.e ? 0 : ins), b = y + s - (buren.s ? 0 : ins);
+            const hoek = (p, q) => (p || q) ? 0 : rad;
             c.save();
-            c.globalAlpha = schaduw ? 0.22 : 1;
             c.beginPath();
-            if (vak.soort === 'bitterbal' || vak.soort === 'mayo') {
-                c.arc(x + s / 2, y + s / 2, s / 2 - ins, 0, Math.PI * 2);
-            } else if (c.roundRect) {
-                c.roundRect(l, t, rr - l, b - t, [hoek(buren.n, buren.w), hoek(buren.n, buren.e), hoek(buren.s, buren.e), hoek(buren.s, buren.w)]);
-            } else {
-                c.rect(l, t, rr - l, b - t);
+            if (c.roundRect) c.roundRect(l, t, r - l, b - t, [hoek(buren.n, buren.w), hoek(buren.n, buren.e), hoek(buren.s, buren.e), hoek(buren.s, buren.w)]);
+            else c.rect(l, t, r - l, b - t);
+            if (schaduw) {
+                c.globalAlpha = 0.28; c.fillStyle = info.bord; c.fill();
+                c.restore();
+                return;
             }
-            c.fillStyle = info.kleur;
-            c.fill();
-            if (schaduw) { c.restore(); return; }
+            const g = c.createLinearGradient(0, y, 0, y + s);
+            g.addColorStop(0, info.bord); g.addColorStop(1, info.bord + 'cc');
+            c.fillStyle = g; c.fill();
             c.clip();
-            // Kleine details per snack, steeds op dezelfde plek (zaad), zodat het niet flikkert
-            const z = vak.zaad || 0;
-            const stip = (dx, dy, r, kleur) => { c.beginPath(); c.arc(x + s * dx, y + s * dy, s * r, 0, Math.PI * 2); c.fillStyle = kleur; c.fill(); };
-            if (vak.soort === 'kroket' || vak.soort === 'bitterbal') {
-                for (let i = 0; i < 5; i++) stip(0.2 + ((z * (i + 3)) % 60) / 100, 0.2 + ((z * (i + 7)) % 60) / 100, 0.045, info.licht);
-            } else if (vak.soort === 'frikandel') {
-                for (let i = 0; i < 3; i++) stip(0.2 + ((z * (i + 5)) % 60) / 100, 0.25 + ((z * (i + 2)) % 50) / 100, 0.04, '#4a2312');
-                c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(x, y + s * 0.18, s, s * 0.12);
-            } else if (vak.soort === 'frietzak') {
-                c.fillStyle = info.licht;
-                for (let i = 0; i < 4; i++) c.fillRect(x + s * (0.14 + i * 0.2), y + s * (0.1 + ((z + i * 3) % 4) * 0.05), s * 0.1, s * 0.85);
-            } else if (vak.soort === 'bamischijf') {
-                c.strokeStyle = info.licht; c.lineWidth = Math.max(1, s * 0.06);
-                for (let i = 0; i < 3; i++) {
-                    c.beginPath();
-                    const yy = y + s * (0.25 + i * 0.25);
-                    c.moveTo(x, yy);
-                    for (let k = 0; k <= 4; k++) c.quadraticCurveTo(x + s * (k * 0.25 + 0.125), yy + (k % 2 ? 1 : -1) * s * 0.08, x + s * (k + 1) * 0.25, yy);
-                    c.stroke();
-                }
-            } else if (vak.soort === 'bakje') {
-                c.fillStyle = info.licht;
-                for (let i = 0; i < 3; i++) c.fillRect(x + s * (0.18 + i * 0.25), y + s * 0.08, s * 0.12, s * 0.42);
-                c.fillStyle = 'rgba(255,255,255,0.25)'; c.fillRect(x, y + s * 0.62, s, s * 0.08);
-            } else if (vak.soort === 'mayo') {
-                stip(0.36, 0.34, 0.12, '#ffffff');
-                c.font = `${Math.round(s * 0.42)}px system-ui`; c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillStyle = '#e8432b'; c.fillText('M', x + s * 0.55, y + s * 0.6);
-            }
-            // Glans bovenop
-            c.fillStyle = 'rgba(255,255,255,0.12)';
-            c.fillRect(x, y, s, s * 0.22);
+            c.translate(x + s / 2, y + s / 2);
+            c.rotate(vak.draai * Math.PI / 2);
+            c.translate(-(vak.u + 0.5) * s, -(vak.v + 0.5) * s);
+            info.teken(c, s);
             c.restore();
         }
 
-        function burenInVeld(r, c) {
-            const vak = veld[r][c], zelfde = (rr, cc) => rr >= 0 && rr < RIJEN && cc >= 0 && cc < KOLOMMEN && veld[rr][cc] && veld[rr][cc].id === vak.id;
-            return { n: zelfde(r - 1, c), s: zelfde(r + 1, c), w: zelfde(r, c - 1), e: zelfde(r, c + 1) };
+        function burenInVeld(r, k) {
+            const vak = veld[r][k];
+            const zelfde = (rr, kk) => rr >= 0 && rr < RIJEN && kk >= 0 && kk < KOLOMMEN && veld[rr][kk] && veld[rr][kk].id === vak.id;
+            return { n: zelfde(r - 1, k), s: zelfde(r + 1, k), w: zelfde(r, k - 1), e: zelfde(r, k + 1) };
         }
-        function burenInVorm(vorm, r, c) {
-            const v = (rr, cc) => !!(vorm[rr] && vorm[rr][cc]);
-            return { n: v(r - 1, c), s: v(r + 1, c), w: v(r, c - 1), e: v(r, c + 1) };
+        function burenInStuk(vakken, v) {
+            const bezet = (x, y) => vakken.some(w => w.x === x && w.y === y);
+            return { n: bezet(v.x, v.y - 1), s: bezet(v.x, v.y + 1), w: bezet(v.x - 1, v.y), e: bezet(v.x + 1, v.y) };
         }
 
         function teken(nu) {
             const B = KOLOMMEN * cel, H = RIJEN * cel;
             ctx.clearRect(0, 0, B, H);
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
-            for (let c = 1; c < KOLOMMEN; c++) { ctx.beginPath(); ctx.moveTo(c * cel + 0.5, 0); ctx.lineTo(c * cel + 0.5, H); ctx.stroke(); }
-            for (let r = 1; r < RIJEN; r++) { ctx.beginPath(); ctx.moveTo(0, r * cel + 0.5); ctx.lineTo(B, r * cel + 0.5); ctx.stroke(); }
+            // Vrolijk speelveld: zachte kleurvlekken en stippen
+            const achter = ctx.createLinearGradient(0, 0, B, H);
+            achter.addColorStop(0, '#2a1650'); achter.addColorStop(0.5, '#1d1440'); achter.addColorStop(1, '#3a1438');
+            ctx.fillStyle = achter; ctx.fillRect(0, 0, B, H);
+            ctx.fillStyle = 'rgba(255,255,255,0.07)';
+            for (let r = 1; r < RIJEN; r++) for (let k = 1; k < KOLOMMEN; k++) { ctx.beginPath(); ctx.arc(k * cel, r * cel, 1.3, 0, Math.PI * 2); ctx.fill(); }
             if (!veld) return;
 
-            for (let r = 0; r < RIJEN; r++) for (let c = 0; c < KOLOMMEN; c++) {
-                if (veld[r][c]) tekenCel(ctx, c * cel, r * cel, cel, veld[r][c], burenInVeld(r, c));
+            for (let r = 0; r < RIJEN; r++) for (let k = 0; k < KOLOMMEN; k++) {
+                if (veld[r][k]) tekenVak(ctx, k * cel, r * cel, cel, veld[r][k], burenInVeld(r, k));
             }
             if (flits) {
                 const fase = 1 - Math.max(0, flits.tot - nu) / 260;
@@ -471,19 +598,14 @@
                 flits.rijen.forEach(r => ctx.fillRect(0, r * cel, B, cel));
             }
             if (stuk && status !== 'voorbij' && !flits) {
-                // Waar hij landt (schaduw), daarna het stuk zelf
-                let gy = stuk.y;
-                while (past(stuk.vorm, stuk.x, gy + 1)) gy++;
-                const vak = { soort: stuk.soort, zaad: (stuk.id * 31) % 97 };
-                stuk.vorm.forEach((rij, r) => rij.forEach((v, c) => {
-                    if (!v) return;
-                    const b = burenInVorm(stuk.vorm, r, c);
-                    if (gy !== stuk.y) tekenCel(ctx, (stuk.x + c) * cel, (gy + r) * cel, cel, vak, b, true);
-                }));
-                stuk.vorm.forEach((rij, r) => rij.forEach((v, c) => {
-                    if (!v || stuk.y + r < 0) return;
-                    tekenCel(ctx, (stuk.x + c) * cel, (stuk.y + r) * cel, cel, { soort: stuk.soort, zaad: (stuk.id * 31 + r * 7 + c * 13) % 97 }, burenInVorm(stuk.vorm, r, c));
-                }));
+                const { vakken } = vakkenVan(stuk.soort, stuk.draai);
+                let gy = 0;
+                while (stukPast(0, gy + 1)) gy++;
+                if (gy) vakken.forEach(v => tekenVak(ctx, (stuk.x + v.x) * cel, (stuk.y + gy + v.y) * cel, cel, { soort: stuk.soort }, burenInStuk(vakken, v), true));
+                vakken.forEach(v => {
+                    if (stuk.y + v.y < 0) return;
+                    tekenVak(ctx, (stuk.x + v.x) * cel, (stuk.y + v.y) * cel, cel, { soort: stuk.soort, draai: stuk.draai, u: v.u, v: v.v }, burenInStuk(vakken, v));
+                });
             }
             // Zwevende teksten
             teksten = teksten.filter(t => nu - t.start < 1300);
@@ -491,7 +613,7 @@
             teksten.forEach(t => {
                 const f = (nu - t.start) / 1300;
                 ctx.globalAlpha = 1 - f * f;
-                ctx.font = `700 ${Math.round(cel * 0.55)}px Fredoka, system-ui, sans-serif`;
+                ctx.font = `700 ${Math.round(cel * 0.6)}px Fredoka, system-ui, sans-serif`;
                 const ty = Math.max(cel * 0.6, (t.y + 0.5) * cel - f * cel * 1.6);
                 ctx.lineWidth = 4; ctx.strokeStyle = '#120b24'; ctx.strokeText(t.tekst, B / 2, ty, B - 8);
                 ctx.fillStyle = t.kleur; ctx.fillText(t.tekst, B / 2, ty, B - 8);
@@ -500,14 +622,13 @@
         }
 
         function tekenVolgende() {
-            const { b: vb, h: vh, s } = volgendeMaat;
+            const { b: vb, h: vh } = volgendeMaat;
             vctx.clearRect(0, 0, vb, vh);
             if (!volgende) return;
-            const vorm = SNACKS[volgende].vorm;
-            const ox = (vb - vorm[0].length * s) / 2, oy = (vh - vorm.length * s) / 2;
-            vorm.forEach((rij, r) => rij.forEach((v, c) => {
-                if (v) tekenCel(vctx, ox + c * s, oy + r * s, s, { soort: volgende, zaad: 17 + r * 7 + c * 13 }, burenInVorm(vorm, r, c));
-            }));
+            const { vakken, b, h } = vakkenVan(volgende, 0);
+            const s = Math.min(26, (vb - 8) / b, (vh - 8) / h);
+            const ox = (vb - b * s) / 2, oy = (vh - h * s) / 2;
+            vakken.forEach(v => tekenVak(vctx, ox + v.x * s, oy + v.y * s, s, { soort: volgende, draai: 0, u: v.u, v: v.v }, burenInStuk(vakken, v)));
             document.getElementById('volgendeNaam').textContent = SNACKS[volgende].naam;
         }
 
@@ -516,7 +637,7 @@
             vorigeTijd = nu;
             if (status === 'spelen') {
                 if (flits) { if (nu >= flits.tot) rondFlitsAf(); }
-                else if (!past(stuk.vorm, stuk.x, stuk.y + 1)) {
+                else if (!stukPast(0, 1)) {
                     // Geland: nog even schuiven of draaien mag, daarna zit hij vast
                     opDeGrond += dt;
                     if (opDeGrond >= LANDTIJD) { opDeGrond = 0; tijdOver = 0; vastzetten(); }
