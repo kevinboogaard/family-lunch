@@ -283,11 +283,14 @@ meer getoond.
 > Dit werkt pas als je de nieuwe `google-apps-script.gs` hebt geplakt en een **nieuwe versie** hebt gepubliceerd.
 > Tot dan zegt `admin.html` dat afsluiten nog niet kan.
 
-## Publiceren via GitHub Pages
+## Publiceren (Azure, lunch.advisor.nl)
 
-1. Push deze repository naar GitHub.
-2. Ga naar **Settings > Pages**, kies bij *Source* de branch `main` en map `/ (root)`.
-3. Na een minuut staat de app op `https://<gebruikersnaam>.github.io/<repo>/`.
+Elke push naar `main` zet de site via de workflow `.github/workflows/azure-static-web-app.yml` op Azure Static Web Apps,
+op `https://lunch.advisor.nl/`. Ook na het automatisch bijwerken van de menukaart wordt opnieuw gepubliceerd.
+
+- `staticwebapp.config.json` laat andere sites `e-food-helper.js` en `menu.json` ophalen (CORS). Dat heeft het
+  **e-food hulpje** nodig: de bladwijzer haalt die bestanden op terwijl je op e-food.nl bent. Zonder die instelling
+  zegt het hulpje "Family hulpje kon niet laden: Failed to fetch". GitHub Pages deed dit vanzelf, Azure niet.
 
 ## Wie ziet wat?
 

@@ -1,0 +1,17 @@
+{
+  "routes": [
+    {
+      "route": "/e-food-helper.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "route": "/menu.json",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+  ]
+}
