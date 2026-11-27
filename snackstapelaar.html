@@ -134,7 +134,8 @@
                         <ul>
                             <li>🥫 <b>Mayo-bom</b>: valt hij op een snack, dan verdwijnen alle snacks van die soort</li>
                             <li>⭐ <b>Vol menu</b>: een volle rij met één soort snack levert extra op</li>
-                            <li>⚡ Elke 8 rijen gaat het sneller</li>
+                            <li>🔥 <b>Aangebrand</b>: om de zoveel tijd komt er van onderen een rij bij</li>
+                            <li>⚡ Elke 5 rijen gaat het sneller</li>
                         </ul>
                         <button class="start-knop" id="startKnop">▶ Start</button>
                         <div class="top-kop verborgen" id="startTopKop">🏆 Top 5</div>
@@ -201,11 +202,13 @@
 
     <script>
         const KOLOMMEN = 10, RIJEN = 18;
-        const MAYO_ELKE = 12;          // elke zoveelste snack is een mayo-bom
-        const RIJEN_PER_LEVEL = 8;
+        const MAYO_ELKE = 16;          // elke zoveelste snack is een mayo-bom
+        const RIJEN_PER_LEVEL = 5;
         const PUNTEN_RIJEN = [0, 100, 300, 600, 1000];
         const RECORD_SLEUTEL = 'familySnackRecord';
-        const LANDTIJD = 500;          // ms dat een gelande snack nog opzij kan voor hij vastzit
+        const LANDTIJD = 250;          // ms dat een gelande snack nog opzij kan voor hij vastzit
+        // Aangebrande rij: om de zoveel tijd duwt de frituur van onderen een rij met één gaatje omhoog (vaker bij een hoger level)
+        const AANBAK = { START: 12000, PER_LEVEL: 1500, MINIMAAL: 4000, WAARSCHUWING: 2500 };
 
         // Highscores: hetzelfde Google-script als de app, met een eigen top 10 voor dit spel
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQoX7KhN74KetP3D8G9VTF59zRMauPE1V57Z-ThODdUtaSLfyWRhNsGCKBJrXF_rpSBw/exec";
@@ -346,6 +349,19 @@
                     c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(s * 0.04, s * 1.02, s * 2.92, s * 0.12);
                 }
             },
+            aangebrand: {
+                naam: 'Aangebrande rest', vorm: [[1]], bord: '#4b3a5e',
+                teken(c, s) {
+                    c.beginPath();
+                    c.moveTo(s * 0.16, s * 0.7);
+                    c.quadraticCurveTo(s * 0.1, s * 0.3, s * 0.42, s * 0.24);
+                    c.quadraticCurveTo(s * 0.8, s * 0.16, s * 0.84, s * 0.52);
+                    c.quadraticCurveTo(s * 0.9, s * 0.84, s * 0.5, s * 0.82);
+                    c.closePath();
+                    c.fillStyle = '#2a1a12'; c.fill();
+                    kruimels(c, s * 0.25, s * 0.3, s * 0.5, s * 0.42, 6, ['#ff7a2f', '#5c3a26', '#ffc21a'], 13, s * 0.035);
+                }
+            },
             mayo: {
                 naam: 'Mayo-bom', vorm: [[1]], bord: '#ff3d81',
                 teken(c, s) {
@@ -362,8 +378,7 @@
                 }
             }
         };
-        // Bitterballen komen wat vaker: handig om gaatjes te vullen
-        const ZAK = ['frikandel', 'kroket', 'bitterbal', 'bitterbal', 'kaassouffle', 'bamischijf', 'frietzak'];
+        const ZAK = ['frikandel', 'kroket', 'bitterbal', 'kaassouffle', 'bamischijf', 'frietzak'];
 
         // Vakjes van een snack bij een draaiing (0-3, met de klok mee), met per vakje waar het in de tekening zit (u, v)
         const vakkenCache = {};
@@ -388,7 +403,7 @@
         let cel = 30, volgendeMaat = { b: 96, h: 72 };
 
         let veld, stuk, volgende, zak = [], teller, score, rijen, level, status = 'start', flits = null, teksten = [], stukNr = 0;
-        let tijdOver = 0, vorigeTijd = 0, opDeGrond = 0;
+        let tijdOver = 0, vorigeTijd = 0, opDeGrond = 0, aanbakTijd = 0;
 
         const leesRecord = () => { try { return Number(localStorage.getItem(RECORD_SLEUTEL)) || 0; } catch (e) { return 0; } };
         const bewaarRecord = s => { try { localStorage.setItem(RECORD_SLEUTEL, String(s)); } catch (e) { /* dan alleen voor nu */ } };
@@ -441,7 +456,7 @@
         // ---------- Spelverloop ----------
         function nieuwSpel() {
             veld = Array.from({ length: RIJEN }, () => Array(KOLOMMEN).fill(null));
-            zak = []; teller = 0; score = 0; rijen = 0; level = 1; flits = null; teksten = []; tijdOver = 0;
+            zak = []; teller = 0; score = 0; rijen = 0; level = 1; flits = null; teksten = []; tijdOver = 0; aanbakTijd = 0;
             volgende = volgendeSoort();
             nieuwStuk();
             status = 'spelen';
@@ -456,7 +471,19 @@
             werkCijfersBij();
             if (!stukPast()) spelVoorbij();
         }
-        const snelheid = () => Math.max(90, 900 - (level - 1) * 80);
+        const snelheid = () => Math.max(60, 550 - (level - 1) * 60);
+        const aanbakInterval = () => Math.max(AANBAK.MINIMAAL, AANBAK.START - (level - 1) * AANBAK.PER_LEVEL);
+
+        // Van onderen komt een aangebrande rij met één gaatje; alles schuift een rij omhoog
+        function aanbakken() {
+            if (veld[0].some(Boolean)) return spelVoorbij();
+            veld.shift();
+            const gat = Math.floor(Math.random() * KOLOMMEN);
+            veld.push(Array.from({ length: KOLOMMEN }, (_, k) => k === gat ? null : { soort: 'aangebrand', id: ++stukNr, draai: 0, u: 0, v: 0 }));
+            if (!stukPast()) stuk.y--;
+            if (!stukPast()) return spelVoorbij();
+            zweefTekst('🔥 Aangebrand!', RIJEN - 2, '#ff7a2f');
+        }
 
         function beweeg(dx) {
             if (status !== 'spelen' || flits) return;
@@ -705,6 +732,16 @@
             ctx.fillStyle = 'rgba(255,255,255,0.07)';
             for (let r = 1; r < RIJEN; r++) for (let k = 1; k < KOLOMMEN; k++) { ctx.beginPath(); ctx.arc(k * cel, r * cel, 1.3, 0, Math.PI * 2); ctx.fill(); }
             if (!veld) return;
+            if (status === 'spelen') {
+                const nog = aanbakInterval() - aanbakTijd;
+                if (nog < AANBAK.WAARSCHUWING) {
+                    const sterkte = 1 - nog / AANBAK.WAARSCHUWING;
+                    const gloed = ctx.createLinearGradient(0, H, 0, H - cel * 4);
+                    gloed.addColorStop(0, `rgba(255, 90, 40, ${0.55 * sterkte * (0.75 + 0.25 * Math.sin(nu / 90))})`);
+                    gloed.addColorStop(1, 'rgba(255, 90, 40, 0)');
+                    ctx.fillStyle = gloed; ctx.fillRect(0, H - cel * 4, B, cel * 4);
+                }
+            }
 
             for (let r = 0; r < RIJEN; r++) for (let k = 0; k < KOLOMMEN; k++) {
                 if (veld[r][k]) tekenVak(ctx, k * cel, r * cel, cel, veld[r][k], burenInVeld(r, k));
@@ -754,7 +791,10 @@
             vorigeTijd = nu;
             if (status === 'spelen') {
                 if (flits) { if (nu >= flits.tot) rondFlitsAf(); }
-                else if (!stukPast(0, 1)) {
+                else if ((aanbakTijd += dt) >= aanbakInterval()) {
+                    aanbakTijd = 0;
+                    aanbakken();
+                } else if (!stukPast(0, 1)) {
                     // Geland: nog even schuiven of draaien mag, daarna zit hij vast
                     opDeGrond += dt;
                     if (opDeGrond >= LANDTIJD) { opDeGrond = 0; tijdOver = 0; vastzetten(); }

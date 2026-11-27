@@ -138,6 +138,17 @@
         .verborgen { display: none !important; }
         .topbar .acties { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
+        /* Keuze tussen de spelletjes */
+        .spel-keuze { position: relative; }
+        .spel-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; width: 250px; padding: 6px; border-radius: 18px;
+                     background: var(--panel-solid); border: 1px solid var(--border); box-shadow: var(--shadow); display: grid; gap: 4px; }
+        .spel-menu a, .spel-menu button { display: grid; grid-template-columns: 34px 1fr; gap: 2px 10px; align-items: center; text-align: left; width: 100%;
+                     padding: 10px 12px; border: 0; border-radius: 12px; background: transparent; color: var(--text); font: inherit; text-decoration: none; cursor: pointer; }
+        .spel-menu a:hover, .spel-menu button:hover, .spel-menu a:focus-visible, .spel-menu button:focus-visible { background: var(--panel-hover); outline: none; }
+        .spel-menu .icoon { grid-row: span 2; font-size: 26px; line-height: 1; text-align: center; }
+        .spel-menu strong { font-size: 14px; }
+        .spel-menu small { color: var(--muted); font-size: 12px; }
+
         /* ---------- Afrekenen ---------- */
         .betaal-bedrag { font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; color: var(--sun); min-height: 42px; }
         .betaal-bedrag small { display: block; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
@@ -1154,7 +1165,13 @@
             <button class="glas-knop verborgen" id="betaalKnop" onclick="openBetaalModal()">💶 Afrekenen</button>
             <button class="glas-knop verborgen" id="mijnKnop" onclick="openMijnModal()">🧾 Mijn bestelling</button>
             <a class="glas-knop" href="stats.html" aria-label="Stats voor nerds">📊 <span class="knop-tekst-lang">Stats</span></a>
-            <button class="glas-knop" id="spelKnop" onclick="openSpel()" aria-label="Spelletje voor tijdens het wachten">🎮 <span class="knop-tekst-lang">Spelletje</span></button>
+            <div class="spel-keuze">
+                <button class="glas-knop" id="spelKnop" onclick="wisselSpelMenu()" aria-label="Spelletje voor tijdens het wachten" aria-haspopup="menu" aria-expanded="false" aria-controls="spelMenu">🎮 <span class="knop-tekst-lang">Spelletje</span></button>
+                <div class="spel-menu verborgen" id="spelMenu" role="menu" aria-label="Kies een spelletje">
+                    <button role="menuitem" onclick="sluitSpelMenu(); openSpel()"><span class="icoon">🍟</span><strong>Friet op de vlucht</strong><small>Springen over zout en meeuwen</small></button>
+                    <a role="menuitem" href="snackstapelaar.html"><span class="icoon">🍢</span><strong>Snackstapelaar</strong><small>Snacks stapelen tot de rij vol is</small></a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1994,6 +2011,24 @@
 
         function leesSpelRecord() { try { return Number(localStorage.getItem('familySpelRecord')) || 0; } catch (e) { return 0; } }
         function bewaarSpelRecord(score) { try { localStorage.setItem('familySpelRecord', String(score)); } catch (e) { /* dan alleen voor nu */ } }
+
+        // ---------- Keuzemenu bij de knop Spelletje ----------
+        function wisselSpelMenu() {
+            const menu = document.getElementById('spelMenu');
+            const open = menu.classList.toggle('verborgen') === false;
+            document.getElementById('spelKnop').setAttribute('aria-expanded', String(open));
+            if (open) menu.querySelector('[role="menuitem"]').focus();
+        }
+        function sluitSpelMenu() {
+            document.getElementById('spelMenu').classList.add('verborgen');
+            document.getElementById('spelKnop').setAttribute('aria-expanded', 'false');
+        }
+        document.addEventListener('click', e => { if (!e.target.closest('.spel-keuze')) sluitSpelMenu(); });
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape' || document.getElementById('spelMenu').classList.contains('verborgen')) return;
+            sluitSpelMenu();
+            document.getElementById('spelKnop').focus();
+        });
 
         function openSpel() {
             const veld = document.getElementById('spelVeld');

@@ -78,13 +78,16 @@ weetjes (entropie van de menukeuze, de frikandel-meter).
 
 ## Snackstapelaar
 
-Een tweede spelletje (`snackstapelaar.html`, ook te openen via **🎮 Spelletje** > **🍢 Nieuw: Snackstapelaar**):
+Een tweede spelletje (`snackstapelaar.html`, te kiezen onder **🎮 Spelletje** in de app):
 vallende snacks stapelen tot een rij vol is. Een eigen spel, met echte snacks in hun eigen maat en een eigen kleur bordje:
 frikandel speciaal (5×1), kroket (3×2), bitterbal (1×1), kaassoufflé (2×1), bamischijf (2×2) en patatje mayo in een puntzak.
 
-- **Mayo-bom**: elke 12e snack. Valt hij op een snack, dan verdwijnen alle snacks van die soort en zakt de rest.
+- **Mayo-bom**: elke 16e snack. Valt hij op een snack, dan verdwijnen alle snacks van die soort en zakt de rest.
 - **Vol menu**: een volle rij met één soort snack levert extra punten op.
-- Elke 8 rijen een level hoger: dan zakken de snacks sneller.
+- **Aangebrand**: om de 12 seconden schuift er van onderen een aangebrande rij met één gaatje in (bij een hoger level
+  vaker, tot elke 4 seconden). Vlak ervoor kleurt de onderkant rood.
+- Elke 5 rijen een level hoger: dan zakken de snacks sneller. Een gelande snack kun je nog een kwart seconde verschuiven.
+  Een potje duurt zo een paar minuten.
 - Op pc met de pijltjes en de spatie, op de telefoon met knoppen onder het bord of door te tikken en te vegen.
 - **Top 10**: na een potje zet je je naam bij je score. De top 5 staat op het start- en eindscherm. Per naam telt de
   beste score, op een eigen tabblad **Highscores Snackstapelaar** (los van de top 10 van Friet op de vlucht).
