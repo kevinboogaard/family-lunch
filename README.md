@@ -86,7 +86,11 @@ frikandel speciaal (5×1), kroket (3×2), bitterbal (1×1), kaassoufflé (2×1),
 - **Vol menu**: een volle rij met één soort snack levert extra punten op.
 - Elke 8 rijen een level hoger: dan zakken de snacks sneller.
 - Op pc met de pijltjes en de spatie, op de telefoon met knoppen onder het bord of door te tikken en te vegen.
-- Het record blijft op je eigen apparaat bewaard; er is (nog) geen gezamenlijke top 10.
+- **Top 10**: na een potje zet je je naam bij je score. De top 5 staat op het start- en eindscherm. Per naam telt de
+  beste score, op een eigen tabblad **Highscores Snackstapelaar** (los van de top 10 van Friet op de vlucht).
+  Heb je een teamcode ingesteld, dan vraagt het spel daar één keer om.
+- Dit werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
+  Tot dan werkt het spel gewoon, maar zonder top 10.
 
 ## Hetzelfde als vorige keer
 

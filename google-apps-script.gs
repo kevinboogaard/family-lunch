@@ -70,9 +70,12 @@ const AFGESLOTEN_SHEET = 'Afgesloten';
 const EMAIL_SHEET = 'E-mailadressen';
 const EMAIL = { MAX_LENGTE: 120, APP_LINK: 'https://lunch.advisor.nl/' };
 
-const HIGHSCORES_SHEET = 'Highscores';
+// Elk spel een eigen tabblad en een eigen maximum. Zonder "spel" gaat het om Friet op de vlucht (zoals altijd).
+const HIGHSCORE_SPELLEN = {
+  friet: { sheet: 'Highscores', maxScore: 100000 },                 // Friet op de vlucht; hoger is niet te halen
+  snack: { sheet: 'Highscores Snackstapelaar', maxScore: 5000000 }  // Snackstapelaar
+};
 const HIGHSCORE = {
-  MAX_SCORE: 100000,           // hoger is niet te halen; alles daarboven is geknoei
   MAX_NAAM: 20,
   TOP: 10,
   MAX_NAMEN: 300,              // daarna vallen de laagste eraf
@@ -421,19 +424,25 @@ function zetAfgesloten_(datum, dicht) {
 
 // ---------- Highscores van het wachtspelletje ----------
 
-function highscoresSheet_() {
+/** "snack" of "friet"; iets anders (of niets) is Friet op de vlucht. */
+function highscoreSpel_(spel) {
+  return HIGHSCORE_SPELLEN[spel] ? String(spel) : 'friet';
+}
+
+function highscoresSheet_(spel) {
+  const naam = HIGHSCORE_SPELLEN[highscoreSpel_(spel)].sheet;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(HIGHSCORES_SHEET);
+  let sheet = ss.getSheetByName(naam);
   if (!sheet) {
-    sheet = ss.insertSheet(HIGHSCORES_SHEET);
+    sheet = ss.insertSheet(naam);
     sheet.getRange('A:C').setNumberFormat('@');
     sheet.appendRow(['Naam', 'Score', 'Datum']);
   }
   return sheet;
 }
 
-function leesHighscores_() {
-  const waarden = highscoresSheet_().getDataRange().getValues();
+function leesHighscores_(spel) {
+  const waarden = highscoresSheet_(spel).getDataRange().getValues();
   const lijst = [];
   for (let i = 1; i < waarden.length; i++) {
     const score = Number(waarden[i][1]) || 0;
@@ -442,30 +451,31 @@ function leesHighscores_() {
   return lijst.sort(function (a, b) { return b.score - a.score || (a.datum < b.datum ? -1 : 1); });
 }
 
-function topHighscores_() {
-  return leesHighscores_().slice(0, HIGHSCORE.TOP);
+function topHighscores_(spel) {
+  return leesHighscores_(spel).slice(0, HIGHSCORE.TOP);
 }
 
 /** Bewaart een score als het de beste van die naam is. Geeft de top 10 en je plek terug. */
 function bewaarHighscore_(body) {
+  const spel = highscoreSpel_(body.spel);
   const teamcode = PropertiesService.getScriptProperties().getProperty('BESTELCODE');
   if (teamcode && String(body.code || '') !== teamcode) return fout_('CODE', 'De teamcode ontbreekt of klopt niet.');
 
   const naam = schoneTekst_(body.naam, HIGHSCORE.MAX_NAAM);
   if (naam.length < LIMIETEN.MIN_NAAM) return fout_('ONGELDIG', 'Vul een naam in van minimaal ' + LIMIETEN.MIN_NAAM + ' tekens.');
   const score = Number(body.score);
-  if (!isFinite(score) || Math.floor(score) !== score || score < 1 || score > HIGHSCORE.MAX_SCORE) return fout_('ONGELDIG', 'Deze score klopt niet.');
+  if (!isFinite(score) || Math.floor(score) !== score || score < 1 || score > HIGHSCORE_SPELLEN[spel].maxScore) return fout_('ONGELDIG', 'Deze score klopt niet.');
 
   // Niet eindeloos laten insturen: per naam en in totaal een maximum per uur
   const cache = CacheService.getScriptCache();
-  const sleutelNaam = 'hs:' + naam.toLowerCase();
+  const sleutelNaam = 'hs:' + spel + ':' + naam.toLowerCase();
   const perNaam = Number(cache.get(sleutelNaam)) || 0;
   const totaal = Number(cache.get('hs:totaal')) || 0;
   if (perNaam >= HIGHSCORE.MAX_PER_NAAM_PER_UUR || totaal >= HIGHSCORE.MAX_PER_UUR) return fout_('LIMIET', 'Even rustig aan met opslaan. Probeer het later nog eens.');
   cache.put(sleutelNaam, String(perNaam + 1), 3600);
   cache.put('hs:totaal', String(totaal + 1), 3600);
 
-  const lijst = leesHighscores_();
+  const lijst = leesHighscores_(spel);
   const bestaand = lijst.filter(function (h) { return h.naam.toLowerCase() === naam.toLowerCase(); })[0];
   let verbeterd = false;
   if (!bestaand) {
@@ -481,13 +491,13 @@ function bewaarHighscore_(body) {
     const bewaren = lijst.slice(0, HIGHSCORE.MAX_NAMEN);
     // "~" voor de naam: zo wordt een naam als "=SOM(…)" nooit een formule
     const rijen = [['Naam', 'Score', 'Datum']].concat(bewaren.map(function (h) { return ['~' + h.naam, String(h.score), h.datum]; }));
-    const sheet = highscoresSheet_();
+    const sheet = highscoresSheet_(spel);
     sheet.clear();
     sheet.getRange('A:C').setNumberFormat('@');
     sheet.getRange(1, 1, rijen.length, 3).setValues(rijen);
   }
-  const plek = leesHighscores_().findIndex(function (h) { return h.naam.toLowerCase() === naam.toLowerCase(); }) + 1;
-  return { ok: true, verbeterd: verbeterd, beste: Math.max(score, bestaand ? bestaand.score : 0), plek: plek, scores: topHighscores_() };
+  const plek = leesHighscores_(spel).findIndex(function (h) { return h.naam.toLowerCase() === naam.toLowerCase(); }) + 1;
+  return { ok: true, verbeterd: verbeterd, beste: Math.max(score, bestaand ? bestaand.score : 0), plek: plek, scores: topHighscores_(spel) };
 }
 
 // ---------- E-mailadressen en de bevestigingsmail ----------
@@ -998,7 +1008,7 @@ function statsVoorNerds_() {
  */
 function doGet(e) {
   try {
-    if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, scores: topHighscores_() });
+    if (e && e.parameter && e.parameter.actie === 'highscores') return json_({ ok: true, spel: highscoreSpel_(e.parameter.spel), scores: topHighscores_(e.parameter.spel) });
     if (e && e.parameter && e.parameter.actie === 'stats') return json_(statsVoorNerds_());
     if (e && e.parameter && e.parameter.actie === 'qr') {
       const uit = leesQr_();
