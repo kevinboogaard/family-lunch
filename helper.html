@@ -193,7 +193,7 @@
 <script>
     // Vast adres van de site. Alleen als deze pagina zelf op een echte website staat (niet lokaal, niet als
     // file:/data:-voorbeeld) wordt het adres daarvan gebruikt; anders krijgt de bladwijzer een kapot adres.
-    const PRODUCTIE = 'https://kevinboogaard.github.io/family-lunch/';
+    const PRODUCTIE = 'https://lunch.advisor.nl/';
     const echteSite = /^https?:\/\//.test(location.href) && !/^https?:\/\/(localhost|127\.|\[::1\])/.test(location.href);
     const basis = echteSite ? location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '') : PRODUCTIE;
     if (!echteSite) {
