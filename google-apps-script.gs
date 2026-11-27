@@ -68,7 +68,7 @@ const AFGESLOTEN_SHEET = 'Afgesloten';
 // E-mailadressen die collega's bij een bestelling invullen (optioneel), voor de mail als jij hun betaling bevestigt.
 // Een eigen tabblad, alleen voor de beheerder: de website geeft deze adressen nooit terug aan collega's.
 const EMAIL_SHEET = 'E-mailadressen';
-const EMAIL = { MAX_LENGTE: 120, APP_LINK: 'https://kevinboogaard.github.io/family-lunch/' };
+const EMAIL = { MAX_LENGTE: 120, APP_LINK: 'https://lunch.advisor.nl/' };
 
 const HIGHSCORES_SHEET = 'Highscores';
 const HIGHSCORE = {
