@@ -20,7 +20,7 @@ const HEADERS = ['BestelID', 'Datum', 'Tijd', 'Naam', 'Product', 'Aantal', 'Stuk
 const KOLOM = { ID: 0, DATUM: 1, NAAM: 3, SLEUTEL: 8 };
 
 // Het menu waartegen producten en prijzen gecontroleerd worden (leeg laten = niet controleren)
-const MENU_URL = 'https://kevinboogaard.github.io/family-lunch/menu.json';
+const MENU_URL = 'https://lunch.advisor.nl/menu.json';
 
 // Pas deze getallen gerust aan; ze gelden bij de volgende "Nieuwe versie" van de implementatie.
 const LIMIETEN = {
