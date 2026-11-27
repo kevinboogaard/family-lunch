@@ -228,6 +228,9 @@ De betaalstatus staat per dag en per naam in een tabblad **Betalingen** van je G
 
 - **Collega's** tikken in het afrekenscherm op **✅ Ik heb betaald**. Het scherm laat hun eigen laatste bestelling
   van dit apparaat zien (dus maandag ook nog die van vrijdag). Met **Toch nog niet betaald** halen ze de melding weer weg.
+- Bevestig jij een betaling, dan ziet de collega dat zodra hij de app of het afrekenscherm (weer) opent, met een
+  melding **✅ Je betaling is bevestigd**. Staat het afrekenscherm open terwijl hij wacht, dan kijkt de app elke
+  15 seconden zelf. De laatst bekende stand staat er meteen, met **🔄 Even controleren…** tot de echte binnen is.
 - **Jij** ziet op `admin.html` onder **Wie heeft betaald?** per persoon het bedrag en de stand, met
   **Bevestig betaald** en **Terug naar open**, en een knop **Kopieer herinnering voor de groepsapp** met de namen
   van wie nog niets gemeld heeft. Bij **Per persoon** in het overzicht op `admin.html` staan dezelfde stickers.

@@ -164,6 +164,9 @@
         .betaal-status-tekst { margin: 0 0 6px; font-weight: 600; }
         .betaal-status-tekst.ok { color: var(--mint); }
         .betaal-status-tekst.wacht { color: var(--sun); }
+        .betaal-status-bij { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+        .status-badge.bijwerken { animation: bijwerkPuls 1s ease-in-out infinite alternate; }
+        @keyframes bijwerkPuls { from { opacity: 1; } to { opacity: 0.45; } }
         .knop-betaald { padding: 13px 24px; border: 0; border-radius: 14px; background: rgba(47, 227, 163, 0.18); color: #b9f7e0; font: 700 16px 'Inter', sans-serif; cursor: pointer; border: 1px solid rgba(47, 227, 163, 0.5); transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.2s; }
         .knop-betaald:hover { transform: translateY(-2px); background: rgba(47, 227, 163, 0.3); }
         .knop-klein {
@@ -2644,9 +2647,21 @@
         async function controleerAfgesloten() {
             const open = mijnDagen().slice(0, 5);
             if (!GOOGLE_SCRIPT_URL || !open.length) return;
-            await Promise.all(open.map(haalStatusVers));
+            const voor = open.map(g => bekendeStatus(g.datum, g.naam));
+            const na = await Promise.all(open.map(haalStatusVers));
+            open.forEach((g, i) => meldAlsBevestigd(g, voor[i], na[i]));
             toonMijnKnop();
         }
+        // Was je betaling nog niet bevestigd en nu wel? Dan even laten weten.
+        function meldAlsBevestigd(g, voor, na) {
+            if (na === 'bevestigd' && voor && voor !== 'bevestigd') toast(`✅ Je betaling van ${dagTekst(g.datum)} is bevestigd. Bedankt!`, 'succes');
+        }
+        // Terug in de app (de telefoon laat een tabblad vaak gewoon openstaan): de standen opnieuw ophalen
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) return;
+            if (document.getElementById('betaalModal').style.display === 'flex') toonBedrag();
+            else controleerAfgesloten();
+        });
 
         function mijnDagen(ookAfgesloten = false) {
             const afgesloten = ookAfgesloten ? new Set() : leesAfgeslotenDagen();
@@ -2791,6 +2806,7 @@
         // binnen een minuut niet opnieuw stellen. Bij het openen van de app wordt de stand al opgehaald (controleerAfgesloten),
         // zodat hij bij "Afrekenen" meestal al binnen is.
         const STATUS_VERS_MS = 60 * 1000;
+        const STATUS_VERS_GEMELD_MS = 8 * 1000; // na "Ik heb betaald": de beheerder kan elk moment bevestigen
         const statusVragen = new Map(); // datum|naam -> { tijd, belofte }
         const statusSleutel = (datum, naam) => datum + '|' + naam.toLowerCase();
         function leesBekendeStatus() { try { return JSON.parse(localStorage.getItem('familyBetaalStatus') || '{}'); } catch (e) { return {}; } }
@@ -2806,7 +2822,8 @@
         function haalStatusVers(g) {
             const sleutel = statusSleutel(g.datum, g.naam);
             const eerder = statusVragen.get(sleutel);
-            if (eerder && Date.now() - eerder.tijd < STATUS_VERS_MS) return eerder.belofte;
+            const vers = bekendeStatus(g.datum, g.naam) === 'zegt' ? STATUS_VERS_GEMELD_MS : STATUS_VERS_MS;
+            if (eerder && Date.now() - eerder.tijd < vers) return eerder.belofte;
             const belofte = haalStatus(g.naam, g.datum, g.sleutel, g.bestellingen.map(b => b.bestelID));
             statusVragen.set(sleutel, { tijd: Date.now(), belofte });
             // Mislukt (geen verbinding)? Dan de volgende keer gewoon opnieuw vragen
@@ -2843,13 +2860,16 @@
             // De laatst bekende stand meteen, de actuele komt er daarna bij (alle tegelijk opgevraagd)
             for (const [g, badge] of badges) {
                 const bekend = bekendeStatus(g.datum, g.naam);
-                if (STATUS_TEKST[bekend]) { badge.className = 'status-badge ' + bekend; badge.textContent = STATUS_TEKST[bekend]; }
+                if (STATUS_TEKST[bekend]) { badge.className = 'status-badge bijwerken ' + bekend; badge.textContent = STATUS_TEKST[bekend]; badge.title = 'Even controleren of dit nog klopt…'; }
             }
             const standen = badges.map(([g]) => haalStatusVers(g));
             for (const [i, [g, badge]] of badges.entries()) {
+                const voor = bekendeStatus(g.datum, g.naam);
                 const status = await standen[i];
+                badge.classList.remove('bijwerken'); badge.title = '';
                 if (status === 'afgesloten' || status === 'verwijderd') g.kaart.remove();
-                else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; }
+                else if (status) { badge.className = 'status-badge ' + status; badge.textContent = STATUS_TEKST[status]; meldAlsBevestigd(g, voor, status); }
+                else if (badge.textContent) badge.title = 'Laatst bekende stand (geen verbinding met de lijst)';
                 // Vandaag, nog niet betaald en bestellen nog open: aanpassen of annuleren
                 if (status === 'open' && g.datum === vandaagISO() && g.bestellingen.length && !bestellenGesloten) {
                     const acties = document.createElement('div');
@@ -2971,11 +2991,15 @@
             document.getElementById('betaalKeuzeBlok').classList.toggle('verborgen', groepen.length < 2);
             document.getElementById('betaalModal').style.display = 'flex';
             toonBedrag();
+            clearInterval(betaalVerversen);
+            betaalVerversen = setInterval(() => { if (betaalContext && betaalContext.status === 'zegt' && !document.hidden) toonBedrag(); }, 15000);
         }
 
         function sluitBetaalModal() {
             document.getElementById('betaalModal').style.display = 'none';
+            clearInterval(betaalVerversen);
         }
+        let betaalVerversen = null;
 
         // Gegevens van de gekozen bestelling: { naam, datum, sleutel, status, kanMelden }
         let betaalContext = null;
@@ -3022,7 +3046,7 @@
             // De laatst bekende stand meteen tonen; het script bevestigt of verbetert hem daarna
             const bekend = bekendeStatus(g.datum, g.naam);
             if (STATUS_TEKST[bekend]) {
-                betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: true, status: bekend };
+                betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: true, status: bekend, bijwerken: bekend !== 'bevestigd' };
                 toonBetaalStatus();
             } else if (GOOGLE_SCRIPT_URL) {
                 const wacht = document.createElement('p');
@@ -3038,10 +3062,11 @@
                 toonMijnKnop();
                 return;
             }
-            // Geen antwoord (geen verbinding)? Dan blijft de laatst bekende stand staan
+            // Geen antwoord (geen verbinding)? Dan blijft de laatst bekende stand staan, met die uitleg erbij
             const stand = status || bekend;
-            betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: !!stand, status: stand || 'open' };
+            betaalContext = { naam: g.naam, datum: g.datum, sleutel: g.sleutel, kanMelden: !!stand, status: stand || 'open', oud: !status && !!bekend };
             toonBetaalStatus();
+            meldAlsBevestigd(g, bekend, status);
         }
 
         // De knop "Ik heb betaald", of de stand van zaken als dat al gemeld of bevestigd is
@@ -3051,6 +3076,17 @@
             const c = betaalContext;
             if (!c || !c.kanMelden) return;
             const regel = (tekst, klasse) => { const p = document.createElement('p'); p.className = 'betaal-status-tekst ' + (klasse || ''); p.textContent = tekst; return p; };
+            if (c.bijwerken) {
+                const bij = document.createElement('p');
+                bij.className = 'betaal-status-bij';
+                bij.textContent = '🔄 Even controleren of dit nog klopt…';
+                vak.appendChild(bij);
+            } else if (c.oud && c.status !== 'bevestigd') {
+                const bij = document.createElement('p');
+                bij.className = 'betaal-status-bij';
+                bij.textContent = '📶 Laatst bekende stand: de lijst was even niet bereikbaar.';
+                vak.appendChild(bij);
+            }
             if (c.status === 'bevestigd') {
                 vak.appendChild(regel('✅ Je betaling is bevestigd. Bedankt!', 'ok'));
             } else if (c.status === 'zegt') {
