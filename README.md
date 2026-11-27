@@ -76,6 +76,18 @@ weetjes (entropie van de menukeuze, de frikandel-meter).
 - De cijfers staan 5 minuten in de cache van het script, dus een nieuwe bestelling telt pas daarna mee.
 - Werkt pas na het plakken van de nieuwe `google-apps-script.gs` en een **nieuwe versie** van de implementatie.
 
+## Snackstapelaar
+
+Een tweede spelletje (`snackstapelaar.html`, ook te openen via **🎮 Spelletje** > **🍢 Nieuw: Snackstapelaar**):
+vallende snacks stapelen tot een rij vol is. Een eigen spel, met snacks als stukken: bitterbal, kroket, frikandel,
+frietzak, bamischijf en het Family-bakje.
+
+- **Mayo-bom**: elke 15e snack. Valt hij op een snack, dan verdwijnen alle snacks van die soort en zakt de rest.
+- **Vol menu**: een volle rij met één soort snack levert extra punten op.
+- Elke 8 rijen een level hoger: dan zakken de snacks sneller.
+- Op pc met de pijltjes en de spatie, op de telefoon met knoppen onder het bord of door te tikken en te vegen.
+- Het record blijft op je eigen apparaat bewaard; er is (nog) geen gezamenlijke top 10.
+
 ## Hetzelfde als vorige keer
 
 Heeft iemand op dit apparaat al eens besteld, dan staat bovenin (en in het lege mandje) de knop

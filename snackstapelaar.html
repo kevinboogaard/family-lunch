@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snackstapelaar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #120b24;
+            --panel: rgba(40, 28, 72, 0.72);
+            --panel-licht: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.13);
+            --text: #fff8ef;
+            --muted: #c3b8de;
+            --sun: #ffc21a;
+            --orange: #ff7a2f;
+            --hot: #ff3d81;
+            --mint: #2fe3a3;
+            --vibe: linear-gradient(120deg, var(--sun), var(--orange) 45%, var(--hot));
+            --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+        }
+        * { box-sizing: border-box; }
+        html, body { overscroll-behavior: none; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 600px at 10% -10%, rgba(255, 61, 129, 0.22), transparent 60%),
+                radial-gradient(900px 600px at 100% 30%, rgba(109, 59, 255, 0.22), transparent 60%),
+                var(--bg);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .pagina { width: min(760px, 100%); margin: 0 auto; padding: 16px 16px 30px; }
+        .kop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .terug { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9em; }
+        .terug:hover { color: var(--text); }
+        h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(1.7em, 5vw, 2.4em); margin: 6px 0 12px; line-height: 1.1; }
+        h1 .verloop { background: var(--vibe); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+        .speelveld { display: grid; grid-template-columns: auto 190px; gap: 18px; justify-content: center; align-items: start; }
+        .bord-wrap { position: relative; width: fit-content; margin: 0 auto; border-radius: 18px; padding: 6px; background: var(--panel); border: 1px solid var(--border); box-shadow: 0 18px 50px -18px rgba(0,0,0,0.7); }
+        canvas#bord { display: block; border-radius: 12px; touch-action: none; background: rgba(0, 0, 0, 0.28); }
+
+        .zijkant { display: grid; gap: 10px; }
+        .blok { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 10px 14px; }
+        .blok small { display: block; color: var(--muted); font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .blok strong { display: block; font-family: var(--mono); font-size: 1.35em; font-variant-numeric: tabular-nums; }
+        .blok .naam { font-size: 0.8em; color: var(--muted); margin-top: 2px; min-height: 1.2em; }
+        canvas#volgende { display: block; margin: 6px auto 0; }
+        .cijfers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .mayo-meter { height: 8px; border-radius: 999px; background: var(--panel-licht); overflow: hidden; margin-top: 6px; }
+        .mayo-meter i { display: block; height: 100%; width: 0; background: #fffbe9; transition: width 0.3s; }
+        .hulp { color: var(--muted); font-size: 0.78em; line-height: 1.5; }
+        .hulp kbd { font-family: var(--mono); font-size: 0.95em; background: var(--panel-licht); border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; color: var(--text); }
+
+        .knoppen { display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; user-select: none; -webkit-user-select: none; }
+        .knoppen button { height: 56px; border-radius: 16px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 1.4em; font-weight: 700;
+                          touch-action: manipulation; cursor: pointer; }
+        .knoppen button:active { background: rgba(255, 194, 26, 0.25); transform: scale(0.96); }
+
+        .laag { position: absolute; inset: 6px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+                text-align: center; padding: 18px; background: rgba(18, 11, 36, 0.86); backdrop-filter: blur(3px); }
+        .laag h2 { font-family: 'Fredoka', sans-serif; margin: 0; font-size: 1.6em; }
+        .laag p { margin: 0; color: var(--muted); font-size: 0.9em; line-height: 1.5; max-width: 260px; }
+        .laag .groot { font-family: var(--mono); font-size: 2em; color: var(--sun); }
+        .laag ul { margin: 0; padding: 0; list-style: none; font-size: 0.85em; color: var(--muted); text-align: left; display: grid; gap: 4px; }
+        .start-knop { background: var(--vibe); color: #2a1d12; border: 0; border-radius: 999px; padding: 12px 26px; font: inherit; font-weight: 800; font-size: 1.05em; cursor: pointer;
+                      box-shadow: 0 10px 30px -10px rgba(255, 61, 129, 0.8); }
+        .start-knop:hover { filter: brightness(1.06); }
+        .verborgen { display: none !important; }
+
+        @media (max-width: 640px), (pointer: coarse) {
+            .knoppen { display: grid; }
+        }
+        @media (max-width: 640px) {
+            .pagina { padding-top: 10px; }
+            h1 { margin-bottom: 8px; }
+            .speelveld { grid-template-columns: auto; gap: 10px; }
+            .zijkant { grid-row: 1; grid-template-columns: 76px 1fr 1fr; gap: 6px; }
+            .zijkant .cijfers { display: contents; }
+            .zijkant .blok { padding: 5px 10px; border-radius: 12px; }
+            .zijkant .blok small { font-size: 0.65em; }
+            .zijkant .blok strong { font-size: 1em; }
+            .zijkant .blok.volgende-blok { grid-row: span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; }
+            .zijkant canvas#volgende { margin-top: 2px; }
+            .zijkant .blok.mayo-blok { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 5px 10px; }
+            .zijkant .mayo-blok .mayo-meter { flex: 1; margin: 0; }
+            .zijkant .mayo-blok .naam { display: block; margin: 0; font-size: 0.72em; white-space: nowrap; min-height: 0; }
+            .zijkant .hulp, .zijkant .volgende-blok .naam { display: none; }
+            .knoppen button { height: 52px; }
+            .laag { padding: 10px; gap: 8px; }
+            .laag h2 { font-size: 1.25em; }
+            .laag ul { font-size: 0.78em; }
+        }
+    </style>
+</head>
+<body>
+    <main class="pagina">
+        <div class="kop">
+            <a class="terug" href="index.html">← Terug naar bestellen</a>
+        </div>
+        <h1><span class="verloop">Snackstapelaar</span> 🍢</h1>
+
+        <div class="speelveld">
+            <div>
+                <div class="bord-wrap">
+                    <canvas id="bord" aria-label="Speelveld van Snackstapelaar"></canvas>
+                    <div class="laag" id="startLaag">
+                        <h2>🍟 Snackstapelaar</h2>
+                        <p>Stapel de snacks. Een volle rij gaat de frituur in.</p>
+                        <ul>
+                            <li>🥫 <b>Mayo-bom</b>: valt hij op een snack, dan verdwijnen alle snacks van die soort</li>
+                            <li>⭐ <b>Vol menu</b>: een rij met één soort snack telt dubbel</li>
+                            <li>⚡ Elke 8 rijen gaat het sneller</li>
+                        </ul>
+                        <button class="start-knop" id="startKnop">▶ Start</button>
+                    </div>
+                    <div class="laag verborgen" id="pauzeLaag">
+                        <h2>⏸ Pauze</h2>
+                        <p>De frituur staat even uit.</p>
+                        <button class="start-knop" id="verderKnop">▶ Verder</button>
+                    </div>
+                    <div class="laag verborgen" id="eindLaag">
+                        <h2>🔥 Overgefrituurd!</h2>
+                        <div class="groot" id="eindScore">0</div>
+                        <p id="eindTekst"></p>
+                        <button class="start-knop" id="opnieuwKnop">🔁 Nog een potje</button>
+                    </div>
+                </div>
+                <div class="knoppen" id="knoppen">
+                    <button data-actie="links" aria-label="Naar links">◀</button>
+                    <button data-actie="draai" aria-label="Draaien">⟳</button>
+                    <button data-actie="rechts" aria-label="Naar rechts">▶</button>
+                    <button data-actie="omlaag" aria-label="Sneller zakken">▼</button>
+                    <button data-actie="val" aria-label="Laten vallen">⤓</button>
+                </div>
+            </div>
+
+            <aside class="zijkant">
+                <div class="blok volgende-blok">
+                    <small>Volgende</small>
+                    <canvas id="volgende" width="96" height="72" aria-hidden="true"></canvas>
+                    <div class="naam" id="volgendeNaam"></div>
+                </div>
+                <div class="cijfers">
+                    <div class="blok"><small>Score</small><strong id="score">0</strong></div>
+                    <div class="blok"><small>Record</small><strong id="record">0</strong></div>
+                    <div class="blok"><small>Rijen</small><strong id="rijen">0</strong></div>
+                    <div class="blok"><small>Level</small><strong id="level">1</strong></div>
+                </div>
+                <div class="blok mayo-blok">
+                    <small>Mayo-bom over</small>
+                    <div class="mayo-meter"><i id="mayoMeter"></i></div>
+                    <div class="naam" id="mayoTekst"></div>
+                </div>
+                <p class="hulp">
+                    <kbd>←</kbd> <kbd>→</kbd> schuiven · <kbd>↑</kbd> draaien<br>
+                    <kbd>↓</kbd> sneller · <kbd>spatie</kbd> laten vallen<br>
+                    <kbd>P</kbd> pauze. Op je telefoon: tik = draaien, veeg = schuiven, veeg omlaag = laten vallen.
+                </p>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        const KOLOMMEN = 8, RIJEN = 16;
+        const MAYO_ELKE = 15;          // elke zoveelste snack is een mayo-bom
+        const RIJEN_PER_LEVEL = 8;
+        const PUNTEN_RIJEN = [0, 100, 300, 600, 1000];
+        const RECORD_SLEUTEL = 'familySnackRecord';
+        const LANDTIJD = 500;          // ms dat een gelande snack nog opzij kan voor hij vastzit
+
+        // De snacks: vorm (1 = vakje) en hoe ze eruitzien
+        const SNACKS = {
+            bitterbal:  { naam: 'Bitterbal',     vorm: [[1]],                 kleur: '#9a5a26', licht: '#c9853f' },
+            kroket:     { naam: 'Kroket',        vorm: [[1, 1]],              kleur: '#d98a3a', licht: '#f3b468' },
+            frikandel:  { naam: 'Frikandel',     vorm: [[1, 1, 1]],           kleur: '#7a3f22', licht: '#9d5a37' },
+            frietzak:   { naam: 'Frietzak',      vorm: [[1, 0], [1, 1]],      kleur: '#ffcf3f', licht: '#fff0a6' },
+            bamischijf: { naam: 'Bamischijf',    vorm: [[1, 1], [1, 1]],      kleur: '#f39a2b', licht: '#ffd08a' },
+            bakje:      { naam: 'Family-bakje',  vorm: [[1, 0, 1], [1, 1, 1]], kleur: '#e8432b', licht: '#ffcf3f' },
+            mayo:       { naam: 'Mayo-bom',      vorm: [[1]],                 kleur: '#fffbe9', licht: '#ffffff' }
+        };
+        const GEWONE = ['bitterbal', 'kroket', 'frikandel', 'frietzak', 'bamischijf', 'bakje'];
+
+        const bord = document.getElementById('bord');
+        const ctx = bord.getContext('2d');
+        const volgendeCanvas = document.getElementById('volgende');
+        const vctx = volgendeCanvas.getContext('2d');
+        let cel = 30, volgendeMaat = { b: 96, h: 72, s: 22 };
+
+        let veld, stuk, volgende, zak = [], teller, score, rijen, level, status = 'start', flits = null, teksten = [], stukNr = 0;
+        let tijdOver = 0, vorigeTijd = 0, opDeGrond = 0;
+
+        const leesRecord = () => { try { return Number(localStorage.getItem(RECORD_SLEUTEL)) || 0; } catch (e) { return 0; } };
+        const bewaarRecord = s => { try { localStorage.setItem(RECORD_SLEUTEL, String(s)); } catch (e) { /* dan alleen voor nu */ } };
+        let record = leesRecord();
+
+        // ---------- Formaat: het bord past altijd op het scherm ----------
+        function maatVoorScherm() {
+            // Hoeveel ruimte is er onder de bovenkant van het bord (en boven de knoppen op de telefoon)?
+            const smal = innerWidth <= 640;
+            const knoppen = document.getElementById('knoppen');
+            const knoppenHoog = getComputedStyle(knoppen).display === 'none' ? 0 : 64;
+            const boven = bord.parentElement.getBoundingClientRect().top + scrollY;
+            const ruimteHoog = innerHeight - boven - knoppenHoog - 28;
+            const ruimteBreed = smal ? innerWidth - 46 : Math.min(innerWidth - 270, 520);
+            cel = Math.max(16, Math.min(38, Math.floor(Math.min(ruimteHoog / RIJEN, ruimteBreed / KOLOMMEN))));
+            const dpr = window.devicePixelRatio || 1;
+            bord.width = KOLOMMEN * cel * dpr; bord.height = RIJEN * cel * dpr;
+            bord.style.width = KOLOMMEN * cel + 'px'; bord.style.height = RIJEN * cel + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const vb = smal ? 64 : 96, vh = smal ? 48 : 72;
+            volgendeCanvas.width = vb * dpr; volgendeCanvas.height = vh * dpr;
+            volgendeCanvas.style.width = vb + 'px'; volgendeCanvas.style.height = vh + 'px';
+            volgendeMaat = { b: vb, h: vh, s: smal ? 15 : 22 };
+            vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            tekenVolgende();
+        }
+
+        // ---------- Stukken ----------
+        function trekSnack() {
+            if (!zak.length) zak = [...GEWONE].sort(() => Math.random() - 0.5);
+            return zak.pop();
+        }
+        function maakStuk(soort) {
+            stukNr++;
+            const vorm = SNACKS[soort].vorm.map(r => [...r]);
+            return { soort, vorm, x: Math.floor((KOLOMMEN - vorm[0].length) / 2), y: 0, id: stukNr };
+        }
+        function volgendeSoort() {
+            teller++;
+            return teller % MAYO_ELKE === 0 ? 'mayo' : trekSnack();
+        }
+        function draai(vorm, richting) {
+            const h = vorm.length, b = vorm[0].length;
+            return Array.from({ length: b }, (_, r) => Array.from({ length: h }, (_, c) => richting > 0 ? vorm[h - 1 - c][r] : vorm[c][b - 1 - r]));
+        }
+        function past(vorm, x, y) {
+            for (let r = 0; r < vorm.length; r++) for (let c = 0; c < vorm[r].length; c++) {
+                if (!vorm[r][c]) continue;
+                const vx = x + c, vy = y + r;
+                if (vx < 0 || vx >= KOLOMMEN || vy >= RIJEN) return false;
+                if (vy >= 0 && veld[vy][vx]) return false;
+            }
+            return true;
+        }
+
+        // ---------- Spelverloop ----------
+        function nieuwSpel() {
+            veld = Array.from({ length: RIJEN }, () => Array(KOLOMMEN).fill(null));
+            zak = []; teller = 0; score = 0; rijen = 0; level = 1; flits = null; teksten = []; tijdOver = 0;
+            volgende = volgendeSoort();
+            nieuwStuk();
+            status = 'spelen';
+            toonLaag(null);
+            werkCijfersBij();
+        }
+        function nieuwStuk() {
+            stuk = maakStuk(volgende);
+            opDeGrond = 0;
+            volgende = volgendeSoort();
+            tekenVolgende();
+            werkCijfersBij();
+            if (!past(stuk.vorm, stuk.x, stuk.y)) spelVoorbij();
+        }
+        const snelheid = () => Math.max(90, 820 - (level - 1) * 75);
+
+        function beweeg(dx) {
+            if (status !== 'spelen' || flits) return;
+            if (past(stuk.vorm, stuk.x + dx, stuk.y)) stuk.x += dx;
+        }
+        function draaiStuk(richting = 1) {
+            if (status !== 'spelen' || flits) return;
+            const nieuw = draai(stuk.vorm, richting);
+            // Past hij niet? Een stapje opzij of omhoog proberen
+            for (const [dx, dy] of [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1]]) {
+                if (past(nieuw, stuk.x + dx, stuk.y + dy)) { stuk.vorm = nieuw; stuk.x += dx; stuk.y += dy; return; }
+            }
+        }
+        function zakEen(door = 'zwaartekracht') {
+            if (status !== 'spelen' || flits) return false;
+            if (past(stuk.vorm, stuk.x, stuk.y + 1)) {
+                stuk.y++;
+                if (door === 'speler') score += 1;
+                tijdOver = 0;
+                return true;
+            }
+            vastzetten();
+            return false;
+        }
+        function laatVallen() {
+            if (status !== 'spelen' || flits) return;
+            let n = 0;
+            while (past(stuk.vorm, stuk.x, stuk.y + 1)) { stuk.y++; n++; }
+            score += n * 2;
+            vastzetten();
+        }
+
+        function vastzetten() {
+            if (stuk.soort === 'mayo') return mayoBom();
+            stuk.vorm.forEach((r, ri) => r.forEach((v, ci) => {
+                if (v && stuk.y + ri >= 0) veld[stuk.y + ri][stuk.x + ci] = { soort: stuk.soort, id: stuk.id, zaad: (stuk.id * 31 + ri * 7 + ci * 13) % 97 };
+            }));
+            if (stuk.vorm.some((r, ri) => r.some(v => v && stuk.y + ri < 0))) return spelVoorbij();
+            controleerRijen() || nieuwStuk();
+        }
+
+        // Mayo valt op een snack: alle snacks van die soort weg, de rest zakt per kolom naar beneden
+        function mayoBom() {
+            const x = stuk.x, onder = stuk.y + 1;
+            const doelwit = onder < RIJEN ? veld[onder][x] : null;
+            if (!doelwit) {
+                zweefTekst('Splats! Mis…', x, stuk.y, '#fffbe9');
+                return nieuwStuk();
+            }
+            let weg = 0;
+            for (let r = 0; r < RIJEN; r++) for (let c = 0; c < KOLOMMEN; c++) {
+                if (veld[r][c] && veld[r][c].soort === doelwit.soort) { veld[r][c] = null; weg++; }
+            }
+            for (let c = 0; c < KOLOMMEN; c++) {
+                const kolom = [];
+                for (let r = RIJEN - 1; r >= 0; r--) if (veld[r][c]) kolom.push(veld[r][c]);
+                for (let r = RIJEN - 1, i = 0; r >= 0; r--, i++) veld[r][c] = kolom[i] || null;
+            }
+            const punten = weg * 15 * level;
+            score += punten;
+            zweefTekst(`🥫 ${weg} × ${SNACKS[doelwit.soort].naam.toLowerCase()} weg! +${punten}`, x, onder, '#fffbe9');
+            controleerRijen() || nieuwStuk();
+        }
+
+        function controleerRijen() {
+            const vol = [];
+            for (let r = 0; r < RIJEN; r++) if (veld[r].every(Boolean)) vol.push(r);
+            if (!vol.length) return false;
+            const menu = vol.filter(r => veld[r].every(v => v.soort === veld[r][0].soort)).length;
+            const punten = (PUNTEN_RIJEN[Math.min(vol.length, 4)] + Math.max(0, vol.length - 4) * 300 + menu * 200) * level;
+            score += punten;
+            const tekst = menu ? `⭐ Vol menu! +${punten}` : vol.length >= 3 ? `🔥 ${vol.length} rijen! +${punten}` : `+${punten}`;
+            zweefTekst(tekst, KOLOMMEN / 2 - 0.5, vol[0], menu ? '#ffc21a' : '#2fe3a3');
+            flits = { rijen: vol, tot: performance.now() + 260 };
+            return true;
+        }
+        function rondFlitsAf() {
+            const oudLevel = level;
+            flits.rijen.forEach(r => { veld.splice(r, 1); veld.unshift(Array(KOLOMMEN).fill(null)); });
+            rijen += flits.rijen.length;
+            level = 1 + Math.floor(rijen / RIJEN_PER_LEVEL);
+            if (level > oudLevel) zweefTekst(`⚡ Level ${level}`, KOLOMMEN / 2 - 0.5, RIJEN / 2, '#ff3d81');
+            flits = null;
+            // Kan een mayo-bom die rijen vrijmaakte weer volle rijen maken? Dan meteen nog een keer.
+            controleerRijen() || nieuwStuk();
+        }
+
+        function spelVoorbij() {
+            status = 'voorbij';
+            const nieuwRecord = score > record;
+            if (nieuwRecord) { record = score; bewaarRecord(record); }
+            document.getElementById('eindScore').textContent = score.toLocaleString('nl-NL');
+            document.getElementById('eindTekst').textContent = nieuwRecord && score > 0
+                ? `🏆 Nieuw record! ${rijen} rijen, level ${level}.`
+                : `${rijen} rijen, level ${level}. Je record is ${record.toLocaleString('nl-NL')}.`;
+            werkCijfersBij();
+            toonLaag('eind');
+        }
+        function pauze(aan) {
+            if (aan && status === 'spelen') { status = 'pauze'; toonLaag('pauze'); }
+            else if (!aan && status === 'pauze') { status = 'spelen'; vorigeTijd = performance.now(); toonLaag(null); }
+        }
+        function toonLaag(welke) {
+            document.getElementById('startLaag').classList.toggle('verborgen', welke !== 'start');
+            document.getElementById('pauzeLaag').classList.toggle('verborgen', welke !== 'pauze');
+            document.getElementById('eindLaag').classList.toggle('verborgen', welke !== 'eind');
+        }
+        function zweefTekst(tekst, x, y, kleur) { teksten.push({ tekst, y, kleur, start: performance.now() }); }
+
+        function werkCijfersBij() {
+            document.getElementById('score').textContent = score.toLocaleString('nl-NL');
+            document.getElementById('record').textContent = Math.max(record, score).toLocaleString('nl-NL');
+            document.getElementById('rijen').textContent = rijen;
+            document.getElementById('level').textContent = level;
+            const over = volgende === 'mayo' ? 0 : MAYO_ELKE - (teller % MAYO_ELKE);
+            document.getElementById('mayoMeter').style.width = ((MAYO_ELKE - over) / MAYO_ELKE * 100) + '%';
+            document.getElementById('mayoTekst').textContent = volgende === 'mayo' ? '🥫 Hij komt eraan!' : `nog ${over} snack${over === 1 ? '' : 's'}`;
+        }
+
+        // ---------- Tekenen ----------
+        function tekenCel(c, x, y, s, vak, buren, schaduw) {
+            const info = SNACKS[vak.soort];
+            const ins = Math.max(1, s * 0.06);
+            const l = x + (buren.w ? 0 : ins), t = y + (buren.n ? 0 : ins);
+            const rr = x + s - (buren.e ? 0 : ins), b = y + s - (buren.s ? 0 : ins);
+            const rad = s * 0.32;
+            const hoek = (a, bb) => (a || bb) ? 0 : rad;
+            c.save();
+            c.globalAlpha = schaduw ? 0.22 : 1;
+            c.beginPath();
+            if (vak.soort === 'bitterbal' || vak.soort === 'mayo') {
+                c.arc(x + s / 2, y + s / 2, s / 2 - ins, 0, Math.PI * 2);
+            } else if (c.roundRect) {
+                c.roundRect(l, t, rr - l, b - t, [hoek(buren.n, buren.w), hoek(buren.n, buren.e), hoek(buren.s, buren.e), hoek(buren.s, buren.w)]);
+            } else {
+                c.rect(l, t, rr - l, b - t);
+            }
+            c.fillStyle = info.kleur;
+            c.fill();
+            if (schaduw) { c.restore(); return; }
+            c.clip();
+            // Kleine details per snack, steeds op dezelfde plek (zaad), zodat het niet flikkert
+            const z = vak.zaad || 0;
+            const stip = (dx, dy, r, kleur) => { c.beginPath(); c.arc(x + s * dx, y + s * dy, s * r, 0, Math.PI * 2); c.fillStyle = kleur; c.fill(); };
+            if (vak.soort === 'kroket' || vak.soort === 'bitterbal') {
+                for (let i = 0; i < 5; i++) stip(0.2 + ((z * (i + 3)) % 60) / 100, 0.2 + ((z * (i + 7)) % 60) / 100, 0.045, info.licht);
+            } else if (vak.soort === 'frikandel') {
+                for (let i = 0; i < 3; i++) stip(0.2 + ((z * (i + 5)) % 60) / 100, 0.25 + ((z * (i + 2)) % 50) / 100, 0.04, '#4a2312');
+                c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(x, y + s * 0.18, s, s * 0.12);
+            } else if (vak.soort === 'frietzak') {
+                c.fillStyle = info.licht;
+                for (let i = 0; i < 4; i++) c.fillRect(x + s * (0.14 + i * 0.2), y + s * (0.1 + ((z + i * 3) % 4) * 0.05), s * 0.1, s * 0.85);
+            } else if (vak.soort === 'bamischijf') {
+                c.strokeStyle = info.licht; c.lineWidth = Math.max(1, s * 0.06);
+                for (let i = 0; i < 3; i++) {
+                    c.beginPath();
+                    const yy = y + s * (0.25 + i * 0.25);
+                    c.moveTo(x, yy);
+                    for (let k = 0; k <= 4; k++) c.quadraticCurveTo(x + s * (k * 0.25 + 0.125), yy + (k % 2 ? 1 : -1) * s * 0.08, x + s * (k + 1) * 0.25, yy);
+                    c.stroke();
+                }
+            } else if (vak.soort === 'bakje') {
+                c.fillStyle = info.licht;
+                for (let i = 0; i < 3; i++) c.fillRect(x + s * (0.18 + i * 0.25), y + s * 0.08, s * 0.12, s * 0.42);
+                c.fillStyle = 'rgba(255,255,255,0.25)'; c.fillRect(x, y + s * 0.62, s, s * 0.08);
+            } else if (vak.soort === 'mayo') {
+                stip(0.36, 0.34, 0.12, '#ffffff');
+                c.font = `${Math.round(s * 0.42)}px system-ui`; c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillStyle = '#e8432b'; c.fillText('M', x + s * 0.55, y + s * 0.6);
+            }
+            // Glans bovenop
+            c.fillStyle = 'rgba(255,255,255,0.12)';
+            c.fillRect(x, y, s, s * 0.22);
+            c.restore();
+        }
+
+        function burenInVeld(r, c) {
+            const vak = veld[r][c], zelfde = (rr, cc) => rr >= 0 && rr < RIJEN && cc >= 0 && cc < KOLOMMEN && veld[rr][cc] && veld[rr][cc].id === vak.id;
+            return { n: zelfde(r - 1, c), s: zelfde(r + 1, c), w: zelfde(r, c - 1), e: zelfde(r, c + 1) };
+        }
+        function burenInVorm(vorm, r, c) {
+            const v = (rr, cc) => !!(vorm[rr] && vorm[rr][cc]);
+            return { n: v(r - 1, c), s: v(r + 1, c), w: v(r, c - 1), e: v(r, c + 1) };
+        }
+
+        function teken(nu) {
+            const B = KOLOMMEN * cel, H = RIJEN * cel;
+            ctx.clearRect(0, 0, B, H);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+            for (let c = 1; c < KOLOMMEN; c++) { ctx.beginPath(); ctx.moveTo(c * cel + 0.5, 0); ctx.lineTo(c * cel + 0.5, H); ctx.stroke(); }
+            for (let r = 1; r < RIJEN; r++) { ctx.beginPath(); ctx.moveTo(0, r * cel + 0.5); ctx.lineTo(B, r * cel + 0.5); ctx.stroke(); }
+            if (!veld) return;
+
+            for (let r = 0; r < RIJEN; r++) for (let c = 0; c < KOLOMMEN; c++) {
+                if (veld[r][c]) tekenCel(ctx, c * cel, r * cel, cel, veld[r][c], burenInVeld(r, c));
+            }
+            if (flits) {
+                const fase = 1 - Math.max(0, flits.tot - nu) / 260;
+                ctx.fillStyle = `rgba(255, 248, 239, ${0.85 * (1 - fase)})`;
+                flits.rijen.forEach(r => ctx.fillRect(0, r * cel, B, cel));
+            }
+            if (stuk && status !== 'voorbij' && !flits) {
+                // Waar hij landt (schaduw), daarna het stuk zelf
+                let gy = stuk.y;
+                while (past(stuk.vorm, stuk.x, gy + 1)) gy++;
+                const vak = { soort: stuk.soort, zaad: (stuk.id * 31) % 97 };
+                stuk.vorm.forEach((rij, r) => rij.forEach((v, c) => {
+                    if (!v) return;
+                    const b = burenInVorm(stuk.vorm, r, c);
+                    if (gy !== stuk.y) tekenCel(ctx, (stuk.x + c) * cel, (gy + r) * cel, cel, vak, b, true);
+                }));
+                stuk.vorm.forEach((rij, r) => rij.forEach((v, c) => {
+                    if (!v || stuk.y + r < 0) return;
+                    tekenCel(ctx, (stuk.x + c) * cel, (stuk.y + r) * cel, cel, { soort: stuk.soort, zaad: (stuk.id * 31 + r * 7 + c * 13) % 97 }, burenInVorm(stuk.vorm, r, c));
+                }));
+            }
+            // Zwevende teksten
+            teksten = teksten.filter(t => nu - t.start < 1300);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            teksten.forEach(t => {
+                const f = (nu - t.start) / 1300;
+                ctx.globalAlpha = 1 - f * f;
+                ctx.font = `700 ${Math.round(cel * 0.55)}px Fredoka, system-ui, sans-serif`;
+                const ty = Math.max(cel * 0.6, (t.y + 0.5) * cel - f * cel * 1.6);
+                ctx.lineWidth = 4; ctx.strokeStyle = '#120b24'; ctx.strokeText(t.tekst, B / 2, ty, B - 8);
+                ctx.fillStyle = t.kleur; ctx.fillText(t.tekst, B / 2, ty, B - 8);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function tekenVolgende() {
+            const { b: vb, h: vh, s } = volgendeMaat;
+            vctx.clearRect(0, 0, vb, vh);
+            if (!volgende) return;
+            const vorm = SNACKS[volgende].vorm;
+            const ox = (vb - vorm[0].length * s) / 2, oy = (vh - vorm.length * s) / 2;
+            vorm.forEach((rij, r) => rij.forEach((v, c) => {
+                if (v) tekenCel(vctx, ox + c * s, oy + r * s, s, { soort: volgende, zaad: 17 + r * 7 + c * 13 }, burenInVorm(vorm, r, c));
+            }));
+            document.getElementById('volgendeNaam').textContent = SNACKS[volgende].naam;
+        }
+
+        function lus(nu) {
+            const dt = Math.min(250, nu - (vorigeTijd || nu));
+            vorigeTijd = nu;
+            if (status === 'spelen') {
+                if (flits) { if (nu >= flits.tot) rondFlitsAf(); }
+                else if (!past(stuk.vorm, stuk.x, stuk.y + 1)) {
+                    // Geland: nog even schuiven of draaien mag, daarna zit hij vast
+                    opDeGrond += dt;
+                    if (opDeGrond >= LANDTIJD) { opDeGrond = 0; tijdOver = 0; vastzetten(); }
+                } else {
+                    opDeGrond = 0;
+                    tijdOver += dt;
+                    if (tijdOver >= snelheid()) { tijdOver = 0; zakEen(); }
+                }
+                werkCijfersBij();
+            }
+            teken(nu);
+            requestAnimationFrame(lus);
+        }
+
+        // ---------- Besturing ----------
+        const ACTIES = { links: () => beweeg(-1), rechts: () => beweeg(1), draai: () => draaiStuk(1), omlaag: () => zakEen('speler'), val: () => laatVallen() };
+        document.addEventListener('keydown', e => {
+            const toets = { ArrowLeft: 'links', ArrowRight: 'rechts', ArrowUp: 'draai', x: 'draai', X: 'draai', ArrowDown: 'omlaag', ' ': 'val' }[e.key];
+            if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); draaiStuk(-1); return; }
+            if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { pauze(status === 'spelen'); return; }
+            if (e.key === 'Enter' && status !== 'spelen' && status !== 'pauze') { nieuwSpel(); return; }
+            if (!toets) return;
+            e.preventDefault();
+            if (status === 'pauze') return;
+            ACTIES[toets]();
+        });
+
+        // Knoppen op de telefoon: vasthouden = herhalen (behalve draaien en laten vallen)
+        document.querySelectorAll('#knoppen button').forEach(knop => {
+            let wacht = null, herhaal = null;
+            const stop = () => { clearTimeout(wacht); clearInterval(herhaal); };
+            knop.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                const actie = knop.dataset.actie;
+                ACTIES[actie]();
+                if (actie === 'draai' || actie === 'val') return;
+                wacht = setTimeout(() => { herhaal = setInterval(ACTIES[actie], actie === 'omlaag' ? 50 : 90); }, 220);
+            });
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => knop.addEventListener(t, stop));
+            knop.addEventListener('contextmenu', e => e.preventDefault());
+        });
+
+        // Vegen op het bord: tik = draaien, opzij = schuiven, snel omlaag = laten vallen
+        let veeg = null;
+        bord.addEventListener('pointerdown', e => { veeg = { x: e.clientX, y: e.clientY, start: performance.now(), geschoven: 0, gezakt: 0 }; });
+        bord.addEventListener('pointermove', e => {
+            if (!veeg || status !== 'spelen') return;
+            const stappen = Math.trunc((e.clientX - veeg.x) / (cel * 0.9));
+            while (veeg.geschoven < stappen) { beweeg(1); veeg.geschoven++; }
+            while (veeg.geschoven > stappen) { beweeg(-1); veeg.geschoven--; }
+            const omlaag = Math.trunc((e.clientY - veeg.y) / cel);
+            while (veeg.gezakt < omlaag && performance.now() - veeg.start > 250) { zakEen('speler'); veeg.gezakt++; }
+        });
+        bord.addEventListener('pointerup', e => {
+            if (!veeg) return;
+            const dx = e.clientX - veeg.x, dy = e.clientY - veeg.y, duur = performance.now() - veeg.start;
+            if (status === 'spelen') {
+                if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && duur < 300) draaiStuk(1);
+                else if (dy > cel * 2 && duur < 250 && Math.abs(dy) > Math.abs(dx) * 1.5) laatVallen();
+            }
+            veeg = null;
+        });
+        bord.addEventListener('pointercancel', () => { veeg = null; });
+
+        document.getElementById('startKnop').addEventListener('click', nieuwSpel);
+        document.getElementById('opnieuwKnop').addEventListener('click', nieuwSpel);
+        document.getElementById('verderKnop').addEventListener('click', () => pauze(false));
+        document.addEventListener('visibilitychange', () => { if (document.hidden) pauze(true); });
+        window.addEventListener('resize', maatVoorScherm);
+
+        maatVoorScherm();
+        document.getElementById('record').textContent = record.toLocaleString('nl-NL');
+        requestAnimationFrame(lus);
+    </script>
+</body>
+</html>
