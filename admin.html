@@ -601,7 +601,7 @@
         if (!open.length) { melding($('betaalMelding'), 'ok', 'Iedereen heeft betaald of gemeld. 🎉'); return; }
         const tekst = 'Hoi allemaal! 🍟 Nog niet betaald voor de Family lunch van ' + dagNaam(datum) + ': ' +
             open.map(p => p.naam + ' (' + euro(p.totaal) + ')').join(', ') +
-            '. Betalen kan via https://kevinboogaard.github.io/family-lunch/ met de knop "Afrekenen". Bedankt!';
+            '. Betalen kan via https://lunch.advisor.nl/ met de knop "Afrekenen". Bedankt!';
         const klaar = () => melding($('betaalMelding'), 'ok', '📋 Gekopieerd! Plak het in de groepsapp.');
         const noodgeval = () => { const ta = document.createElement('textarea'); ta.value = tekst; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); klaar(); } catch (e) { melding($('betaalMelding'), 'fout', 'Kopiëren is niet gelukt.'); } ta.remove(); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tekst).then(klaar, noodgeval); else noodgeval();
@@ -798,7 +798,7 @@
                 },
                 bestellingen: lijst.map(b => ({ Naam: b.Naam, Product: b.Product, Aantal: b.Aantal }))
             };
-            const bron = /^https?:\/\//.test(location.href) ? 'e-food-helper.js' : 'https://kevinboogaard.github.io/family-lunch/e-food-helper.js';
+            const bron = /^https?:\/\//.test(location.href) ? 'e-food-helper.js' : 'https://lunch.advisor.nl/e-food-helper.js';
             const code = await (await fetch(bron + '?' + Date.now())).text();
             kopieer('window.__familyHelperData=' + JSON.stringify(gegevens) + ';\n' + code, '📎 Gekopieerd! Open e-food, druk op F12, kies "Console" en plak de tekst (Ctrl+V).');
         } catch (err) {
