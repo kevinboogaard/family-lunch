@@ -188,7 +188,7 @@ de rijen in het tabblad **Bestellingen** te verwijderen.
 
 ## Afrekenen met een QR-code (beheer)
 
-Op `admin.html` (`https://kevinboogaard.github.io/family-lunch/admin.html`) zet je de QR-code waarmee
+Op `admin.html` (`https://lunch.advisor.nl/admin.html`) zet je de QR-code waarmee
 collega's jou kunnen betalen, bijvoorbeeld een Tikkie- of bank-QR. In de app verschijnt dan een knop
 **💶 Afrekenen** en na het plaatsen van een bestelling opent het afrekenscherm vanzelf, met de QR, jouw
 tekst en het bedrag dat die persoon vandaag moet betalen.
